@@ -8,7 +8,7 @@ import com.handtruth.mc.paket.fields.Int64Codec
 import com.handtruth.mc.paket.fields.struct
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.ByteArrayOutput
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class StructFieldTest {

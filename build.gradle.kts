@@ -1,12 +1,10 @@
 @file:Suppress("UNUSED_VARIABLE")
 
-import com.android.build.gradle.LibraryPlugin
 import org.jetbrains.kotlin.gradle.plugin.KotlinMultiplatformPluginWrapper
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 plugins {
     id("com.gladed.androidgitversion")
-    id("com.android.library") apply false
     kotlin("multiplatform") apply false
 }
 
@@ -27,7 +25,7 @@ allprojects {
     version = versionName
 }
 
-val libModules by extra { listOf<String>() }
+val libModules by extra { listOf("nbt", "paket", "shared", "chat", "mcproto", "mojang-api") }
 
 fun Project.configureProject() {
     apply<KotlinMultiplatformPluginWrapper>()
@@ -42,32 +40,6 @@ fun Project.configureProject() {
                 }
             }
         }
-        /*
-        js {
-            browser {
-                testTask {
-                    useKarma {
-                        usePhantomJS()
-                    }
-                }
-            }
-            nodejs()
-        }
-        */
-        //wasm32()
-        /*
-        linuxArm32Hfp()
-        linuxArm64()
-        linuxMips32()
-        linuxMipsel32()
-        linuxX64()
-        mingwX86()
-        mingwX64()
-        macosX64()
-        ios()
-        iosArm32()
-        iosArm64()
-        */
 
         sourceSets {
             fun kotlinx(name: String) = "org.jetbrains.kotlinx:kotlinx-$name"
@@ -76,82 +48,64 @@ fun Project.configureProject() {
             val platform = dependencies.platform("com.handtruth.internal:platform:$platformVersion")
             all {
                 with(languageSettings) {
+                    enableLanguageFeature("InlineClasses")
                     useExperimentalAnnotation("kotlin.RequiresOptIn")
+                    useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
+                    useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
+                    useExperimentalAnnotation("kotlinx.serialization.ImplicitReflectionSerializer")
+                    useExperimentalAnnotation("com.handtruth.mc.paket.ExperimentalPaketApi")
+                    useExperimentalAnnotation("kotlin.time.ExperimentalTime")
                     useExperimentalAnnotation("kotlinx.coroutines.ExperimentalCoroutinesApi")
                 }
                 dependencies {
-                    implementation(platform)
                     api(platform)
-                    //compileOnly(platform)
+                    implementation(platform)
+                    compileOnly(platform)
+                    runtimeOnly(platform)
                 }
             }
             val commonMain by getting {
                 dependencies {
-                    implementation(kotlin("stdlib"))
+                    api(kotlin("stdlib"))
                 }
             }
             val commonTest by getting {
                 dependencies {
                     implementation(kotlin("test-common"))
                     implementation(kotlin("test-annotations-common"))
+                    implementation(ktor("test-dispatcher"))
                     //implementation(ktor("test-dispatcher"))
                 }
             }
             val jvmMain by getting {
                 dependencies {
-                    implementation(kotlin("stdlib-jdk8"))
+                    api(kotlin("stdlib-jdk8"))
                 }
             }
             val jvmTest by getting {
                 dependencies {
-                    implementation(kotlin("test-junit"))
-                    //implementation(ktor("test-dispatcher-jvm"))
-                }
-            }
-            val jsMain by getting {
-                dependencies {
-                    implementation(kotlin("stdlib-js"))
-                }
-            }
-            val jsTest by getting {
-                dependencies {
-                    implementation(kotlin("test-js"))
-                    //implementation(ktor("test-dispatcher-js"))
-                }
-            }
-            val nativeMain by creating {
-                dependsOn(commonMain)
-            }
-            val nativeTest by creating {
-                dependsOn(commonMain)
-                dependencies {
-                    //implementation(ktor("test-dispatcher-native"))
-                }
-            }
-
-            sequenceOf<String>(
-                    //"wasm32"//, "linuxArm32Hfp", "linuxArm64", "linuxMips32", "linuxMipsel32", "linuxX64",
-                    //"mingwX86", "mingwX64", "ios", "iosArm32", "iosArm64"
-            ).forEach {
-                val map = asMap
-                map["${it}Main"]?.apply {
-                    dependsOn(nativeMain)
-                }
-                map["${it}Test"]?.apply {
-                    dependsOn(nativeTest)
+                    implementation(kotlin("test-junit5"))
+                    implementation(ktor("test-dispatcher-jvm"))
+                    runtimeOnly("org.junit.jupiter:junit-jupiter-engine")
                 }
             }
         }
     }
 
-    val jacoco = extensions["jacoco"] as JacocoPluginExtension
-
-    with(jacoco) {
+    configure<JacocoPluginExtension> {
         toolVersion = "0.8.5"
         reportsDir = file("${buildDir}/jacoco-reports")
     }
 
+
     tasks {
+        withType<Test> {
+            useJUnitPlatform()
+            testLogging {
+                events("passed", "skipped", "failed")
+            }
+        }
+
         val jvmTest by getting {}
         val testCoverageReport by creating(JacocoReport::class) {
             dependsOn(jvmTest)
@@ -180,4 +134,4 @@ fun Project.configureProject() {
 }
 
 libModules.forEach { project(":tools-$it").configureProject() }
-//project(":tools-all").configureProject()
+project(":tools-all").configureProject()

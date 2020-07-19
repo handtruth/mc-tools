@@ -6,7 +6,7 @@ import com.handtruth.mc.nbt.asNBTInput
 import com.handtruth.mc.nbt.buildCompoundTag
 import kotlinx.io.ByteArrayInput
 import kotlinx.io.ByteArrayOutput
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class BinaryFormatTest {

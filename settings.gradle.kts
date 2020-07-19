@@ -32,3 +32,12 @@ fun module(name: String) {
     include(":$prefix-$name")
     project(":$prefix-$name").projectDir = file("modules/$name")
 }
+
+module("nbt")
+module("paket")
+module("shared")
+module("chat")
+module("mcproto")
+module("mojang-api")
+module("all")
+module("bom")
