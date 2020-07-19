@@ -1,10 +1,10 @@
-package com.handtruth.mc.minecraft.proto.test
+package com.handtruth.mc.mojang.test
 
-import com.handtruth.mc.minecraft.Mojang
 import com.handtruth.mc.minecraft.UUID
-import com.handtruth.mc.minecraft.model.*
-import com.handtruth.mc.minecraft.util.decodeBase64AsString
-import com.handtruth.mc.minecraft.util.json
+import com.handtruth.mc.mojang.Mojang
+import com.handtruth.mc.mojang.model.*
+import com.handtruth.mc.mojang.util.decodeBase64AsString
+import com.handtruth.mc.mojang.util.json
 import io.ktor.test.dispatcher.testSuspend
 import kotlinx.serialization.Serializable
 import kotlin.test.*
@@ -57,7 +57,11 @@ class MojangAPITest {
         val profile = json.parse(Profile.serializer(), str)
         assertEquals("IQuant", profile.name)
         assertEquals(UUID("c14a227a1b9541efb223ad1aeb299050"), profile.id)
-        assertEquals(ExampleProperty("Русский текст, как всегда", 13), profile["example"])
+        assertEquals(
+            ExampleProperty(
+                "Русский текст, как всегда",
+                13
+            ), profile["example"])
         assertEquals(UnknownProperty("Lol Kek Kotlin Berg"), profile["kotlin"])
         assertNotNull(profile.textures)
         json.stringify(Profile.serializer(), profile)

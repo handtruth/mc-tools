@@ -1,9 +1,9 @@
-package com.handtruth.mc.minecraft.proto.test
+package com.handtruth.mc.chat.test
 
-import com.handtruth.mc.minecraft.model.ChatMessage
-import com.handtruth.mc.minecraft.util.buildChat
-import com.handtruth.mc.minecraft.util.parseControlSequences
-import com.handtruth.mc.minecraft.util.toChatString
+import com.handtruth.mc.chat.ChatMessage
+import com.handtruth.mc.chat.buildChat
+import com.handtruth.mc.chat.parseControlSequences
+import com.handtruth.mc.chat.toChatString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -42,7 +42,7 @@ class ChatMessageTest {
         val chat = buildChat {
             color(ChatMessage.Color.Gold) {
                 bold {
-                    text("Hello")
+                    +("Hello")
                 }
                 text(" ")
                 italic {
@@ -70,7 +70,7 @@ class ChatMessageTest {
             bold {
                 italic {
                     color(ChatMessage.Color.Gold) {
-                        text("Ordinal")
+                        +("Ordinal")
                     }
                 }
             }

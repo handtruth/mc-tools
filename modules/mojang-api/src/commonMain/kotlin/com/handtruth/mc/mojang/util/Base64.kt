@@ -1,4 +1,4 @@
-package com.handtruth.mc.minecraft.util
+package com.handtruth.mc.mojang.util
 
 import kotlinx.io.Input
 import kotlinx.io.buffer.Buffer

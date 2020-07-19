@@ -1,7 +1,7 @@
-package com.handtruth.mc.minecraft.util
+package com.handtruth.mc.mojang.util
 
-import com.handtruth.mc.minecraft.model.Profile
-import com.handtruth.mc.minecraft.model.ProfileContext
+import com.handtruth.mc.mojang.model.Profile
+import com.handtruth.mc.mojang.model.ProfileContext
 import kotlinx.serialization.*
 import kotlin.native.concurrent.ThreadLocal
 

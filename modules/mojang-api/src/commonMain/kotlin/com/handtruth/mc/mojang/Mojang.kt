@@ -1,9 +1,10 @@
-package com.handtruth.mc.minecraft
+package com.handtruth.mc.mojang
 
-import com.handtruth.mc.minecraft.model.PlayerByNameResponse
-import com.handtruth.mc.minecraft.model.Profile
-import com.handtruth.mc.minecraft.model.ProfileContext
-import com.handtruth.mc.minecraft.util.json
+import com.handtruth.mc.minecraft.UUID
+import com.handtruth.mc.mojang.model.PlayerByNameResponse
+import com.handtruth.mc.mojang.model.Profile
+import com.handtruth.mc.mojang.model.ProfileContext
+import com.handtruth.mc.mojang.util.json
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import kotlinx.serialization.DeserializationStrategy
