@@ -3,6 +3,7 @@ image: openjdk:8-jdk-alpine
 stages:
   - build
   - test
+  - package
 
 cache:
   paths:
@@ -35,5 +36,7 @@ Package:
   script:
     - $GRADLE publishToMavenLocal
   tags: [ package ]
+  dependencies:
+    - Build
   only:
     - tags
