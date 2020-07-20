@@ -68,9 +68,8 @@ private class BytesPaketReceiver(private val input: ReceiveChannel<Bytes>) : Abs
         clear()
     }
 
-    override suspend fun peek(paket: Paket) = breakableAction {
-        if (!isCaught)
-            catchOrdinal()
+    override fun peek(paket: Paket) = breakableAction {
+        check(isCaught)
         pending!!.input.preview { paket.read(this) }
     }
 

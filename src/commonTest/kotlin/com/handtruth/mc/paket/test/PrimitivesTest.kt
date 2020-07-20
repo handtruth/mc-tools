@@ -162,6 +162,7 @@ class PrimitivesTest {
         val array = output.toByteArray()
         val input = ByteArrayInput(array)
         val (paketB, paketC) = PaketReceiver(input).use {
+            it.catchOrdinal()
             it.peek(BytesPaket) to it.receive(BytesPaket)
         }
         assertEquals(paketB.data.size(), paketC.data.size())

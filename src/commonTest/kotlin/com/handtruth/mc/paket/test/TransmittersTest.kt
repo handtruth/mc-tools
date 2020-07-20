@@ -21,6 +21,8 @@ class TransmittersTest {
         val stream = MemoryAsyncStreamBase()
         val ts = PaketTransmitter(stream.toAsyncStream(), stream.toAsyncStream())
         ts.send(paketA)
+        ts.catchOrdinal()
+        ts.peek(ProtocolTest.ExamplePaket)
         val peeked = ts.peek(ProtocolTest.ExamplePaket)
         val paketB = ts.receive(ProtocolTest.ExamplePaket)
         assertEquals(paketA, paketB)
@@ -46,6 +48,8 @@ class TransmittersTest {
             println("Data sent")
         }
         println("Task spawned")
+        ts.catchOrdinal()
+        ts.peek(ProtocolTest.ExamplePaket)
         val peeked = ts.peek(ProtocolTest.ExamplePaket)
         val paketB = ts.receive(ProtocolTest.ExamplePaket)
         println("Paket received")
@@ -66,6 +70,8 @@ class TransmittersTest {
         val paketA = ProtocolTest.paket
         ts.send(paketA)
         println("Data sent")
+        ts.catchOrdinal()
+        ts.peek(ProtocolTest.ExamplePaket)
         val peeked = ts.peek(ProtocolTest.ExamplePaket)
         println("Peeked")
         val paketB = ts.receive(ProtocolTest.ExamplePaket)
@@ -84,6 +90,7 @@ class TransmittersTest {
         val paketA = ProtocolTest.paket
         ts.send(paketA)
         println("Data sent")
+        ts.catchOrdinal()
         val peeked = ts.peek(ProtocolTest.ExamplePaket)
         println("Peeked")
         val paketB = ts.receive(ProtocolTest.ExamplePaket)
@@ -136,6 +143,8 @@ class TransmittersTest {
         val task = async {
             ts.send(paketA)
         }
+        ts.catchOrdinal()
+        ts.peek(BasePaket)
         val peeked = ts.peek(BasePaket)
         assertEquals(BasePaket.NextTypes.First, peeked.type)
         val paketB = ts.receive(FirstPaket)

@@ -21,9 +21,6 @@ fun PaketTransmitter.asSynchronized() = PaketTransmitter(
     this as PaketReceiver, (this as PaketSender).asSynchronized()
 )
 
-suspend inline fun <reified E : Enum<E>> PaketTransmitter.catchAs() = enumValues<E>()[catchOrdinal()]
-inline fun <reified E : Enum<E>> PaketTransmitter.idAs() = enumValues<E>()[idOrdinal]
-
 operator fun PaketReceiver.plus(sender: PaketSender) = PaketTransmitter(this, sender)
 operator fun PaketSender.plus(receiver: PaketReceiver) = PaketTransmitter(receiver, this)
 

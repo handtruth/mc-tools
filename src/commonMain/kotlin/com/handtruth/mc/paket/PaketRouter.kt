@@ -153,9 +153,8 @@ internal abstract class PaketRouter(private val count: Int, private val receiver
             }
         }
 
-        override suspend fun peek(paket: Paket) = breakableAction {
-            if (!isCaught)
-                catchOrdinal()
+        override fun peek(paket: Paket) = breakableAction {
+            check(isCaught)
             receiver.peek(paket)
         }
 

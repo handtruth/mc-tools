@@ -48,9 +48,8 @@ private class ChannelPaketReceiver(val input: ReceiveChannel<Paket>) : PaketRece
         drop()
     }
 
-    override suspend fun peek(paket: Paket) {
-        if (!isCaught)
-            catchOrdinal()
+    override fun peek(paket: Paket) {
+        check(isCaught)
         val received = pending!!
         for ((a, b) in received.fields zip paket.fields) {
             @Suppress("UNCHECKED_CAST")

@@ -7,6 +7,7 @@ import kotlinx.io.Input
 import kotlinx.io.Output
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 private class OutputPaketSender(
     val channel: Output,
@@ -33,7 +34,7 @@ private class InputPaketReceiver(val channel: Input, private val ioContext: Coro
         if (isCaught) {
             drop()
             catchOrdinal()
-        } else withContext(ioContext ?: coroutineContext) {
+        } else withContext(ioContext ?: EmptyCoroutineContext) {
             size = readVarInt(channel)
             val id = channel.preview {
                 readVarInt(this)
@@ -58,27 +59,22 @@ private class InputPaketReceiver(val channel: Input, private val ioContext: Coro
         }
     }
 
-    override suspend fun receive(paket: Paket) = breakableAction {
+    override suspend fun receive(paket: Paket) {
         if (!isCaught)
             catchOrdinal()
-        withContext(ioContext ?: coroutineContext) {
-            paket.read(channel)
-            val estimate = size - paket.size
-            val skipped = channel.discard(estimate)
-            validate(estimate == skipped) {
-                "Failed to discard paket estimate ($estimate estimated, skipped $skipped)"
-            }
+        paket.read(channel)
+        val estimate = size - paket.size
+        val skipped = channel.discard(estimate)
+        validate(estimate == skipped) {
+            "Failed to discard paket estimate ($estimate estimated, skipped $skipped)"
         }
         isCaught = false
     }
 
-    override suspend fun peek(paket: Paket) {
-        if (!isCaught)
-            catchOrdinal()
-        withContext(ioContext ?: coroutineContext) {
-            channel.preview {
-                paket.read(channel)
-            }
+    override fun peek(paket: Paket) {
+        check(isCaught)
+        channel.preview {
+            paket.read(this)
         }
     }
 
