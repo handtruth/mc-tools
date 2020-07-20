@@ -38,6 +38,7 @@ class RoutersTest {
         val master = PaketTransmitter(channel)
         val (slave1, slave2) = master filter { it.id != IDS.Third } split { it.id }
         val task1 = launch(CoroutineName("first")) {
+            slave1.catchOrdinal()
             slave1.peek(FirstPaket)
             slave1.receive(FirstPaket)
             println("first received 1")
@@ -45,7 +46,6 @@ class RoutersTest {
             println("first received 2")
         }
         val task2 = launch(CoroutineName("second")) {
-            slave2.peek(SecondPaket)
             slave2.receive(SecondPaket)
             println("second received 1")
         }
@@ -73,6 +73,7 @@ class RoutersTest {
         val count = 10000
         val recv1 = launch(dispatcher + CoroutineName("recv 1")) {
             repeat(count) {
+                slave1.catchOrdinal()
                 slave1.peek(FirstPaket)
                 slave1.receive(FirstPaket)
                 //println("recv 1: $it")
@@ -139,6 +140,7 @@ class RoutersTest {
         }
         val recv2 = launch(dispatcher + CoroutineName("recv 2")) {
             repeat(count) {
+                main.catchOrdinal()
                 main.peek(SecondPaket)
                 main.receive(SecondPaket)
                 //println("recv 2: $it")
@@ -191,6 +193,7 @@ class RoutersTest {
         }
         val recv2 = launch(dispatcher + CoroutineName("recv 2")) {
             repeat(count) {
+                ts2.catchOrdinal()
                 ts2.peek(SecondPaket)
                 ts2.receive(SecondPaket)
                 //println("recv 2: $it")

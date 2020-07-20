@@ -91,16 +91,15 @@ private class KtorPaketReceiver(private val channel: ByteReadChannel) : Abstract
 
     private var buffer: BytesInfo? = null
 
-    override suspend fun receive(paket: Paket) = breakableAction {
+    override suspend fun receive(paket: Paket) {
         if (!isCaught)
             catchOrdinal()
         paket.read(buffer!!.input)
         drop()
     }
 
-    override suspend fun peek(paket: Paket) = breakableAction {
-        if (!isCaught)
-            catchOrdinal()
+    override fun peek(paket: Paket) {
+        check(isCaught)
         buffer!!.input.preview {
             paket.read(this)
         }

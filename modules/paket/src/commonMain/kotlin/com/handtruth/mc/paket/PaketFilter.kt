@@ -38,10 +38,4 @@ internal abstract class PaketFilter(private val parent: PaketReceiver) : PaketRe
             catchOrdinal()
         parent.receive(paket)
     }
-
-    override suspend fun peek(paket: Paket) {
-        if (!isCaught)
-            catchOrdinal()
-        parent.peek(paket)
-    }
 }

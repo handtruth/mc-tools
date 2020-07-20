@@ -82,7 +82,7 @@ class NestTest {
             }
             launch {
                 repeat(n * 3 + 1) {
-                    when (ts.catch<IDS2>()) {
+                    when (ts.catchAs<IDS2>()) {
                         IDS2.First -> ts.receive(FirstPaket)
                         IDS2.Second -> {
                             assertEquals(SecondPaket.size, ts.size)

@@ -17,7 +17,6 @@ val versionCode = androidGitVersion.code().let { if (it == 0) 1 else it }
 
 allprojects {
     repositories {
-        google()
         jcenter()
         maven("https://mvn.handtruth.com")
     }
@@ -25,7 +24,7 @@ allprojects {
     version = versionName
 }
 
-val libModules by extra { listOf("nbt", "paket", "shared", "chat", "mcproto", "mojang-api") }
+val libModules by extra { listOf("nbt", "paket", "shared", "chat", "client", "mojang-api") }
 
 fun Project.configureProject() {
     apply<KotlinMultiplatformPluginWrapper>()

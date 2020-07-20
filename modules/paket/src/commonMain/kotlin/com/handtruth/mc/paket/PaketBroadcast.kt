@@ -16,6 +16,9 @@ interface PaketBroadcast : Closeable {
 @ExperimentalPaketApi
 interface PaketBroadcastSender : PaketSender, PaketBroadcast
 
+/**
+ * DOES NOT WORK IN MULTIPLE THREADS
+ */
 @ExperimentalPaketApi
 fun PaketReceiver.broadcast(): PaketBroadcast = PaketBroadcastImpl(this)
 
@@ -87,12 +90,9 @@ private class PaketBroadcastImpl(private val receiver: PaketReceiver) : Knot(), 
             drop()
         }
 
-        override suspend fun peek(paket: Paket) = breakableAction {
-            if (!isCaught)
-                catchOrdinal()
-            mutex.withLock {
-                receiver.peek(paket)
-            }
+        override fun peek(paket: Paket) {
+            check(isCaught)
+            receiver.peek(paket)
         }
 
         override fun close() {

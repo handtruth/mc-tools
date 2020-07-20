@@ -63,9 +63,8 @@ private class NestPaketTransmitterImpl(
         clear()
     }
 
-    override suspend fun peek(paket: Paket) {
-        if (!isCaught)
-            catchOrdinal()
+    override fun peek(paket: Paket) {
+        check(isCaught)
         val nest = source.produce(paket)
         ts.peek(nest)
     }
