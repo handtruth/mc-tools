@@ -11,7 +11,8 @@ internal class NBTStructDecoder(
     context: SerialModule,
     updateMode: UpdateMode
 ) : NBTCompositeDecoder(context, updateMode) {
-    override val size = tag.value.size
+
+    override fun decodeCollectionSize(descriptor: SerialDescriptor) = descriptor.elementsCount
 
     override fun retrieveTag(descriptor: SerialDescriptor, index: Int): Tag<*> {
         val name = descriptor.getElementName(index)

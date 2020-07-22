@@ -2,6 +2,9 @@
 
 package com.handtruth.mc.paket
 
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
+
 interface PaketPeeking {
     val idOrdinal: Int
     val size: Int
@@ -23,6 +26,30 @@ interface PaketReceiver : PaketPeeking, Breakable {
 suspend inline fun <P : Paket> PaketReceiver.receive(source: PaketSource<P>) = source.produce().also { receive(it) }
 
 fun <P : Paket> PaketPeeking.peek(source: PaketSource<P>) = source.produce().also { peek(it) }
+
+suspend inline fun <R> PaketReceiver.receive(block: PaketPeeking.() -> R): R {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    catchOrdinal()
+    try {
+        return block()
+    } finally {
+        drop()
+    }
+}
+
+suspend inline fun <R> PaketReceiver.receiveAll(block: PaketPeeking.() -> Unit): Nothing {
+    contract {
+        callsInPlace(block, InvocationKind.AT_LEAST_ONCE)
+    }
+    try {
+        while (true)
+            receive(block)
+    } finally {
+        close()
+    }
+}
 
 abstract class AbstractPaketReceiver : AbstractBreakable(), PaketReceiver {
     override var idOrdinal = -1

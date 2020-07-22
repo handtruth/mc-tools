@@ -9,16 +9,10 @@ internal abstract class NBTIndexedDecoder(
 ) : CompositeDecoder {
     final override fun endStructure(descriptor: SerialDescriptor) {}
 
-    protected abstract val size: Int
-
-    final override fun decodeCollectionSize(descriptor: SerialDescriptor): Int {
-        return size
-    }
-
     protected var index = 0
 
     final override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
-        if (index >= size)
+        if (index >= decodeCollectionSize(descriptor))
             return CompositeDecoder.READ_DONE
         return index++
     }

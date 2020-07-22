@@ -3,6 +3,7 @@ package com.handtruth.mc.nbt.test
 import com.handtruth.mc.nbt.NBT
 import com.handtruth.mc.nbt.add
 import com.handtruth.mc.nbt.buildCompoundTag
+import kotlinx.serialization.Serializable
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -62,6 +63,17 @@ class SerializerTest {
         val expected = bigNBTObject
         val bytes = NBT.Default.dump(BigNBTObject.serializer(), expected)
         val actual = NBT.Default.load(BigNBTObject.serializer(), bytes)
+        assertEquals(expected, actual)
+    }
+
+    @Serializable
+    data class MyObject(val valueA: String, val valueB: String?)
+
+    @Test
+    fun nullableField() {
+        val expected = MyObject("one", null)
+        val data = NBT.Default.dump(MyObject.serializer(), expected)
+        val actual = NBT.Default.load(MyObject.serializer(), data)
         assertEquals(expected, actual)
     }
 }

@@ -11,7 +11,10 @@ internal class NBTListDecoder(
     context: SerialModule,
     updateMode: UpdateMode
 ) : NBTCompositeDecoder(context, updateMode) {
-    override val size = tag.value.size
+
+    override fun decodeCollectionSize(descriptor: SerialDescriptor): Int {
+        return tag.value.size
+    }
 
     override fun retrieveTag(descriptor: SerialDescriptor, index: Int): Tag<*> {
         return tag.value[index]

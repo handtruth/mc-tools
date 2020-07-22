@@ -11,7 +11,10 @@ internal class NBTLongArrayDecoder(
     context: SerialModule,
     updateMode: UpdateMode
 ) : NBTIndexedDecoder(context, updateMode) {
-    override val size = tag.value.size
+
+    override fun decodeCollectionSize(descriptor: SerialDescriptor): Int {
+        return tag.value.size
+    }
 
     override fun <T> decodeNonPrimitiveElement(
         descriptor: SerialDescriptor,
@@ -54,7 +57,7 @@ internal class NBTLongArrayDecoder(
         index: Int,
         deserializer: DeserializationStrategy<T?>
     ): T? {
-        return if (index >= size)
+        return if (index >= decodeCollectionSize(descriptor))
             null
         else
             decodeSerializableElement(descriptor, index, deserializer)

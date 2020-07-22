@@ -11,7 +11,10 @@ internal class NBTByteArrayDecoder(
     context: SerialModule,
     updateMode: UpdateMode
 ) : NBTIndexedDecoder(context, updateMode) {
-    override val size = tag.value.size
+
+    override fun decodeCollectionSize(descriptor: SerialDescriptor): Int {
+        return tag.value.size
+    }
 
     override fun decodeBooleanElement(descriptor: SerialDescriptor, index: Int): Boolean {
         return tag.value[index].toInt() != 0
@@ -46,7 +49,7 @@ internal class NBTByteArrayDecoder(
         index: Int,
         deserializer: DeserializationStrategy<T?>
     ): T? {
-        return if (index >= size)
+        return if (index >= decodeCollectionSize(descriptor))
             null
         else
             decodeSerializableElement(descriptor, index, deserializer)

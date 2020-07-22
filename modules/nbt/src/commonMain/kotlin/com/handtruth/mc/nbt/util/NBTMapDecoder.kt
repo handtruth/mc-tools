@@ -12,7 +12,8 @@ internal class NBTMapDecoder(
     context: SerialModule,
     updateMode: UpdateMode
 ) : NBTCompositeDecoder(context, updateMode) {
-    override val size = tag.value.size * 2
+
+    override fun decodeCollectionSize(descriptor: SerialDescriptor) = tag.value.size
 
     private var current: CurrentElement = CurrentElement.Key
 
