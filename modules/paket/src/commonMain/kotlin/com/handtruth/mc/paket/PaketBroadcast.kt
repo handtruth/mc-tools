@@ -14,7 +14,9 @@ interface PaketBroadcast : Closeable {
 }
 
 @ExperimentalPaketApi
-interface PaketBroadcastSender : PaketSender, PaketBroadcast
+interface PaketBroadcastSender : PaketSender, PaketBroadcast {
+    override fun openSubscription(): PaketTransmitter
+}
 
 /**
  * DOES NOT WORK IN MULTIPLE THREADS
@@ -28,11 +30,18 @@ fun PaketTransmitter.broadcast(): PaketBroadcastSender = PaketBroadcastSenderImp
 private class PaketBroadcastSenderImpl private constructor(
     private val sender: PaketSender,
     private val receiver: PaketBroadcast
-) : PaketBroadcastSender, PaketSender by sender, PaketBroadcast by receiver {
+) : PaketBroadcastSender, PaketSender by sender {
+
+    private val notCloseableSender = sender.asNotCloseable()
 
     constructor(sender: PaketSender, receiver: PaketReceiver) : this(sender.asSynchronized(), receiver.broadcast())
 
+    override fun openSubscription() = PaketTransmitter(
+         receiver.openSubscription(), notCloseableSender
+    )
+
     override fun close() {
+        sender.close()
         receiver.close()
     }
 }

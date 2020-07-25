@@ -31,7 +31,8 @@ suspend inline fun <R> PaketReceiver.receive(block: PaketPeeking.() -> R): R {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
-    catchOrdinal()
+    if (!isCaught)
+        catchOrdinal()
     try {
         return block()
     } finally {
@@ -39,7 +40,7 @@ suspend inline fun <R> PaketReceiver.receive(block: PaketPeeking.() -> R): R {
     }
 }
 
-suspend inline fun <R> PaketReceiver.receiveAll(block: PaketPeeking.() -> Unit): Nothing {
+suspend inline fun PaketReceiver.receiveAll(block: PaketPeeking.() -> Unit): Nothing {
     contract {
         callsInPlace(block, InvocationKind.AT_LEAST_ONCE)
     }

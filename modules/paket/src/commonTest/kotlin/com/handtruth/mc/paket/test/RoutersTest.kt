@@ -156,10 +156,9 @@ class RoutersTest {
     fun broadcastTest() = testTimeout(5.seconds) {
         val main = PaketTransmitter(Channel<Bytes>())
         val master = main.broadcast()
-        val sender = master.asNotCloseable()
-        val ts1 = sender + master.openSubscription() filter { it.id == IDS.First }
-        val ts2 = sender + master.openSubscription() filter { it.id == IDS.Second }
-        val ts3 = sender + master.openSubscription() filter { it.id == IDS.Third }
+        val ts1 = master.openSubscription() filter { it.id == IDS.First }
+        val ts2 = master.openSubscription() filter { it.id == IDS.Second }
+        val ts3 = master.openSubscription() filter { it.id == IDS.Third }
         val dispatcher = EmptyCoroutineContext // Dispatchers.Default
         val count = 10000
         val send1 = launch(dispatcher + CoroutineName("send 1")) {

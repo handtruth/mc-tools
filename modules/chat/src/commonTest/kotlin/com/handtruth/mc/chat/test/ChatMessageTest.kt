@@ -77,4 +77,102 @@ class ChatMessageTest {
         }
         assertEquals("""{"text":"Ordinal","bold":true,"italic":true,"color":"gold"}""", ordinal.toChatString())
     }
+
+    @Test
+    fun parseSome() {
+        val expected = buildChat {
+            + " "
+            + "Ассоци"
+            italic {
+                + "иции "
+                bold {
+                    + "с "
+                    color(ChatMessage.Color.Gold) {
+                        underlined {
+                            + "лет"
+                        }
+                        + "а"
+                        color(ChatMessage.Color.DarkRed) {
+                            + "ю"
+                        }
+                        italic(false) {
+                            + "щ"
+                        }
+                        + "им"
+                    }
+                }
+            }
+            + " "
+            strikethrough {
+                + "квадра"
+            }
+            + "коп"
+            obfuscated {
+                + "тером"
+            }
+        }
+        val actual = ChatMessage.parse("""
+            [
+                " ",
+                {
+                    "text": "Ассоци"
+                },
+                {
+                    "text": "иции ",
+                    "italic": true
+                },
+                {
+                    "text": "с ",
+                    "bold": true,
+                    "italic": true
+                },
+                {
+                    "text": "лет",
+                    "bold": true,
+                    "italic": true,
+                    "underlined": true,
+                    "color": "gold"
+                },
+                {
+                    "text": "а",
+                    "bold": true,
+                    "italic": true,
+                    "color": "gold"
+                },
+                {
+                    "text": "ю",
+                    "bold": true,
+                    "italic": true,
+                    "color": "dark_red"
+                },
+                {
+                    "text": "щ",
+                    "bold": true,
+                    "italic": false,
+                    "color": "gold"
+                },
+                {
+                    "text": "им",
+                    "bold": true,
+                    "italic": true,
+                    "color": "gold"
+                },
+                {
+                    "text": " "
+                },
+                {
+                    "text": "квадра",
+                    "strikethrough": true
+                },
+                {
+                    "text": "коп"
+                },
+                {
+                    "text": "тером",
+                    "obfuscated": true
+                }
+            ]
+        """.trimIndent())
+        assertEquals(expected, actual)
+    }
 }

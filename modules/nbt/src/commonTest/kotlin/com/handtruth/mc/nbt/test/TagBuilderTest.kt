@@ -12,9 +12,9 @@ class TagBuilderTest {
     @Test
     fun buildRootTag() {
         val tag = buildCompoundTag {
-            "group"("Administrator")
+            "group"("Them")
             "id"(568)
-            "members".compounds {
+            "members" compounds {
                 add {
                     "name"("Ktlo")
                     "id"(398.toShort())
@@ -29,7 +29,7 @@ class TagBuilderTest {
             "intArray".intArray(58, -98, 334)
             "longArray".longArray(4842, -6496462, 24554679784123)
         }
-        println(tag)
+        println(tag.toString(pretty = true))
         val output = ByteArrayOutput()
         NBT.Default.write(output, tag)
         val bytes = output.toByteArray()

@@ -73,7 +73,6 @@ fun Project.configureProject() {
                     implementation(kotlin("test-common"))
                     implementation(kotlin("test-annotations-common"))
                     implementation(ktor("test-dispatcher"))
-                    //implementation(ktor("test-dispatcher"))
                 }
             }
             val jvmMain by getting {

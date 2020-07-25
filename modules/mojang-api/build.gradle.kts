@@ -15,5 +15,5 @@ dependencies {
     "jvmMainImplementation"(kotlinx("serialization-runtime"))
     "jvmMainImplementation"(ktor("io-jvm"))
     "jvmMainImplementation"(ktor("client-core-jvm"))
-    "jvmMainImplementation"(ktor("client-cio"))
+    "jvmTestImplementation"(ktor("client-cio"))
 }

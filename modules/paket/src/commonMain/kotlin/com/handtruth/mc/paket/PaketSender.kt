@@ -2,6 +2,12 @@
 
 package com.handtruth.mc.paket
 
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.consume
+import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.channels.toCollection
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.ByteArrayOutput
@@ -41,6 +47,14 @@ object EmptyPaketSender : PaketSender {
     override suspend fun send(paket: Paket) {}
     override val broken get() = false
     override fun close() {}
+}
+
+suspend infix fun Flow<Paket>.sendTo(sender: PaketSender) {
+    collect { sender.send(it) }
+}
+
+suspend infix fun ReceiveChannel<Paket>.sendTo(sender: PaketSender) {
+    consumeEach { sender.send(receive()) }
 }
 
 fun PaketSender.asNotCloseable(): PaketSender = object : PaketSender by this {

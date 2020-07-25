@@ -5,3 +5,6 @@ import kotlinx.serialization.SerialInfo
 @SerialInfo
 @Target(AnnotationTarget.PROPERTY)
 annotation class NBTListType(val id: TagID)
+
+@DslMarker
+annotation class NBTDsl

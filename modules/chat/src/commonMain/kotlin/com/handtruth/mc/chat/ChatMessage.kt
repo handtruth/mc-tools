@@ -122,5 +122,6 @@ data class ChatMessage(
 
     companion object {
         val empty = ChatMessage("")
+        fun parse(string: String): ChatMessage = json.parse(ChatMessageJsonSerializer, string)
     }
 }

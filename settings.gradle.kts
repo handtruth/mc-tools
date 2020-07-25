@@ -2,12 +2,12 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         jcenter()
-        google()
     }
     val kotlinVersion: String by settings
     val gitAndroidVersion: String by settings
     val androidGradleVersion: String by settings
     val atomicfuVersion: String by settings
+    val dokkaVersion: String by settings
     resolutionStrategy {
         eachPlugin {
             when {
@@ -35,6 +35,7 @@ fun module(name: String) {
 
 module("nbt")
 module("paket")
+module("paket-tool")
 module("shared")
 module("chat")
 module("client")

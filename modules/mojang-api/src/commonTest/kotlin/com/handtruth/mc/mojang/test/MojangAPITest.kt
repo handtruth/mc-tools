@@ -16,14 +16,16 @@ class MojangAPITest {
         ProfileContext.use(ProfileContext.empty)
     }
 
+    val mojang = Mojang()
+
     @Test
     fun ktloGetUUIDAndProfile() = testSuspend {
-        val data = Mojang.getUUIDbyName("Ktlo")
+        val data = mojang.getUUIDbyName("Ktlo")
         println("Got ID of Ktlo")
         assertFalse(data.demo)
         assertFalse(data.legacy)
         assertEquals(UUID("7bd9e814-d23f-483c-bb4a-91c192ff5351"), data.id)
-        val profile = Mojang.getProfile(data.id)
+        val profile = mojang.getProfile(data.id)
         assertEquals("Ktlo", profile.name)
         assertEquals(data.id, profile.id)
         assertFalse(profile.legacy)
