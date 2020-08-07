@@ -1,5 +1,6 @@
 package com.handtruth.mc.paket
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.io.Closeable
 
 class BrokenObjectException : RuntimeException {
@@ -22,8 +23,10 @@ abstract class AbstractBreakable : Breakable {
             throw BrokenObjectException("object broken, consider recreate")
         try {
             return lambda()
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            broken = true
+            close()
             throw e
         }
     }

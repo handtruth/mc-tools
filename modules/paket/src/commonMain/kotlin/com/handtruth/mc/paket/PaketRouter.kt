@@ -68,17 +68,20 @@ internal abstract class PaketRouter(private val count: Int, private val receiver
 
     private suspend fun catchNext(): Int {
         receiver.isCaught && return code
-        while (true) {
-            receiver.catchOrdinal()
-            code = splitter(receiver)
-            if (code == -1)
-                continue
-            if (code !in 0 until count)
-                throw IndexOutOfBoundsException()
-            if (!_children[code].broken)
-                break
+        try {
+            while (true) {
+                receiver.catchOrdinal()
+                code = splitter(receiver)
+                if (code == -1)
+                    continue
+                if (code !in 0 until count)
+                    throw IndexOutOfBoundsException()
+                if (!_children[code].broken)
+                    break
+            }
+        } finally {
+            conductor.offer(code)
         }
-        conductor.send(code)
         return code
     }
 
