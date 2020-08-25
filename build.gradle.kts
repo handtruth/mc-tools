@@ -24,7 +24,7 @@ allprojects {
     version = versionName
 }
 
-val libModules by extra { listOf("nbt", "paket", "shared", "chat", "client", "mojang-api") }
+val libModules by extra { listOf("nbt", "paket", "zint", "shared", "chat", "client", "mojang-api") }
 
 fun Project.configureProject() {
     apply<KotlinMultiplatformPluginWrapper>()
@@ -110,8 +110,8 @@ fun Project.configureProject() {
             group = "Reporting"
             description = "Generate Jacoco coverage reports."
             val coverageSourceDirs = arrayOf(
-                    "commonMain/src",
-                    "jvmMain/src"
+                    "src/commonMain/kotlin",
+                    "src/jvmMain/kotlin"
             )
             val classFiles = file("${buildDir}/classes/kotlin/jvm/")
                     .walkBottomUp()
