@@ -2,6 +2,7 @@ package com.handtruth.mc.paket
 
 import com.handtruth.mc.paket.util.Codecs
 import com.handtruth.mc.paket.util.Path
+import com.handtruth.mc.util.*
 import kotlinx.io.*
 import kotlinx.io.text.readUtf8String
 import kotlinx.io.text.writeUtf8String
@@ -10,81 +11,17 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.StructureKind
 import kotlin.reflect.KClass
 
-internal fun sizeVarInt(value: Int): Int {
-    var integer = value
-    var count = 0
-    do {
-        integer = integer ushr 7
-        count++
-    } while (integer != 0)
-    return count
-}
+internal fun sizeVarInt(value: Int) = sizeUZInt32(value.toUInt())
 
-internal fun readVarInt(input: Input): Int {
-    var numRead = 0
-    var result = 0
-    var read: Int
-    do {
-        read = input.readByte().toInt()
-        val value = read and 127
-        result = result or (value shl 7 * numRead)
-        numRead++
-        if (numRead > 5) {
-            throw RuntimeException("VarInt is too big")
-        }
-    } while (read and 128 != 0)
-    return result
-}
+internal fun readVarInt(input: Input) = readUZInt32(input).toInt()
 
-internal fun writeVarInt(output: Output, integer: Int) {
-    var value = integer
-    do {
-        var temp = (value and 127)
-        value = value ushr 7
-        if (value != 0) {
-            temp = temp or 128
-        }
-        output.writeByte(temp.toByte())
-    } while (value != 0)
-}
+internal fun writeVarInt(output: Output, value: Int) = writeUZInt32(output, value.toUInt())
 
-internal fun sizeVarLong(value: Long): Int {
-    var integer = value
-    var count = 0
-    do {
-        integer = integer ushr 7
-        count++
-    } while (integer != 0L)
-    return count
-}
+internal fun sizeVarLong(value: Long) = sizeUZInt64(value.toULong())
 
-internal fun readVarLong(input: Input): Long {
-    var numRead = 0
-    var result = 0L
-    var read: Long
-    do {
-        read = input.readByte().toLong()
-        val value = read and 127L
-        result = result or (value shl 7 * numRead)
-        numRead++
-        if (numRead > 10) {
-            throw RuntimeException("VarLong is too big")
-        }
-    } while (read and 128L != 0L)
-    return result
-}
+internal fun readVarLong(input: Input) = readUZInt64(input).toLong()
 
-internal fun writeVarLong(output: Output, integer: Long) {
-    var value = integer
-    do {
-        var temp = (value and 127)
-        value = value ushr 7
-        if (value != 0L) {
-            temp = temp or 128
-        }
-        output.writeByte(temp.toByte())
-    } while (value != 0L)
-}
+internal fun writeVarLong(output: Output, value: Long) = writeUZInt64(output, value.toULong())
 
 private val Char.isHighSurrogate get() = this >= Char.MIN_HIGH_SURROGATE && this < (Char.MAX_HIGH_SURROGATE + 1)
 

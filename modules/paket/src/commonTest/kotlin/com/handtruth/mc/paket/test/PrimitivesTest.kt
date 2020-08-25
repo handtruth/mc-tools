@@ -6,6 +6,7 @@ import com.handtruth.mc.paket.fields.bytes
 import com.handtruth.mc.paket.fields.path
 import com.handtruth.mc.paket.fields.string
 import com.handtruth.mc.paket.util.Path
+import com.handtruth.mc.util.writeUZInt32
 import io.ktor.test.dispatcher.testSuspend
 import io.ktor.utils.io.core.toByteArray
 import kotlinx.io.*
@@ -19,7 +20,7 @@ fun otherWriteString(output: Output, value: String) {
     val bytes = buildBytes {
         writeUtf8String(value)
     }
-    writeVarInt(output, bytes.size())
+    writeUZInt32(output, bytes.size().toUInt())
     bytes.input().copyTo(output)
 }
 
@@ -106,16 +107,6 @@ class PrimitivesTest {
         companion object : PaketCreator<WithStringPaket> {
             override fun produce() = WithStringPaket()
         }
-    }
-
-    @Test
-    fun sizeVarIntCheck() {
-        assertEquals(1, sizeVarInt(0))
-        assertEquals(1, sizeVarInt(35))
-        assertEquals(5, sizeVarInt(-1))
-        assertEquals(3, sizeVarInt(56845))
-        assertEquals(1, SimplePaket.size)
-        assertEquals(12, WithStringPaket("lolkapopka").size)
     }
 
     class PathPaket(location: String = "") : Paket() {

@@ -36,6 +36,7 @@ fun module(name: String) {
 module("nbt")
 module("paket")
 module("paket-tool")
+module("zint")
 module("shared")
 module("chat")
 module("client")

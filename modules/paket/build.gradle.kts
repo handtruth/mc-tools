@@ -9,6 +9,7 @@ dependencies {
 
     val atomicfuVersion: String by project
 
+    commonMainApi(project(":tools-zint"))
     commonMainApi(kotlinx("io"))
     commonMainApi(kotlinx("coroutines-core-common"))
     commonMainApi(kotlinx("serialization-runtime-common"))
