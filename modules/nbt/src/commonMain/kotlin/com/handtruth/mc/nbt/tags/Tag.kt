@@ -1,21 +1,24 @@
 package com.handtruth.mc.nbt.tags
 
+import com.handtruth.mc.nbt.NBTBinaryConfig
+import com.handtruth.mc.nbt.NBTStringConfig
 import com.handtruth.mc.nbt.TagID
+import com.handtruth.mc.nbt.util.Reader
 import kotlinx.io.Input
 import kotlinx.io.Output
 import kotlin.reflect.KProperty
 
 abstract class Tag<out T: Any>(val id: TagID) {
     abstract val value: T
-    abstract fun write(output: Output)
-    abstract fun toMojangson(builder: Appendable, pretty: Boolean = false, level: Int = 0)
+    internal abstract fun writeBinary(output: Output, conf: NBTBinaryConfig)
+    internal abstract fun writeText(output: Appendable, conf: NBTStringConfig, level: Int)
 
     override fun toString() = buildString {
-        toMojangson(this)
+        writeText(this, NBTStringConfig.Default, 0)
     }
 
-    fun toString(pretty: Boolean) = buildString {
-        toMojangson(this, pretty, 0)
+    fun toString(conf: NBTStringConfig) = buildString {
+        writeText(this, conf, 0)
     }
 
     override fun hashCode() = value.hashCode()
@@ -36,7 +39,8 @@ operator fun <T: Any> MutableTag<T>.getValue(thisRef: Any?, property: KProperty<
 }
 
 interface TagResolver<T: Any> {
-    fun read(input: Input): Tag<T>
+    fun readBinary(input: Input, conf: NBTBinaryConfig): Tag<T>
+    fun readText(input: Reader, conf: NBTStringConfig): Tag<T>
     val id: TagID
     fun wrap(value: T): Tag<T>
 }

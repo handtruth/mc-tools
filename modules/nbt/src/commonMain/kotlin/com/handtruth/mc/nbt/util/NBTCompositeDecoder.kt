@@ -51,7 +51,7 @@ internal abstract class NBTCompositeDecoder(
     override fun decodeLongElement(descriptor: SerialDescriptor, index: Int): Long {
         val tag = retrieveTag(descriptor, index)
         validate(tag is LongTag, Long::class, tag.id)
-        return tag.integer
+        return tag.long
     }
 
     override fun <T : Any> decodeNullableSerializableElement(

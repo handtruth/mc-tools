@@ -1,14 +1,15 @@
 package com.handtruth.mc.nbt.test
 
-import com.handtruth.mc.nbt.NBT
-import com.handtruth.mc.nbt.add
-import com.handtruth.mc.nbt.buildCompoundTag
+import com.handtruth.mc.nbt.*
 import kotlinx.io.ByteArrayInput
 import kotlinx.io.ByteArrayOutput
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class TagBuilderTest {
+
+    val javaNBT = NBTBinaryCodec(NBTBinaryConfig.Java) + NBTSerialFormat()
+
     @Test
     fun buildRootTag() {
         val tag = buildCompoundTag {
@@ -29,12 +30,12 @@ class TagBuilderTest {
             "intArray".intArray(58, -98, 334)
             "longArray".longArray(4842, -6496462, 24554679784123)
         }
-        println(tag.toString(pretty = true))
+        println(tag.toString(NBTStringConfig.Default.copy(pretty = true)))
         val output = ByteArrayOutput()
-        NBT.Default.write(output, tag)
+        javaNBT.write(output, tag)
         val bytes = output.toByteArray()
         val input = ByteArrayInput(bytes)
-        val actual = NBT.Default.read(input)
+        val actual = javaNBT.read(input)
         assertEquals(tag, actual)
     }
 }

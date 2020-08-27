@@ -1,19 +1,26 @@
 package com.handtruth.mc.nbt.tags
 
+import com.handtruth.mc.nbt.NBTBinaryConfig
+import com.handtruth.mc.nbt.NBTStringConfig
 import com.handtruth.mc.nbt.TagID
+import com.handtruth.mc.nbt.util.*
+import com.handtruth.mc.nbt.util.readSize
 import com.handtruth.mc.nbt.util.smartJoin
-import com.handtruth.mc.nbt.util.validate
+import com.handtruth.mc.nbt.util.writeInt32
+import com.handtruth.mc.nbt.util.writeSize
 import kotlinx.io.Input
 import kotlinx.io.Output
-import kotlinx.io.readInt
-import kotlinx.io.writeInt
 
 class IntArrayTag(override var value: IntArray) : MutableTag<IntArray>(
     TagID.IntArray
 ) {
-    override fun write(output: Output) {
-        output.writeInt(value.size)
-        value.forEach { output.writeInt(it) }
+    override fun writeBinary(output: Output, conf: NBTBinaryConfig) {
+        writeSize(output, conf, value.size)
+        value.forEach { writeInt32(output, conf, it) }
+    }
+
+    override fun writeText(output: Appendable, conf: NBTStringConfig, level: Int) {
+        joinArray(value.iterator(), output, conf, 'I', "")
     }
 
     override fun equals(other: Any?): Boolean {
@@ -29,16 +36,18 @@ class IntArrayTag(override var value: IntArray) : MutableTag<IntArray>(
     }
 
     companion object : TagResolver<IntArray> {
-        override fun read(input: Input): IntArrayTag {
-            val size = input.readInt()
+        override fun readBinary(input: Input, conf: NBTBinaryConfig): IntArrayTag {
+            val size = readSize(input, conf)
             validate(size >= 0) { "byte array size is negative: $size" }
-            return IntArrayTag(IntArray(size) { input.readInt() })
+            return IntArrayTag(IntArray(size) { readInt32(input, conf) })
         }
+
+        override fun readText(input: Reader, conf: NBTStringConfig): IntArrayTag {
+            val list = readArray(input, 'I', null) { it.toInt() }
+            return IntArrayTag(list.toIntArray())
+        }
+
         override val id get() = TagID.IntArray
         override fun wrap(value: IntArray) = IntArrayTag(value)
-    }
-
-    override fun toMojangson(builder: Appendable, pretty: Boolean, level: Int) {
-        smartJoin(value.iterator(), builder, "[I;", postfix = "]")
     }
 }
