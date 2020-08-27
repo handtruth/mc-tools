@@ -1,9 +1,12 @@
 package com.handtruth.mc.paket.test
 
+import com.handtruth.mc.nbt.NBTBinaryCodec
+import com.handtruth.mc.nbt.NBTSerialFormat
+import com.handtruth.mc.nbt.plus
 import com.handtruth.mc.paket.Paket
 import com.handtruth.mc.paket.PaketCreator
+import com.handtruth.mc.paket.fields.binary
 import com.handtruth.mc.paket.fields.json
-import com.handtruth.mc.paket.fields.nbt
 import com.handtruth.mc.paket.fields.serial
 import io.ktor.test.dispatcher.testSuspend
 import kotlinx.serialization.Serializable
@@ -45,7 +48,7 @@ class NBTFormatTest {
     class NBTTestPaket(dataA: DataForNBT = DataForNBT(), dataB: DataForNBT = DataForNBT()) : Paket() {
         override val id = NBTDummyID.Ohh
 
-        val dataA by nbt(dataA)
+        val dataA by binary(NBTBinaryCodec() + NBTSerialFormat(), dataA)
         val dataB by serial(dataB)
         val dataC by json(dataB)
 

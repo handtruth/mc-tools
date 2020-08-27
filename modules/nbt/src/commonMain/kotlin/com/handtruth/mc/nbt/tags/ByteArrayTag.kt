@@ -1,17 +1,26 @@
 package com.handtruth.mc.nbt.tags
 
+import com.handtruth.mc.nbt.NBTBinaryConfig
+import com.handtruth.mc.nbt.NBTStringConfig
 import com.handtruth.mc.nbt.TagID
-import com.handtruth.mc.nbt.util.smartJoin
-import com.handtruth.mc.nbt.util.validate
+import com.handtruth.mc.nbt.util.*
+import com.handtruth.mc.nbt.util.Reader
+import com.handtruth.mc.nbt.util.StringReader
+import com.handtruth.mc.nbt.util.readSize
+import com.handtruth.mc.nbt.util.writeSize
 import kotlinx.io.*
 
 class ByteArrayTag(override var value: ByteArray) : MutableTag<ByteArray>(
     TagID.ByteArray
 ) {
-    override fun write(output: Output) {
-        output.writeInt(value.size)
+    override fun writeBinary(output: Output, conf: NBTBinaryConfig) {
+        writeSize(output, conf, value.size)
         // TODO: Improve when fixed
         value.forEach { output.writeByte(it) }
+    }
+
+    override fun writeText(output: Appendable, conf: NBTStringConfig, level: Int) {
+        joinArray(value.iterator(), output, conf, 'B', "b")
     }
 
     override fun equals(other: Any?): Boolean {
@@ -27,16 +36,18 @@ class ByteArrayTag(override var value: ByteArray) : MutableTag<ByteArray>(
     }
 
     companion object : TagResolver<ByteArray> {
-        override fun read(input: Input): ByteArrayTag {
-            val size = input.readInt()
+        override fun readBinary(input: Input, conf: NBTBinaryConfig): ByteArrayTag {
+            val size = readSize(input, conf)
             validate(size >= 0) { "byte array size is negative: $size" }
             return ByteArrayTag(ByteArray(size) { input.readByte() })
         }
+
+        override fun readText(input: Reader, conf: NBTStringConfig): ByteArrayTag {
+            val list = readArray(input, 'B', 'b') { it.toByte() }
+            return ByteArrayTag(list.toByteArray())
+        }
+
         override val id get() = TagID.ByteArray
         override fun wrap(value: ByteArray) = ByteArrayTag(value)
-    }
-
-    override fun toMojangson(builder: Appendable, pretty: Boolean, level: Int) {
-        smartJoin(value.iterator(), builder, prefix = "[B;", suffix = "b", postfix = "]")
     }
 }

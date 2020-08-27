@@ -12,18 +12,33 @@ class CompoundTag(
     var isRoot: Boolean = false
 ) : Tag<Map<String, Tag<*>>>(TagID.Compound) {
 
-    override fun write(output: Output) {
+    override fun writeBinary(output: Output, conf: NBTBinaryConfig) {
         for ((key, value) in value) {
             output.writeByte(value.id.ordinal.toByte())
-            writeString(output, key)
-            value.write(output)
+            writeString(output, conf, key)
+            value.writeBinary(output, conf)
         }
         if (!isRoot)
             output.writeByte(0)
     }
 
+    override fun writeText(output: Appendable, conf: NBTStringConfig, level: Int) {
+        smartJoin(
+            value.iterator(),
+            output,
+            prefix = "{",
+            postfix = "}",
+            pretty = conf.pretty,
+            level = level
+        ) { (key, value) ->
+            writeString(this, conf.quoteKeys, key)
+            append(if (conf.pretty) ": " else ":")
+            value.writeText(this, conf, level + 1)
+        }
+    }
+
     companion object : TagResolver<Map<String, Tag<*>>> {
-        override fun read(input: Input): CompoundTag {
+        override fun readBinary(input: Input, conf: NBTBinaryConfig): CompoundTag {
             val tags = TagID.values()
             val result: MutableMap<String, Tag<*>> = hashMapOf()
             while (true) {
@@ -34,30 +49,48 @@ class CompoundTag(
                 val tag = tags[tagId]
                 if (tag == TagID.End)
                     break
-                val key = readString(input)
-                val value = tag.resolver.read(input)
+                val key = readString(input, conf)
+                val value = tag.resolver.readBinary(input, conf)
                 val previous = result.put(key, value)
                 validate(previous == null) { "value with that name was already specified" }
             }
             return CompoundTag(result)
         }
 
+        override fun readText(input: Reader, conf: NBTStringConfig): CompoundTag {
+            input.skipSpace()
+            if (input.read() != '{')
+                error("not an compound tag")
+            val result: MutableMap<String, Tag<*>> = hashMapOf()
+            cycle@while (true) {
+                when (deduceTag(input)) {
+                    TagID.End -> {
+                        input.skipSpace()
+                        check(input.read() == '}') { "unexpected token" }
+                        break@cycle
+                    }
+                    TagID.String -> {}
+                    else -> error("string expected as key")
+                }
+                val key = readString(input)
+                input.skipSpace()
+                check(input.read() == ':') { "key-value delimiter expected" }
+                val valueTag = deduceTag(input)
+                check(valueTag != TagID.End) { "value expected" }
+                val value = valueTag.resolver.readText(input, conf)
+                result[key] = value
+                input.skipSpace()
+                when (input.read()) {
+                    ',' -> {}
+                    '}' -> break@cycle
+                    else -> error("unexpected token")
+                }
+            }
+            return CompoundTag(result)
+        }
+
         override val id get() = TagID.Compound
         override fun wrap(value: Map<String, Tag<*>>) = CompoundTag(value.toMutableMap())
-    }
-
-    override fun toMojangson(builder: Appendable, pretty: Boolean, level: Int) {
-        smartJoin(
-            value.iterator(),
-            builder,
-            prefix = "{",
-            postfix = "}",
-            pretty = pretty,
-            level = level
-        ) { (key, value) ->
-            append('"').append(quoteString(key)).append(if (pretty) "\": " else "\":")
-            value.toMojangson(this, pretty, level + 1)
-        }
     }
 
     // builders

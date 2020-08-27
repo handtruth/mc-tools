@@ -1,8 +1,6 @@
 package com.handtruth.mc.nbt.test
 
-import com.handtruth.mc.nbt.NBT
-import com.handtruth.mc.nbt.add
-import com.handtruth.mc.nbt.buildCompoundTag
+import com.handtruth.mc.nbt.*
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -58,11 +56,13 @@ class SerializerTest {
         println(actualPlayer)
     }
 
+    val javaNBT = NBTBinaryCodec(NBTBinaryConfig.Java) + NBTSerialFormat()
+
     @Test
     fun notchianBigObject() {
         val expected = bigNBTObject
-        val bytes = NBT.Default.dump(BigNBTObject.serializer(), expected)
-        val actual = NBT.Default.load(BigNBTObject.serializer(), bytes)
+        val bytes = javaNBT.dump(BigNBTObject.serializer(), expected)
+        val actual = javaNBT.load(BigNBTObject.serializer(), bytes)
         assertEquals(expected, actual)
     }
 
@@ -72,8 +72,8 @@ class SerializerTest {
     @Test
     fun nullableField() {
         val expected = MyObject("one", null)
-        val data = NBT.Default.dump(MyObject.serializer(), expected)
-        val actual = NBT.Default.load(MyObject.serializer(), data)
+        val data = javaNBT.dump(MyObject.serializer(), expected)
+        val actual = javaNBT.load(MyObject.serializer(), data)
         assertEquals(expected, actual)
     }
 }

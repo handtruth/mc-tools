@@ -1,10 +1,13 @@
 package com.handtruth.mc.nbt.tags
 
+import com.handtruth.mc.nbt.NBTBinaryConfig
 import com.handtruth.mc.nbt.NBTDsl
+import com.handtruth.mc.nbt.NBTStringConfig
 import com.handtruth.mc.nbt.TagID
-import com.handtruth.mc.nbt.util.smartJoin
-import com.handtruth.mc.nbt.util.validate
-import kotlinx.io.*
+import com.handtruth.mc.nbt.util.*
+import kotlinx.io.Input
+import kotlinx.io.Output
+import kotlinx.io.readByte
 
 class ListTag<T : Any>(
     override var value: MutableList<Tag<T>>,
@@ -12,13 +15,19 @@ class ListTag<T : Any>(
 ) : Tag<List<Tag<T>>>(TagID.List) {
     inline val tagId get() = resolver.id
 
-    override fun write(output: Output) {
+    override fun writeBinary(output: Output, conf: NBTBinaryConfig) {
         output.writeByte(tagId.ordinal.toByte())
         val value = value
-        output.writeInt(value.size)
+        writeSize(output, conf, value.size)
         value.forEach {
             validate(it.id == tagId) { "list element tag ID is different ($tagId expected, got ${it.id})" }
-            it.write(output)
+            it.writeBinary(output, conf)
+        }
+    }
+
+    override fun writeText(output: Appendable, conf: NBTStringConfig, level: Int) {
+        smartJoin(value.iterator(), output, prefix = "[", postfix = "]", pretty = conf.pretty, level = level) {
+            it.writeText(this, conf, level + 1)
         }
     }
 
@@ -30,18 +39,48 @@ class ListTag<T : Any>(
             return values[type]
         }
 
-        private fun read(input: Input, tagId: TagID): MutableList<Tag<Any>> {
-            val size = input.readInt()
+        private fun read(input: Input, conf: NBTBinaryConfig, tagId: TagID): MutableList<Tag<Any>> {
+            val size = readSize(input, conf)
             validate(size >= 0) { "list size is negative" }
             val resolver = tagId.resolver
-            return MutableList(size) { resolver.read(input) }
+            return MutableList(size) { resolver.readBinary(input, conf) }
         }
 
-        override fun read(input: Input): Tag<List<Tag<Any>>> {
+        override fun readBinary(input: Input, conf: NBTBinaryConfig): Tag<List<Tag<Any>>> {
             val tagId = readID(input)
-            val list = read(input, tagId)
+            val list = read(input, conf, tagId)
             @Suppress("UNCHECKED_CAST")
             return ListTag(list, tagId.resolver as TagResolver<Any>)
+        }
+
+        override fun readText(input: Reader, conf: NBTStringConfig): Tag<List<Tag<Any>>> {
+            input.skipSpace()
+            check(input.read() == '[') { "not a list" }
+            val id = deduceTag(input)
+            if (id == TagID.End) {
+                input.skipSpace()
+                check(input.read() == ']') { "unexpected token" }
+                return ListTag(mutableListOf(), TagID.End.resolver)
+            }
+            val result = mutableListOf<Tag<Any>>()
+            cycle@while (true) {
+                input.skipSpace()
+                when (input.read()) {
+                    ']' -> break@cycle
+                    else -> {
+                        input.back()
+                        result += id.resolver.readText(input, conf)
+                        input.skipSpace()
+                        when (val a = input.read()) {
+                            ',' -> {}
+                            ']' -> break@cycle
+                            else -> error("unexpected token: $a")
+                        }
+                    }
+                }
+            }
+            @Suppress("UNCHECKED_CAST")
+            return ListTag(result, id.resolver as TagResolver<Any>)
         }
 
         override val id get() = TagID.List
@@ -150,12 +189,6 @@ class ListTag<T : Any>(
     }
 
     val values: MutableList<T> = InterfaceList(resolver, value)
-
-    override fun toMojangson(builder: Appendable, pretty: Boolean, level: Int) {
-        smartJoin(value.iterator(), builder, prefix = "[", postfix = "]", pretty = pretty, level = level) {
-            it.toMojangson(this, pretty, level + 1)
-        }
-    }
 
     // builder
 

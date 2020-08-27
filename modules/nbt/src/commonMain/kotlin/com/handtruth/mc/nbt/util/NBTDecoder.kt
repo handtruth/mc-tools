@@ -69,7 +69,7 @@ internal class NBTDecoder(
 
     override fun decodeLong(): Long {
         validate(tag is LongTag, Long::class, tag.id)
-        return tag.integer
+        return tag.long
     }
 
     override fun decodeNotNullMark() = tag is EndTag

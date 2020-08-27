@@ -1,9 +1,6 @@
 package com.handtruth.mc.nbt.test
 
-import com.handtruth.mc.nbt.NBT
-import com.handtruth.mc.nbt.add
-import com.handtruth.mc.nbt.asNBTInput
-import com.handtruth.mc.nbt.buildCompoundTag
+import com.handtruth.mc.nbt.*
 import kotlinx.io.ByteArrayInput
 import kotlinx.io.ByteArrayOutput
 import kotlin.test.Test
@@ -14,16 +11,18 @@ class BinaryFormatTest {
     private fun open(file: String) =
         javaClass.getResourceAsStream(file)!!.asNBTInput()
 
+    val javaNBT = NBTBinaryCodec(NBTBinaryConfig.Java) + NBTSerialFormat()
+
     @Test
     fun readPlayerData() {
         // Real example
-        val tag = NBT.Default.read(open("66f3f777-edce-3c09-a5d2-6118f9b9e223.dat"))
+        val tag = javaNBT.read(open("66f3f777-edce-3c09-a5d2-6118f9b9e223.dat"))
         println(tag)
     }
 
     @Test
     fun readWriteBigNBT() {
-        val actual = NBT.Default.read(open("bigtest.nbt"))
+        val actual = javaNBT.read(open("bigtest.nbt"))
         val expected = buildCompoundTag {
             "Level" {
                 "shortTest" short 32767
@@ -63,16 +62,16 @@ class BinaryFormatTest {
         assertEquals(expected, actual)
         val expectedOutput = ByteArrayOutput()
         val actualOutput = ByteArrayOutput()
-        NBT.Default.write(expectedOutput, expected)
-        NBT.Default.write(actualOutput, actual)
+        javaNBT.write(expectedOutput, expected)
+        javaNBT.write(actualOutput, actual)
         assertEquals(expectedOutput.toByteArray().toList(), actualOutput.toByteArray().toList())
     }
 
     @Test
     fun deserializeBigNBT() {
         val expected = bigNBTObject
-        val tag = NBT.Default.read(open("bigtest.nbt"))
-        val actual = NBT.Default.deserialize(BigNBTObject.serializer(), tag)
+        val tag = javaNBT.read(open("bigtest.nbt"))
+        val actual = javaNBT.fromNBT(BigNBTObject.serializer(), tag)
         assertEquals(expected, actual)
         println(actual)
     }
@@ -80,7 +79,7 @@ class BinaryFormatTest {
     @Test
     fun russian() {
         val expected = NamedProperty("Русский", 0.5f)
-        val actual = NBT.Default.load(NamedProperty.serializer(), NBT.Default.dump(NamedProperty.serializer(), expected))
+        val actual = javaNBT.load(NamedProperty.serializer(), javaNBT.dump(NamedProperty.serializer(), expected))
         assertEquals(expected, actual)
         println(actual)
     }
@@ -94,10 +93,10 @@ class BinaryFormatTest {
             }
         }
         val output = ByteArrayOutput()
-        NBT.Default.write(output, root)
+        javaNBT.write(output, root)
         val decode = ByteArrayInput(output.toByteArray())
-        val easy1 = NBT.Default.read(decode)
-        val easy2 = NBT.Default.read(input)
+        val easy1 = javaNBT.read(decode)
+        val easy2 = javaNBT.read(input)
         assertEquals(easy1, easy2)
     }
 }

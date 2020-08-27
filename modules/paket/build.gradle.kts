@@ -9,13 +9,12 @@ dependencies {
 
     val atomicfuVersion: String by project
 
-    commonMainApi(project(":tools-zint"))
     commonMainApi(kotlinx("io"))
     commonMainApi(kotlinx("coroutines-core-common"))
     commonMainApi(kotlinx("serialization-runtime-common"))
-    commonMainCompileOnly(project(":tools-nbt"))
     commonMainCompileOnly("io.ktor:ktor-io")
     commonMainCompileOnly("com.soywiz.korlibs.korio:korio")
+    commonMainImplementation(project(":tools-zint"))
     commonMainImplementation("org.jetbrains.kotlinx:atomicfu-common:$atomicfuVersion")
 
     commonTestImplementation(project(":tools-nbt"))
