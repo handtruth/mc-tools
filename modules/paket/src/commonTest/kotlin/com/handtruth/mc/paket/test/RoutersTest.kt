@@ -37,7 +37,7 @@ class RoutersTest {
         val channel = Channel<Bytes>()
         val master = PaketTransmitter(channel)
         val (slave1, slave2) = master filter { it.id != IDS.Third } split { it.id }
-        val task1 = launch(CoroutineName("first")) {
+        launch(CoroutineName("first")) {
             slave1.catchOrdinal()
             slave1.peek(FirstPaket)
             slave1.receive(FirstPaket)
@@ -45,11 +45,11 @@ class RoutersTest {
             slave1.receive(FirstPaket)
             println("first received 2")
         }
-        val task2 = launch(CoroutineName("second")) {
+        launch(CoroutineName("second")) {
             slave2.receive(SecondPaket)
             println("second received 1")
         }
-        val task3 = launch(CoroutineName("sender")) {
+        launch(CoroutineName("sender")) {
             slave1.send(FirstPaket)
             println("first sent 1")
             slave1.send(ThirdPaket)
@@ -61,7 +61,6 @@ class RoutersTest {
             slave2.send(FirstPaket)
             println("first sent 2")
         }
-        joinAll(task1, task2, task3)
     }
 
     @Test
@@ -110,6 +109,39 @@ class RoutersTest {
         }
         joinAll(recv1, recv2, send1, send2)
         send3.cancel()
+    }
+
+    @Test
+    fun partRouterTest() = testTimeout(5.seconds) {
+        val channel = Channel<Bytes>()
+        val receiver = PaketReceiver(channel)
+        val sender = PaketSender(channel).asSynchronized()
+        val (rx1, rx2) = receiver split { it.id }
+        val context = Dispatchers.Default
+        val rx = launch(context) {
+            repeat(10) {
+                rx1.receive {
+                    println("first rx #$it: begin")
+                    peek(FirstPaket)
+                }
+                println("first rx #$it: end")
+            }
+        }
+        val job = launch(context) {
+            rx2.receiveAll {
+                println("second rx")
+                peek(SecondPaket)
+            }
+        }
+        val tx = launch(context) {
+            repeat(10) {
+                sender.send(FirstPaket)
+                println("first tx #$it")
+            }
+        }
+        joinAll(rx, tx)
+        println("done")
+        job.cancel()
     }
 
     @Test

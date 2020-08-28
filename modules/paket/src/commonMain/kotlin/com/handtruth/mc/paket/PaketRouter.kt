@@ -60,29 +60,28 @@ internal abstract class PaketRouter(private val count: Int, private val receiver
     private val _children = List(count) { PartialReceiver(it) }
     val children: List<PaketReceiver> get() = _children
 
-    private val conductor = BroadcastChannel<Int>(Channel.CONFLATED)
+    private val conductor = BroadcastChannel<Unit>(Channel.CONFLATED)
     private val mutex = Mutex()
-    private val subscribers = atomic(0)
 
-    private var code = -1
+    private val code = atomic(-1)
 
     private suspend fun catchNext(): Int {
-        receiver.isCaught && return code
+        receiver.isCaught && return code.value
         try {
             while (true) {
                 receiver.catchOrdinal()
-                code = splitter(receiver)
-                if (code == -1)
+                code.value = splitter(receiver)
+                if (code.value == -1)
                     continue
-                if (code !in 0 until count)
+                if (code.value !in 0 until count)
                     throw IndexOutOfBoundsException()
-                if (!_children[code].broken)
+                if (!_children[code.value].broken)
                     break
             }
         } finally {
-            conductor.offer(code)
+            conductor.offer(Unit)
         }
-        return code
+        return code.value
     }
 
     private inner class PartialReceiver(val identity: Int) : AbstractPaketReceiver() {
@@ -103,22 +102,15 @@ internal abstract class PaketRouter(private val count: Int, private val receiver
                 drop()
                 catchOrdinal()
             } else {
-                val channel = mutex.withLock {
-                    subscribers.incrementAndGet()
-                    conductor.openSubscription()
-                }
+                val channel = conductor.openSubscription()
                 try {
-                    mutex.withLock {
-                        catchNext()
-                    }
-                    do {
-                        val repeat = invokeOnReceive(channel.receive())
+                    val loop = invokeOnReceive(mutex.withLock { catchNext() })
+                    if (loop) do {
+                        channel.receive()
+                        val repeat = invokeOnReceive(mutex.withLock { catchNext() })
                     } while (repeat)
                 } finally {
-                    mutex.withLock {
-                        subscribers.decrementAndGet()
-                        channel.cancel()
-                    }
+                    channel.cancel()
                 }
                 idOrdinal
             }
@@ -128,35 +120,33 @@ internal abstract class PaketRouter(private val count: Int, private val receiver
             isCaught = false
             idOrdinal = -1
             size = -1
-            code = -1
+            code.value = -1
         }
 
-        override suspend fun drop(): Unit = breakableAction {
+        override suspend fun drop() {
             if (!isCaught) {
                 catchOrdinal()
                 drop()
             } else {
-                clear()
-                receiver.drop()
                 mutex.withLock {
-                    if (subscribers.value != 0)
-                        catchNext()
+                    clear()
+                    receiver.drop()
+                    conductor.offer(Unit)
                 }
             }
         }
 
-        override suspend fun receive(paket: Paket) = breakableAction {
+        override suspend fun receive(paket: Paket) {
             if (!isCaught)
                 catchOrdinal()
-            receiver.receive(paket)
-            clear()
             mutex.withLock {
-                if (subscribers.value != 0)
-                    catchNext()
+                receiver.receive(paket)
+                clear()
+                conductor.offer(Unit)
             }
         }
 
-        override fun peek(paket: Paket) = breakableAction {
+        override fun peek(paket: Paket) {
             check(isCaught)
             receiver.peek(paket)
         }

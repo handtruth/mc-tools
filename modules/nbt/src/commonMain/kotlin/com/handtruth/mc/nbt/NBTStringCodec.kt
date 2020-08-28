@@ -43,5 +43,6 @@ internal class NBTStringCodecImpl(override val stringConfig: NBTStringConfig) : 
     }
 }
 
+@Suppress("FunctionName")
 fun NBTStringCodec(stringConfig: NBTStringConfig = NBTStringConfig.Default): NBTStringCodec =
     NBTStringCodecImpl(stringConfig)

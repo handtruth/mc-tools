@@ -27,5 +27,6 @@ internal class NBTBinaryCodecImpl(override val binaryConfig: NBTBinaryConfig) : 
     override fun write(output: Output, tag: CompoundTag) = tag.writeBinary(output, binaryConfig)
 }
 
+@Suppress("FunctionName")
 fun NBTBinaryCodec(binaryConfig: NBTBinaryConfig = NBTBinaryConfig.Default): NBTBinaryCodec =
     NBTBinaryCodecImpl(binaryConfig)

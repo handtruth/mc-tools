@@ -38,7 +38,7 @@ val tag = buildCompoundTag {
     "members" compounds { // list of compound tags
         add {
             "name"("Ktlo")
-            "id"(398.toShort())
+            "id" short 398
         }
         add {
             "name"("Xydgiz")
@@ -63,12 +63,14 @@ There are text representation of NBT format that has an unofficial name
 For example, the above tag has the following string representation.
 
 ```kotlin
-println(tag.toString(pretty = true))
+val strCodec = NBTStringCodec(NBTStringConfig.Default.copy(pretty = true))
+println(strCodec.write(tag))
+//Or Just println(tag.toString(NBTStringConfig.Default.copy(pretty = true)))
 /* Output
 {
-    "metadata": [I;3,5,8,9,16,-15],
-    "longArray": [L;4842l,-6496462l,24554679784123l],
-    "members": [
+    metadata: [I;3,5,8,9,16,-15],
+    longArray: [L;4842l,-6496462l,24554679784123l],
+    members: [
         {
             "name": "Ktlo",
             "id": 398s
@@ -78,24 +80,49 @@ println(tag.toString(pretty = true))
             "id": -3s
         }
     ],
-    "byteArray": [B;-3b,5b,76b,81b],
-    "id": 568,
-    "intArray": [I;58,-98,334],
-    "group": "Them"
+    byteArray: [B;-3b,5b,76b,81b],
+    id: 568,
+    intArray: [I;58,-98,334],
+    group: "Them"
 }
 */
 ```
 
-Currently, there are no way to parse Mojangson, but this feature may arrive in
-the future.
+You can also read Mojangson text with `NBTStringCodec::read`
+
+There are several NBT formats implemented:
+- **Java** - Minecraft Java Edition NBT
+- **BedrockDisk** - Minecraft Bedrock Edition world data storage format
+- **BedrockNet** - Minecraft Bedrock Edition network protocol format
+- **KBT** - Internal HandTruth NBT-like format.
+
+To use any of them one should instantiate `NBTBinaryCodec`
+
+```kotlin
+val codec = NBTBinaryCodec(NBTBinaryConfig.Java)
+val root: CompoundTag = codec.read(byteArray)
+```
 
 ### Serialization / Deserialization
 
-This library can serialize and deserialize objects as NBT tags. Class `NBT`
+This library can serialize and deserialize objects as NBT tags. Class `NBTBinaryFormat`
 implements `BinaryFormat` from **kotlinx-serialization** library. `NBT`
 instances also know how to transform a tag to ByteArray.
 
 There are some examples in [SerializerTest.kt].
+
+### Composition
+
+Starting from version 0.1.0 NBT module of this library slits its functionality between
+3 types: `NBTSerialFormat`, `NBTBinaryCodec` and `NBTStringCodec`. You can combine them
+to get types with more facilities.
+
+```kotlin
+val binaryFormat: NBTBinaryFormat = NBTBinaryCodec() + NBTSerialFormat()
+val stringFormat: NBTStringFormat = NBTStringCodec() + NBTSerialFormat()
+val codec: NBTCodec = NBTBinaryCodec() + NBTStringCodec()
+val nbt: NBT = codec + NBTSerialFormat()
+```
 
 [CompoundTag.kt]: src/commonMain/kotlin/com/handtruth/mc/nbt/tags/CompoundTag.kt
 [ListTag.kt]: src/commonMain/kotlin/com/handtruth/mc/nbt/tags/ListTag.kt

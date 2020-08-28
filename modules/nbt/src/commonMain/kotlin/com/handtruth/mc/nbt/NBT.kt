@@ -5,9 +5,11 @@ import kotlinx.serialization.modules.SerialModule
 
 interface NBT : NBTCodec, NBTBinaryFormat, NBTStringFormat
 
+@Suppress("FunctionName")
 fun NBT(binary: NBTBinaryCodec, string: NBTStringCodec, serial: NBTSerialFormat): NBT =
     object : NBT, NBTBinaryCodec by binary, NBTStringCodec by string, NBTSerialFormat by serial {}
 
+@Suppress("FunctionName")
 fun NBT(
     binary: NBTBinaryConfig = NBTBinaryConfig.Default,
     string: NBTStringConfig = NBTStringConfig.Default,
