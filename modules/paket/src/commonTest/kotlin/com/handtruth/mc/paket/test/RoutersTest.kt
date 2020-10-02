@@ -2,6 +2,7 @@ package com.handtruth.mc.paket.test
 
 import com.handtruth.mc.paket.*
 import com.soywiz.korio.lang.printStackTrace
+import io.ktor.test.dispatcher.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
@@ -68,7 +69,7 @@ class RoutersTest {
         val channel = Channel<Bytes>()
         val master = PaketTransmitter(channel)
         val (slave1, slave2, slave3) = master filter { it.id != IDS.Third } split { it.id }
-        val dispatcher = Dispatchers.Default
+        val dispatcher = EmptyCoroutineContext + Dispatchers.Default
         val count = 10000
         val recv1 = launch(dispatcher + CoroutineName("recv 1")) {
             repeat(count) {
@@ -244,5 +245,75 @@ class RoutersTest {
         joinAll(send1, send2, recv1, recv2)
         println("done all")
         master.close()
+    }
+
+    @Test
+    fun dynamicRouter() = testSuspend {
+        val main = PaketTransmitter(Channel<Bytes>())
+        val router = main.asRouter()
+        val ts1 = router.route { it.id == IDS.First }
+        val ts2 = router.route { it.id == IDS.Second }
+        val ts3 = router.route { it.id == IDS.Third }
+        val default = router.default()
+        val dispatcher = EmptyCoroutineContext + Dispatchers.Default
+        val count = 10000
+        val send1 = launch(dispatcher + CoroutineName("send 1")) {
+            repeat(count) {
+                ts1.send(FirstPaket)
+                //println("send 1: $it")
+            }
+            println("done send 1")
+        }
+        val send2 = launch(dispatcher + CoroutineName("send 2")) {
+            repeat(count) {
+                router.send(SecondPaket)
+                //println("send 2: $it")
+            }
+            println("done send 2")
+        }
+        launch(dispatcher + CoroutineName("send 3")) {
+            repeat(count) {
+                ts3.send(ThirdPaket)
+                //println("send 3: $it")
+            }
+            println("done send 3")
+        }
+        val recv1 = launch(dispatcher + CoroutineName("recv 1")) {
+            repeat(count) {
+                ts1.receive(FirstPaket)
+                //println("recv 1: $it")
+            }
+            ts1.close()
+            println("done recv 1")
+        }
+        val recv2 = launch(dispatcher + CoroutineName("recv 2")) {
+            repeat(count / 2) {
+                ts2.catchOrdinal()
+                ts2.peek(SecondPaket)
+                ts2.receive(SecondPaket)
+                //println("recv 2: $it")
+            }
+            ts2.close()
+            println("done recv 2")
+        }
+        launch(dispatcher + CoroutineName("recv 3")) {
+            val thr = assertFails {
+                ts3.dropAll()
+            }
+            thr.printStackTrace()
+            assertTrue {
+                thr is ClosedReceiveChannelException || thr is CancellationException || thr is BrokenObjectException
+            }
+        }
+        val def = launch {
+            repeat(count / 4) {
+                default.receive(SecondPaket)
+            }
+            default.close()
+            println("done recv default")
+        }
+        joinAll(send1, send2, recv1, recv2, def)
+        println("done all")
+        router.close()
     }
 }

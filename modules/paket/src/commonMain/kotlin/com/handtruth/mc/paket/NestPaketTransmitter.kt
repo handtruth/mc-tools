@@ -7,7 +7,7 @@ interface NestPaketTransmitter : PaketTransmitter {
     val fullSize: Int
 }
 
-interface NestSource<N : Paket> {
+interface NestSource<out N : Paket> {
     fun produce(paket: Paket): N
     fun head(): N
 }

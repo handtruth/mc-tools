@@ -12,5 +12,5 @@ inline fun <reified P: Paket> paketSource(): PaketSource<*>? =
     }
 inline fun <reified P: Paket> producePaket() = paketSource<P>()?.let { it.produce() as P } ?:
     P::class.primaryConstructor!!.callBy(emptyMap())
-suspend inline fun <reified P: Paket> PaketReceiver.receive() = producePaket<P>().also { receive(it) }
-suspend inline fun <reified P: Paket> PaketReceiver.peek() = producePaket<P>().also { peek(it) }
+suspend inline fun <reified P: Paket> PaketReceiver.receive(): P = producePaket<P>().also { receive(it) }
+inline fun <reified P: Paket> PaketPeeking.peek(): P = producePaket<P>().also { peek(it) }
