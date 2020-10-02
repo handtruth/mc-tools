@@ -67,7 +67,7 @@ abstract class AbstractPaketReceiver : AbstractBreakable(), PaketReceiver {
 inline fun <reified E : Enum<E>> PaketPeeking.getId() = enumValues<E>()[idOrdinal]
 suspend inline fun <reified E : Enum<E>> PaketReceiver.catchAs() = enumValues<E>()[catchOrdinal()]
 
-suspend inline fun PaketReceiver.dropAll(): Nothing {
+suspend fun PaketReceiver.dropAll(): Nothing {
     while (true) drop()
 }
 

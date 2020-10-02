@@ -28,4 +28,5 @@ dependencies {
     "jvmMainCompileOnly"("io.ktor:ktor-io-jvm")
 
     "jvmTestImplementation"("io.ktor:ktor-io-jvm")
+    "jvmTestImplementation"("io.ktor:ktor-network")
 }

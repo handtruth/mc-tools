@@ -14,33 +14,32 @@ import kotlinx.serialization.modules.EmptyModule
 abstract class Paket {
     abstract val id: Enum<*>
 
-    private val mutableFields = mutableListOf<Field<*>>()
-    val fields: List<Field<*>> get() = mutableFields
+    val fields = mutableListOf<Field<*>>()
 
-    val size get() = sizeVarInt(id.ordinal) + mutableFields.sumBy { it.size }
+    val size get() = sizeVarInt(id.ordinal) + fields.sumBy { it.size }
 
     override fun equals(other: Any?): Boolean {
-        if (other is Paket && id == other.id && mutableFields.size == other.mutableFields.size) {
-            for (i in 0 until mutableFields.size)
-                if (mutableFields[i] != other.mutableFields[i])
+        if (other is Paket && id == other.id && fields.size == other.fields.size) {
+            for (i in 0 until fields.size)
+                if (fields[i] != other.fields[i])
                     return false
             return true
         }
         return false
     }
-    override fun hashCode() = id.hashCode() + mutableFields.hashCode()
+    override fun hashCode() = id.hashCode() + fields.hashCode()
     override fun toString(): String {
         val builder = StringBuilder(id.toString()).append(":{ ")
-        for (i in 0 until mutableFields.size - 1)
-            builder.append(mutableFields[i].toString()).append("; ")
-        if (mutableFields.isNotEmpty())
-            builder.append(mutableFields.last().toString()).append(' ')
+        for (i in 0 until fields.size - 1)
+            builder.append(fields[i].toString()).append("; ")
+        if (fields.isNotEmpty())
+            builder.append(fields.last().toString()).append(' ')
         builder.append('}')
         return builder.toString()
     }
 
     fun <F> field(field: Field<F>): Field<F> {
-        mutableFields += field
+        fields += field
         return field
     }
 
