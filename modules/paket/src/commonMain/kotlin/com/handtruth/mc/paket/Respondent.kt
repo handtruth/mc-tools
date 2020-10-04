@@ -12,7 +12,9 @@ internal fun <E : Enum<E>> respondent(values: Array<E>, name: String, ts: PaketT
 
 @PaketTreeDsl
 suspend inline fun <reified E : Enum<E>> respondent(
-    ts: PaketTransmitter, name: String = "root", crossinline builder: Respondent<E>.() -> Unit
+    ts: PaketTransmitter,
+    name: String = "root",
+    crossinline builder: Respondent<E>.() -> Unit
 ) {
     coroutineScope {
         respondent(enumValues<E>(), name, ts, coroutineContext).apply(builder)
@@ -34,10 +36,11 @@ class Respondent<E : Enum<E>> internal constructor(
     }
 
     private fun nextName(context: CoroutineName?, name: String): CoroutineName {
-        return if (context == null)
+        return if (context == null) {
             CoroutineName(name)
-        else
+        } else {
             CoroutineName("${context.name}/$name")
+        }
     }
 
     override val coroutineContext =

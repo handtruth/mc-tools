@@ -14,17 +14,20 @@ object UZInt32Codec : Codec<UInt> {
     override fun write(output: Output, value: UInt) = writeUZInt32(output, value)
 }
 
-object UZInt32ListCodec : ListCodec<UInt>(UZInt32Codec)
+val UZInt32ListCodec = ListCodec(UZInt32Codec)
+val NullableUZInt32Codec = NullableCodec(UZInt32Codec)
 
-class UZInt32Field(initial: UInt) : Field<UInt>(UZInt32Codec, initial)
-class UZInt32ListField(initial: MutableList<UInt>) : ListField<UInt>(UZInt32ListCodec, initial)
-
-fun Paket.uzint32(initial: UInt = 0u) = field(UZInt32Field(initial))
+fun Paket.uzint32(initial: UInt = 0u) = field(UZInt32Codec, initial)
 fun Paket.zint(initial: UInt) = uzint32(initial)
 
-fun Paket.listOfUzint32(initial: MutableList<UInt> = mutableListOf()) = field(UZInt32ListField(initial))
+fun Paket.nullableUzint32(initial: UInt? = null) = field(NullableUZInt32Codec, initial)
+fun Paket.nullableZint(initial: UInt?) = field(NullableUZInt32Codec, initial)
+
+fun Paket.listOfUzint32(initial: MutableList<UInt> = mutableListOf()) = field(UZInt32ListCodec, initial)
+
 @JvmName("listOfUzint32RO")
 fun Paket.listOfUzint32(initial: List<UInt>) = listOfUzint32(initial.toMutableList())
 fun Paket.listOfZint(initial: MutableList<UInt>) = listOfUzint32(initial)
+
 @JvmName("listOfZintRO")
 fun Paket.listOfZint(initial: List<UInt>) = listOfUzint32(initial)

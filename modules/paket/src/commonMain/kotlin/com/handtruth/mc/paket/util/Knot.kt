@@ -77,7 +77,6 @@ abstract class Knot : Closeable {
     override fun close() {
         coordinator.close()
     }
-
 }
 
 @InternalPaketApi

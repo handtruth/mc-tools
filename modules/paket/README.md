@@ -1,5 +1,4 @@
-MC:Tools Paket
-========================
+# Module tools-paket
 
 This library defines base for communication protocol. Module [client] uses it
 in Minecraft protocol implementation. Currently, compression is not supported.

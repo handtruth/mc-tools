@@ -14,8 +14,9 @@ fun Input.asNBTInput(): Input {
     val magic = preview {
         readShort()
     }
-    if (magic.toInt() == 0x1f8b)
+    if (magic.toInt() == 0x1f8b) {
         return GZIPInputStream(this.asInputStream()).asInput()
+    }
     return this
 }
 

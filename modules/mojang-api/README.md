@@ -1,5 +1,4 @@
-MC:Tools Mojang API
-============================================================
+# Module tools-mojang-api
 
 This module contains a simple client to [Mojang API](https://wiki.vg/Mojang_API).
 

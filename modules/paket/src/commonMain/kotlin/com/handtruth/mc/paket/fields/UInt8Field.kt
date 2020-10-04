@@ -13,17 +13,20 @@ object UInt8Codec : Codec<UByte> {
 }
 
 @ExperimentalPaketApi
-object UInt8ListCodec : ListCodec<UByte>(UInt8Codec)
+val UInt8ListCodec = ListCodec(UInt8Codec)
 
 @ExperimentalPaketApi
-class UInt8Field(initial: UByte): Field<UByte>(UInt8Codec, initial)
-@ExperimentalPaketApi
-class UInt8ListField(initial: MutableList<UByte>): ListField<UByte>(UInt8ListCodec, initial)
+val NullableUInt8Codec = NullableCodec(UInt8Codec)
 
 @ExperimentalPaketApi
-fun Paket.uint8(initial: UByte = 0u) = field(UInt8Field(initial))
+fun Paket.uint8(initial: UByte = 0u) = field(UInt8Codec, initial)
+
 @ExperimentalPaketApi
-fun Paket.listOfUint8(initial: MutableList<UByte> = mutableListOf()) = field(UInt8ListField(initial))
+fun Paket.nullableUint8(initial: UByte? = null) = field(NullableUInt8Codec, initial)
+
+@ExperimentalPaketApi
+fun Paket.listOfUint8(initial: MutableList<UByte> = mutableListOf()) = field(UInt8ListCodec, initial)
+
 @ExperimentalPaketApi
 @JvmName("listOfUint8RO")
 fun Paket.listOfUint8(initial: List<UByte>) = listOfUint8(initial.toMutableList())

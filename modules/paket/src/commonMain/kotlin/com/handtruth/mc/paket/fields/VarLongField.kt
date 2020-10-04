@@ -11,12 +11,12 @@ object VarLongCodec : Codec<Long> {
     override fun write(output: Output, value: Long) = writeVarLong(output, value)
 }
 
-object VarLongListCodec : ListCodec<Long>(VarLongCodec)
+val VarLongListCodec = ListCodec(VarLongCodec)
+val NullableVarLongCodec = NullableCodec(VarLongCodec)
 
-class VarLongField(initial: Long) : Field<Long>(VarLongCodec, initial)
-class VarLongListField(initial: MutableList<Long>) : ListField<Long>(VarLongListCodec, initial)
+fun Paket.varLong(initial: Long = 0L) = field(VarLongCodec, initial)
+fun Paket.nullableVarLong(initial: Long? = null) = field(NullableVarLongCodec, initial)
+fun Paket.listOfVarLong(initial: MutableList<Long> = mutableListOf()) = field(VarLongListCodec, initial)
 
-fun Paket.varLong(initial: Long = 0L) = field(VarLongField(initial))
-fun Paket.listOfVarLong(initial: MutableList<Long> = mutableListOf()) = field(VarLongListField(initial))
 @JvmName("listOfVarLongRO")
 fun Paket.listOfVarLong(initial: List<Long>) = listOfVarLong(initial.toMutableList())

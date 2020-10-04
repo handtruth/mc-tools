@@ -8,9 +8,6 @@ import io.ktor.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.net.InetAddress
-import java.net.InetSocketAddress
-import kotlin.test.Test
 
 class NetworkTest {
 
@@ -39,16 +36,16 @@ class NetworkTest {
         return ts
     }
 
-    //@Test
+    // @Test
     @KtorExperimentalAPI
     fun localhostTest() = testSuspend {
         val selector = ActorSelectorManager(Dispatchers.IO)
-        //val server = aSocket(selector).tcp().bind("127.0.0.1", 0)
-        //val address = server.localAddress as InetSocketAddress
+        // val server = aSocket(selector).tcp().bind("127.0.0.1", 0)
+        // val address = server.localAddress as InetSocketAddress
         val client = aSocket(selector).tcp().connect("127.0.0.1", 4545)
-        //val socket = server.accept()
+        // val socket = server.accept()
         val ts = forSocket(client, SecondPaket, FirstPaket)
-        //forSocket(socket, SecondPaket, FirstPaket)
+        // forSocket(socket, SecondPaket, FirstPaket)
         println("BEGIN")
         ts.send(FirstPaket)
     }

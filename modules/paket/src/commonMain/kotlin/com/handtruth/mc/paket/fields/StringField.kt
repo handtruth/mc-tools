@@ -11,12 +11,12 @@ object StringCodec : Codec<String> {
     override fun write(output: Output, value: String) = writeString(output, value)
 }
 
-object StringListCodec : ListCodec<String>(StringCodec)
+val StringListCodec = ListCodec(StringCodec)
+val NullableStringCodec = NullableCodec(StringCodec)
 
-class StringField(initial: String) : Field<String>(StringCodec, initial)
-class StringListField(initial: MutableList<String>) : ListField<String>(StringListCodec, initial)
+fun Paket.string(initial: String = "") = field(StringCodec, initial)
+fun Paket.listOfString(initial: MutableList<String> = mutableListOf()) = field(StringListCodec, initial)
+fun Paket.nullableString(initial: String? = null) = field(NullableStringCodec, initial)
 
-fun Paket.string(initial: String = "") = field(StringField(initial))
-fun Paket.listOfString(initial: MutableList<String> = mutableListOf()) = field(StringListField(initial))
 @JvmName("listOfStringRO")
 fun Paket.listOfString(initial: List<String>) = listOfString(initial.toMutableList())

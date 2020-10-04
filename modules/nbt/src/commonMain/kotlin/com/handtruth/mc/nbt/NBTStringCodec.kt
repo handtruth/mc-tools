@@ -30,8 +30,9 @@ internal class NBTStringCodecImpl(override val stringConfig: NBTStringConfig) : 
         try {
             val id = deduceTag(reader)
             val result = id.resolver.readText(reader, stringConfig)
-            if (result is CompoundTag)
+            if (result is CompoundTag) {
                 result.isRoot = true
+            }
             return result
         } catch (e: Exception) {
             throw NBTParseException(reader.position(), e)

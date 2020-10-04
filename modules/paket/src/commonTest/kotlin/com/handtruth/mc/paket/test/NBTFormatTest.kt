@@ -1,13 +1,9 @@
 package com.handtruth.mc.paket.test
 
-import com.handtruth.mc.nbt.NBTBinaryCodec
-import com.handtruth.mc.nbt.NBTSerialFormat
-import com.handtruth.mc.nbt.plus
 import com.handtruth.mc.paket.Paket
 import com.handtruth.mc.paket.PaketCreator
+import com.handtruth.mc.paket.PaketFormat
 import com.handtruth.mc.paket.fields.binary
-import com.handtruth.mc.paket.fields.json
-import com.handtruth.mc.paket.fields.serial
 import io.ktor.test.dispatcher.testSuspend
 import kotlinx.serialization.Serializable
 import kotlin.random.Random
@@ -48,9 +44,8 @@ class NBTFormatTest {
     class NBTTestPaket(dataA: DataForNBT = DataForNBT(), dataB: DataForNBT = DataForNBT()) : Paket() {
         override val id = NBTDummyID.Ohh
 
-        val dataA by binary(NBTBinaryCodec() + NBTSerialFormat(), dataA)
-        val dataB by serial(dataB)
-        val dataC by json(dataB)
+        val dataA by binary(PaketFormat(), dataA)
+        val dataB by binary(PaketFormat(), dataB)
 
         companion object : PaketCreator<NBTTestPaket> {
             override fun produce() = NBTTestPaket()
@@ -59,18 +54,31 @@ class NBTFormatTest {
 
     @Test
     fun readWriteNBT() = testSuspend {
-        writeReadPaket(NBTTestPaket(
-            DataForNBT("Lol kek Kotlin berg", 5468, listOf(3.0f, 5.6f, -89f)),
-            DataForNBT("Русская строка с необычными символами для ASCII",
-                -89765, listOf(0.2f, -34.5f),
-                Player("Ktlo", 24982984545979, mapOf(
-                        668 to Attribute(
-                            10, 569, true, 68,
-                            Random.nextLong(), 5688f, 647878.343
+        writeReadPaket(
+            NBTTestPaket(
+                DataForNBT("Lol kek Kotlin berg", 5468, listOf(3.0f, 5.6f, -89f)),
+                DataForNBT(
+                    "Русская строка с необычными символами для ASCII",
+                    -89765,
+                    listOf(0.2f, -34.5f),
+                    Player(
+                        "Ktlo",
+                        24982984545979,
+                        mapOf(
+                            668 to Attribute(
+                                10,
+                                569,
+                                true,
+                                68,
+                                Random.nextLong(),
+                                5688f,
+                                647878.343
+                            )
                         )
                     )
                 )
-            )
-        ), NBTTestPaket)
+            ),
+            NBTTestPaket
+        )
     }
 }

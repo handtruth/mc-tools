@@ -1,42 +1,119 @@
-image: openjdk:8-jdk-alpine
+image: reg.handtruth.com/roots/kotlin/build
 
 stages:
   - build
+  - testPlatform
+  - testGroup
   - test
+  - analysis
   - package
+  - deploy
 
 cache:
   paths:
-    - .gradle/wrapper
-    - .gradle/caches
+    - .gradle
 
 variables:
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
   GIT_SUBMODULE_STRATEGY: normal
   GRADLE: ./gradlew -Pci --console=plain --no-daemon --max-workers=1 --stacktrace
 
-Build:
+assemble:
   stage: build
   script:
     - $GRADLE assemble
-  artifacts:
+  artifacts: &artifacts
     paths:
       - build
+      - 'modules/*/build'
 
-Test:
+.test: &test
+  script:
+    - $GRADLE $CI_JOB_NAME
+  artifacts: *artifacts
+
+.platformTest: &platformTest
+  <<: *test
+  stage: testPlatform
+  needs:
+    - assemble
+  artifacts:
+    reports:
+      junit:
+        - 'modules/*/build/test-results/$CI_JOB_NAME/TEST-*.xml'
+
+jvmTest: *platformTest
+
+.jsBrowserTest: *platformTest
+
+.jsNodeTest: *platformTest
+
+.groupTest: &groupTest
+  <<: *test
+  stage: testGroup
+
+.jsTest:
+  <<: *groupTest
+  needs:
+    - .jsNodeTest
+    - .jsBrowserTest
+
+allTest:
+  <<: *test
+  stage: test
+  needs:
+    - jvmTest
+  cache:
+    policy: pull
+
+lint:
   stage: test
   script:
-    - $GRADLE check
-  artifacts:
-    paths:
-      - build
+    - $GRADLE ktlintCheck
+  needs:
+    - assemble
+  cache:
+    policy: pull
 
-Package:
+coverage:
+  stage: analysis
+  script:
+    - $GRADLE rootTestCoverageReport
+    - cat build/reports/jacoco/rootTestCoverageReport/html/index.html || true
+  coverage: "/Total.*?([0-9]{1,3})%/"
+  artifacts: *artifacts
+  needs:
+    - jvmTest
+
+mavenSnapshot:
+  stage: package
+  script:
+    - $GRADLE publish
+  needs:
+    - assemble
+  cache:
+    policy: pull
+
+mavenRelease:
   stage: package
   script:
     - $GRADLE publishToMavenLocal
   tags: [ package ]
-  dependencies:
-    - Build
-  only:
-    - tags
+  only: [ tags ]
+  needs:
+    - assemble
+  cache:
+    policy: pull
+
+pages:
+  stage: package
+  script:
+    - $GRADLE gitlabPagesCreate
+  only: [ tags ]
+  needs:
+    - coverage
+  artifacts:
+    paths:
+      - public
+  cache:
+    policy: pull

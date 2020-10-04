@@ -9,7 +9,5 @@ dependencies {
 
     commonMainApi(project(":tools-shared"))
     commonMainImplementation(project(":tools-paket"))
-    commonMainImplementation(kotlinx("serialization-runtime-common"))
-
-    "jvmMainImplementation"(kotlinx("serialization-runtime"))
+    commonMainImplementation(kotlinx("serialization-json"))
 }

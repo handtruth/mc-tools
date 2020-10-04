@@ -1,6 +1,10 @@
 package com.handtruth.mc.minecraft
 
 import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 internal const val uuidClassName = "com.handtruth.mc.minecraft.UUID"
 
@@ -15,13 +19,13 @@ sealed class UUIDSerializer : KSerializer<UUID> {
         override fun serialize(encoder: Encoder, value: UUID) = encoder.encodeString(value.toMojangUUID())
     }
 
-    override val descriptor = PrimitiveDescriptor(uuidClassName, PrimitiveKind.STRING)
+    override val descriptor = PrimitiveSerialDescriptor(uuidClassName, PrimitiveKind.STRING)
 
     override fun deserialize(decoder: Decoder) =
         UUID(decoder.decodeString())
 }
 
-private fun char2int(char: Char) = when(char) {
+private fun char2int(char: Char) = when (char) {
     in '0'..'9' -> char - '0'
     in 'a'..'f' -> char - 'a' + 10
     in 'A'..'F' -> char - 'A' + 10
@@ -90,7 +94,7 @@ data class UUID(val most: Long, val least: Long) {
         val chars = CharArray(36)
         exportUUIDPart(most, chars, 0, false)
         exportUUIDPart(least, chars, 18, false)
-        return String(chars)
+        return chars.concatToString()
     }
 
     fun toGUID(): String {
@@ -101,6 +105,6 @@ data class UUID(val most: Long, val least: Long) {
         val chars = CharArray(32)
         exportUUIDPart(most, chars, 0, true)
         exportUUIDPart(least, chars, 16, true)
-        return String(chars)
+        return chars.concatToString()
     }
 }

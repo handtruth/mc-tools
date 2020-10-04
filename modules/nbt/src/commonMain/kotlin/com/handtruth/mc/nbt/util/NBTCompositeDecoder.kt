@@ -2,14 +2,12 @@ package com.handtruth.mc.nbt.util
 
 import com.handtruth.mc.nbt.tags.*
 import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.SerialDescriptor
-import kotlinx.serialization.UpdateMode
-import kotlinx.serialization.modules.SerialModule
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.modules.SerializersModule
 
 internal abstract class NBTCompositeDecoder(
-    context: SerialModule,
-    updateMode: UpdateMode
-) : NBTIndexedDecoder(context, updateMode) {
+    serializersModule: SerializersModule
+) : NBTIndexedDecoder(serializersModule) {
     protected abstract fun retrieveTag(descriptor: SerialDescriptor, index: Int): Tag<*>
 
     override fun decodeBooleanElement(descriptor: SerialDescriptor, index: Int): Boolean {
@@ -57,13 +55,16 @@ internal abstract class NBTCompositeDecoder(
     override fun <T : Any> decodeNullableSerializableElement(
         descriptor: SerialDescriptor,
         index: Int,
-        deserializer: DeserializationStrategy<T?>
+        deserializer: DeserializationStrategy<T?>,
+        previousValue: T?
     ): T? {
-        if (this is NBTStructDecoder)
+        if (this is NBTStructDecoder) {
             println(descriptor.getElementName(index))
-        if (retrieveTag(descriptor, index) is EndTag)
+        }
+        if (retrieveTag(descriptor, index) is EndTag) {
             return null
-        return decodeSerializableElement(descriptor, index, deserializer)
+        }
+        return decodeSerializableElement(descriptor, index, deserializer, previousValue)
     }
 
     override fun <T> decodeNonPrimitiveElement(
@@ -72,7 +73,7 @@ internal abstract class NBTCompositeDecoder(
         deserializer: DeserializationStrategy<T>
     ): T {
         val tag = retrieveTag(descriptor, index)
-        val decoder = NBTDecoder(tag, context, updateMode)
+        val decoder = NBTDecoder(tag, serializersModule)
         return deserializer.deserialize(decoder)
     }
 
@@ -87,6 +88,4 @@ internal abstract class NBTCompositeDecoder(
         validate(tag is StringTag, String::class, tag.id)
         return tag.value
     }
-
-    override fun decodeUnitElement(descriptor: SerialDescriptor, index: Int) {}
 }

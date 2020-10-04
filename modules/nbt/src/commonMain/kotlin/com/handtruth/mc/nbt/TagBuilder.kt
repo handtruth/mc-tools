@@ -17,7 +17,7 @@ inline fun buildCompoundTag(isRoot: Boolean = true, block: CompoundTag.() -> Uni
     CompoundTag(hashMapOf(), isRoot).apply(block)
 
 @NBTDsl
-inline fun <T: Any> buildListTag(resolver: TagResolver<T>, block: ListTag<T>.() -> Unit) =
+inline fun <T : Any> buildListTag(resolver: TagResolver<T>, block: ListTag<T>.() -> Unit) =
     ListTag(mutableListOf(), resolver).apply(block)
 
 @NBTDsl

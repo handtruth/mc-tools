@@ -17,9 +17,12 @@ class PerformanceTest {
         Create, Rent
     }
 
-    class CreatePaket(pString: String = "lolkek",
-                      pVarLong: Long = Random.nextLong(),
-                      pInt8: Byte = 230.toByte(), pBool: Boolean = true) : Paket() {
+    class CreatePaket(
+        pString: String = "lolkek",
+        pVarLong: Long = Random.nextLong(),
+        pInt8: Byte = 230.toByte(),
+        pBool: Boolean = true
+    ) : Paket() {
         override val id = IDS.Create
         var pString by string(pString)
         var pVarLong by varLong(pVarLong)
@@ -52,8 +55,12 @@ class PerformanceTest {
         var pint83 by int8()
         var pBool3 by bool()
 
-        operator fun invoke(pString: String = "lolkek", pVarLong: Long = Random.nextLong(),
-                            pint8: Byte = 230.toByte(), pBool: Boolean = true): RentPaket {
+        operator fun invoke(
+            pString: String = "lolkek",
+            pVarLong: Long = Random.nextLong(),
+            pint8: Byte = 230.toByte(),
+            pBool: Boolean = true
+        ): RentPaket {
             this.pString = pString
             this.pVarLong = pVarLong
             this.pint8 = pint8
@@ -72,7 +79,7 @@ class PerformanceTest {
         companion object : JvmPaketPool<RentPaket>(RentPaket::class)
     }
 
-    //@Test
+    // @Test
     fun `Paket Creation vs Paket Rent`() {
         runBlocking {
             val iterations = 100000

@@ -36,8 +36,13 @@ class MojangAPITest {
         assertNull(textures.cape)
         assertNotNull(textures.skin)
         assertFalse(textures.isAlex)
-        TexturesProperty(textures.timestamp, textures.profileId,
-            textures.profileName, textures.textures, textures.signatureRequired)
+        TexturesProperty(
+            textures.timestamp,
+            textures.profileId,
+            textures.profileName,
+            textures.textures,
+            textures.signatureRequired
+        )
     }
 
     @Serializable
@@ -56,29 +61,39 @@ class MojangAPITest {
         val context = ProfileContext.default + ("example" to ExampleProperty)
         ProfileContext.use(context)
         assertEquals(exampleDecoded, decodeBase64AsString(exampleEncoded))
-        val profile = json.parse(Profile.serializer(), str)
+        val profile = json.decodeFromString(Profile.serializer(), str)
         assertEquals("IQuant", profile.name)
         assertEquals(UUID("c14a227a1b9541efb223ad1aeb299050"), profile.id)
         assertEquals(
             ExampleProperty(
                 "Русский текст, как всегда",
                 13
-            ), profile["example"])
+            ),
+            profile["example"]
+        )
         assertEquals(UnknownProperty("Lol Kek Kotlin Berg"), profile["kotlin"])
         assertNotNull(profile.textures)
-        json.stringify(Profile.serializer(), profile)
+        json.encodeToString(Profile.serializer(), profile)
     }
 
     @Test
     fun checkContextes() {
         val context = ProfileContext.default + ("example" to ExampleProperty)
         assertEquals(2, context.factories.size)
-        assertEquals(ProfileContext.empty + mapOf("textures" to TexturesProperty, "example" to ExampleProperty),
-            context)
-        assertEquals(ProfileContext.empty +
-                sequenceOf("textures" to TexturesProperty, "example" to ExampleProperty).asIterable(), context)
-        assertEquals(ProfileContext.empty +
-                sequenceOf("textures" to TexturesProperty, "example" to ExampleProperty), context)
+        assertEquals(
+            ProfileContext.empty + mapOf("textures" to TexturesProperty, "example" to ExampleProperty),
+            context
+        )
+        assertEquals(
+            ProfileContext.empty +
+                sequenceOf("textures" to TexturesProperty, "example" to ExampleProperty).asIterable(),
+            context
+        )
+        assertEquals(
+            ProfileContext.empty +
+                sequenceOf("textures" to TexturesProperty, "example" to ExampleProperty),
+            context
+        )
         assertEquals(ProfileContext.default + mapOf("example" to ExampleProperty).entries.first(), context)
         assertEquals(ProfileContext.default + mapOf("example" to ExampleProperty).entries.asIterable(), context)
         assertEquals(ProfileContext.default, ProfileContext.default + ProfileContext.empty)
@@ -90,9 +105,8 @@ class MojangAPITest {
     @Test
     fun playersVariant() {
         val playerA = PlayerByNameResponse("Ktlo", UUID.empty, legacy = true, demo = true)
-        val string = json.stringify(PlayerByNameResponse.serializer(), playerA)
-        val playerB = json.parse(PlayerByNameResponse.serializer(), string)
+        val string = json.encodeToString(PlayerByNameResponse.serializer(), playerA)
+        val playerB = json.decodeFromString(PlayerByNameResponse.serializer(), string)
         assertEquals(playerA, playerB)
     }
-
 }

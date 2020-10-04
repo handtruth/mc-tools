@@ -1,5 +1,4 @@
-MC:Tools Client
-======================================
+# Module tools-client
 
 This module provides a simple client for Minecraft Java Edition server. It can
 get status of a Minecraft server, but nothing more. There are no plans to

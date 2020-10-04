@@ -7,6 +7,5 @@ dependencies {
 
     commonMainImplementation(project(":tools-zint"))
     commonMainImplementation(kotlinx("io"))
-    commonMainApi(kotlinx("serialization-runtime-common"))
-    "jvmMainApi"(kotlinx("serialization-runtime"))
+    commonMainApi(kotlinx("serialization-core"))
 }

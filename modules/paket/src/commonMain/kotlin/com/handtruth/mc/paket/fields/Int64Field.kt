@@ -11,12 +11,12 @@ object Int64Codec : Codec<Long> {
     override fun write(output: Output, value: Long) = writeLong(output, value)
 }
 
-object Int64ListCodec : ListCodec<Long>(Int64Codec)
+val Int64ListCodec = ListCodec(Int64Codec)
+val NullableInt64Codec = NullableCodec(Int64Codec)
 
-class Int64Field(initial: Long): Field<Long>(Int64Codec, initial)
-class Int64ListField(initial: MutableList<Long>): ListField<Long>(Int64ListCodec, initial)
+fun Paket.int64(initial: Long = 0L) = field(Int64Codec, initial)
+fun Paket.listOfInt64(initial: MutableList<Long> = mutableListOf()) = field(Int64ListCodec, initial)
+fun Paket.nullableInt64(initial: Long? = null) = field(NullableInt64Codec, initial)
 
-fun Paket.int64(initial: Long = 0L) = field(Int64Field(initial))
-fun Paket.listOfInt64(initial: MutableList<Long> = mutableListOf()) = field(Int64ListField(initial))
 @JvmName("listOfInt64RO")
 fun Paket.listOfInt64(initial: List<Long>) = listOfInt64(initial.toMutableList())

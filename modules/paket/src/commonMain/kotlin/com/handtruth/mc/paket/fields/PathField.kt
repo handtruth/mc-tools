@@ -14,18 +14,26 @@ object PathCodec : Codec<Path> {
 }
 
 @ExperimentalPaketApi
-object PathListCodec : ListCodec<Path>(PathCodec)
+val PathListCodec = ListCodec(PathCodec)
 
 @ExperimentalPaketApi
-class PathField(initial: Path) : Field<Path>(PathCodec, initial)
-@ExperimentalPaketApi
-class PathListField(initial: MutableList<Path>) : ListField<Path>(PathListCodec, initial)
+val NullablePathCodec = NullableCodec(PathCodec)
 
 @ExperimentalPaketApi
-fun Paket.path(initial: Path = Path.empty) = field(PathField(initial))
+fun Paket.path(initial: Path = Path.empty) = field(PathCodec, initial)
+
 @ExperimentalPaketApi
-fun Paket.path(initial: String) = field(PathField(Path(initial)))
+fun Paket.path(initial: String) = field(PathCodec, Path(initial))
+
 @ExperimentalPaketApi
-fun Paket.listOfPath(initial: MutableList<Path> = mutableListOf()) = field(PathListField(initial))
-@ExperimentalPaketApi @JvmName("listOfPathRO")
+fun Paket.listOfPath(initial: MutableList<Path> = mutableListOf()) = field(PathListCodec, initial)
+
+@ExperimentalPaketApi
+fun Paket.nullablePath(initial: Path? = null) = field(NullablePathCodec, initial)
+
+@ExperimentalPaketApi
+fun Paket.nullablePath(initial: String? = null) = field(NullablePathCodec, initial?.let { Path(it) })
+
+@ExperimentalPaketApi
+@JvmName("listOfPathRO")
 fun Paket.listOfPath(initial: List<Path>) = listOfPath(initial.toMutableList())

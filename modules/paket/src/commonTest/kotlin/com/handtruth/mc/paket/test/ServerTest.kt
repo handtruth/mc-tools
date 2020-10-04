@@ -84,7 +84,7 @@ class ServerTest {
     }
 
     private suspend fun execClient(ts: PaketTransmitter) {
-        val c = corespondent<IDS>(ts)
+        val c = correspondent<IDS>(ts)
         c.send(FirstPaket().apply { payload = 232323232323 })
         c.branch<SubIDS>(IDS.Second) send OnePaket
         val data = c.branch<SubIDS>(IDS.Second).request(TwoPaket().apply { data = "hi lol" }) { peek(TwoPaket).data }

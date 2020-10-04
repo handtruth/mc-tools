@@ -3,30 +3,34 @@ package com.handtruth.mc.nbt.util
 import com.handtruth.mc.nbt.NBTListType
 import com.handtruth.mc.nbt.tags.*
 import kotlinx.serialization.*
-import kotlinx.serialization.modules.SerialModule
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.encoding.CompositeEncoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.modules.SerializersModule
 
-internal class NBTEncoder(override val context: SerialModule) : Encoder {
+internal class NBTEncoder(
+    override val serializersModule: SerializersModule
+) : Encoder {
     var tag: Tag<*> = Tag.empty
         internal set
 
     override fun beginStructure(
-        descriptor: SerialDescriptor,
-        vararg typeSerializers: KSerializer<*>
+        descriptor: SerialDescriptor
     ): CompositeEncoder {
-        return NBTStructEncoder(context, this)
+        return NBTStructEncoder(serializersModule, this)
     }
 
     override fun beginCollection(
         descriptor: SerialDescriptor,
-        collectionSize: Int,
-        vararg typeSerializers: KSerializer<*>
+        collectionSize: Int
     ): CompositeEncoder {
         return when (descriptor.kind) {
             StructureKind.LIST -> {
                 val tagId = (descriptor.annotations.find { it is NBTListType } as? NBTListType)?.id ?: EndTag.id
-                NBTListEncoder(context, this, tagId.resolver)
+                NBTListEncoder(serializersModule, this, tagId.resolver)
             }
-            StructureKind.MAP -> NBTMapEncoder(context, this)
+            StructureKind.MAP -> NBTMapEncoder(serializersModule, this)
             else -> throw NotImplementedError()
         }
     }
@@ -73,9 +77,5 @@ internal class NBTEncoder(override val context: SerialModule) : Encoder {
 
     override fun encodeString(value: String) {
         tag = StringTag(value)
-    }
-
-    override fun encodeUnit() {
-        tag = Tag.empty
     }
 }

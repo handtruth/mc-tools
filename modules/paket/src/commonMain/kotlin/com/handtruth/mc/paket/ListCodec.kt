@@ -3,7 +3,7 @@ package com.handtruth.mc.paket
 import kotlinx.io.Input
 import kotlinx.io.Output
 
-open class ListCodec<T>(val inner: Codec<T>) : Codec<MutableList<T>> {
+class ListCodec<T>(val inner: Codec<T>) : Codec<MutableList<T>> {
     override fun measure(value: MutableList<T>) = sizeVarInt(value.size) + value.sumBy { inner.measure(it) }
     override fun read(input: Input, old: MutableList<T>?): MutableList<T> {
         val size = readVarInt(input)
@@ -18,6 +18,3 @@ open class ListCodec<T>(val inner: Codec<T>) : Codec<MutableList<T>> {
         value.forEach { inner.write(output, it) }
     }
 }
-
-abstract class ListField<T>(codec: Codec<MutableList<T>>, initial: MutableList<T>) :
-        Field<MutableList<T>>(codec, initial)

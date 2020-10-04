@@ -13,17 +13,20 @@ object UInt32Codec : Codec<UInt> {
 }
 
 @ExperimentalPaketApi
-object UInt32ListCodec : ListCodec<UInt>(UInt32Codec)
+val UInt32ListCodec = ListCodec(UInt32Codec)
 
 @ExperimentalPaketApi
-class UInt32Field(initial: UInt): Field<UInt>(UInt32Codec, initial)
-@ExperimentalPaketApi
-class UInt32ListField(initial: MutableList<UInt>): ListField<UInt>(UInt32ListCodec, initial)
+val NullableUInt32Codec = NullableCodec(UInt32Codec)
 
 @ExperimentalPaketApi
-fun Paket.uint32(initial: UInt = 0u) = field(UInt32Field(initial))
+fun Paket.uint32(initial: UInt = 0u) = field(UInt32Codec, initial)
+
 @ExperimentalPaketApi
-fun Paket.listOfUint32(initial: MutableList<UInt> = mutableListOf()) = field(UInt32ListField(initial))
+fun Paket.nullableUint32(initial: UInt? = null) = field(NullableUInt32Codec, initial)
+
+@ExperimentalPaketApi
+fun Paket.listOfUint32(initial: MutableList<UInt> = mutableListOf()) = field(UInt32ListCodec, initial)
+
 @ExperimentalPaketApi
 @JvmName("listOfUint32RO")
 fun Paket.listOfUint32(initial: List<UInt>) = listOfUint32(initial.toMutableList())

@@ -76,35 +76,35 @@ class RoutersTest {
                 slave1.catchOrdinal()
                 slave1.peek(FirstPaket)
                 slave1.receive(FirstPaket)
-                //println("recv 1: $it")
+                // println("recv 1: $it")
             }
             println("done recv 1")
         }
         val recv2 = launch(dispatcher + CoroutineName("recv 2")) {
             repeat(count) {
                 slave2.receive(SecondPaket)
-                //println("recv 2: $it")
+                // println("recv 2: $it")
             }
             println("done recv 2")
         }
         val send1 = launch(dispatcher + CoroutineName("send 1")) {
             repeat(count) {
                 slave1.send(FirstPaket)
-                //println("sent 1: $it")
+                // println("sent 1: $it")
             }
             println("done sent 1")
         }
         val send2 = launch(dispatcher + CoroutineName("sent 2")) {
             repeat(count) {
                 slave2.send(SecondPaket)
-                //println("sent 2: $it")
+                // println("sent 2: $it")
             }
             println("done sent 2")
         }
         val send3 = launch(dispatcher + CoroutineName("sent 3")) {
             repeat(count - 1) {
                 slave3.send(ThirdPaket)
-                //println("sent 3: $it")
+                // println("sent 3: $it")
             }
             println("done sent 3")
         }
@@ -153,21 +153,21 @@ class RoutersTest {
         val send1 = launch(dispatcher + CoroutineName("send 1")) {
             repeat(count) {
                 main.send(FirstPaket)
-                //println("send 1: $it")
+                // println("send 1: $it")
             }
             println("done send 1")
         }
         val send2 = launch(dispatcher + CoroutineName("send 2")) {
             repeat(count) {
                 main.send(SecondPaket)
-                //println("send 2: $it")
+                // println("send 2: $it")
             }
             println("done send 2")
         }
         val send3 = launch(dispatcher + CoroutineName("send 3")) {
             repeat(count) {
                 main.send(ThirdPaket)
-                //println("send 3: $it")
+                // println("send 3: $it")
             }
             println("done send 3")
         }
@@ -176,7 +176,7 @@ class RoutersTest {
                 main.catchOrdinal()
                 main.peek(SecondPaket)
                 main.receive(SecondPaket)
-                //println("recv 2: $it")
+                // println("recv 2: $it")
             }
             println("done recv 2")
         }
@@ -197,28 +197,28 @@ class RoutersTest {
         val send1 = launch(dispatcher + CoroutineName("send 1")) {
             repeat(count) {
                 ts1.send(FirstPaket)
-                //println("send 1: $it")
+                // println("send 1: $it")
             }
             println("done send 1")
         }
         val send2 = launch(dispatcher + CoroutineName("send 2")) {
             repeat(count) {
                 ts2.send(SecondPaket)
-                //println("send 2: $it")
+                // println("send 2: $it")
             }
             println("done send 2")
         }
         launch(dispatcher + CoroutineName("send 3")) {
             repeat(count) {
                 ts3.send(ThirdPaket)
-                //println("send 3: $it")
+                // println("send 3: $it")
             }
             println("done send 3")
         }
         val recv1 = launch(dispatcher + CoroutineName("recv 1")) {
             repeat(count) {
                 ts1.receive(FirstPaket)
-                //println("recv 1: $it")
+                // println("recv 1: $it")
             }
             ts1.close()
             println("done recv 1")
@@ -228,7 +228,7 @@ class RoutersTest {
                 ts2.catchOrdinal()
                 ts2.peek(SecondPaket)
                 ts2.receive(SecondPaket)
-                //println("recv 2: $it")
+                // println("recv 2: $it")
             }
             ts2.close()
             println("done recv 2")
@@ -260,28 +260,28 @@ class RoutersTest {
         val send1 = launch(dispatcher + CoroutineName("send 1")) {
             repeat(count) {
                 ts1.send(FirstPaket)
-                //println("send 1: $it")
+                // println("send 1: $it")
             }
             println("done send 1")
         }
         val send2 = launch(dispatcher + CoroutineName("send 2")) {
             repeat(count) {
                 router.send(SecondPaket)
-                //println("send 2: $it")
+                // println("send 2: $it")
             }
             println("done send 2")
         }
         launch(dispatcher + CoroutineName("send 3")) {
             repeat(count) {
                 ts3.send(ThirdPaket)
-                //println("send 3: $it")
+                // println("send 3: $it")
             }
             println("done send 3")
         }
         val recv1 = launch(dispatcher + CoroutineName("recv 1")) {
             repeat(count) {
                 ts1.receive(FirstPaket)
-                //println("recv 1: $it")
+                // println("recv 1: $it")
             }
             ts1.close()
             println("done recv 1")
@@ -291,7 +291,7 @@ class RoutersTest {
                 ts2.catchOrdinal()
                 ts2.peek(SecondPaket)
                 ts2.receive(SecondPaket)
-                //println("recv 2: $it")
+                // println("recv 2: $it")
             }
             ts2.close()
             println("done recv 2")

@@ -3,15 +3,15 @@ package com.handtruth.mc.paket
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-inline fun <reified E : Enum<E>> corespondent(ts: PaketTransmitter): Corespondent<E> =
-    corespondent(enumValues(), ts.asSynchronized())
+inline fun <reified E : Enum<E>> correspondent(ts: PaketTransmitter): Correspondent<E> =
+    correspondent(enumValues(), ts.asSynchronized())
 
 @PublishedApi
-internal fun <E : Enum<E>> corespondent(values: Array<E>, ts: PaketTransmitter): Corespondent<E> {
-    return Corespondent(ts, values)
+internal fun <E : Enum<E>> correspondent(values: Array<E>, ts: PaketTransmitter): Correspondent<E> {
+    return Correspondent(ts, values)
 }
 
-class Corespondent<E : Enum<E>> internal constructor(
+class Correspondent<E : Enum<E>> internal constructor(
     private val ts: PaketTransmitter,
     private val values: Array<E>
 ) : PaketSender {
@@ -19,24 +19,24 @@ class Corespondent<E : Enum<E>> internal constructor(
 
     private val router = ts.asRouter()
 
-    private val branches = arrayOfNulls<Corespondent<*>?>(values.size)
+    private val branches = arrayOfNulls<Correspondent<*>?>(values.size)
 
     @PublishedApi
-    internal fun <T : Enum<T>> branch(values: Array<T>, bid: E): Corespondent<T> {
+    internal fun <T : Enum<T>> branch(values: Array<T>, bid: E): Correspondent<T> {
         val id = bid.ordinal
         val it = branches[id]
         return if (it == null || it.broken) {
-            val result = Corespondent(BranchPaketTransmitter(bid, router.route { it.idOrdinal == id }), values)
+            val result = Correspondent(BranchPaketTransmitter(bid, router.route { it.idOrdinal == id }), values)
             branches[id] = result
             result
         } else {
             require(values contentEquals it.values) { "there is an open branch for other paket id type" }
             @Suppress("UNCHECKED_CAST")
-            it as Corespondent<T>
+            it as Correspondent<T>
         }
     }
 
-    inline fun <reified T : Enum<T>> branch(bid: E): Corespondent<T> {
+    inline fun <reified T : Enum<T>> branch(bid: E): Correspondent<T> {
         return branch(enumValues(), bid)
     }
 

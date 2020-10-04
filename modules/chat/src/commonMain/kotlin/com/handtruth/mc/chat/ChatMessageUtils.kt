@@ -1,9 +1,7 @@
 package com.handtruth.mc.chat
 
-import com.handtruth.mc.chat.ChatMessage
-import kotlinx.serialization.builtins.list
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
 
 @DslMarker
 annotation class ChatMessageDsl
@@ -82,8 +80,9 @@ inline fun buildChat(block: ChatMessageBuilder.() -> Unit): ChatMessage {
     val builder = ChatMessageBuilder()
     builder.block()
     val chat = builder.build().flatten()
-    if (chat.extra.size == 1)
+    if (chat.extra.size == 1) {
         return chat.extra[0]
+    }
     return chat
 }
 
@@ -98,8 +97,9 @@ fun parseControlSequences(value: String): ChatMessage {
     var color: ChatMessage.Color? = null
 
     operator fun String.unaryPlus() {
-        if (this.isNotEmpty())
+        if (this.isNotEmpty()) {
             list.add(ChatMessage(this, bold, italic, underlined, strikethrough, obfuscated, color))
+        }
     }
 
     var begin = 0
@@ -111,8 +111,9 @@ fun parseControlSequences(value: String): ChatMessage {
             break
         }
         +value.substring(begin, end)
-        if (value.length <= end)
+        if (value.length <= end) {
             break
+        }
         when (val c = value[end + 1]) {
             // Colors section
             in '0'..'9', in 'a'..'f', in 'A'..'F' -> color = ChatMessage.Color.getByCode(c)
@@ -143,7 +144,10 @@ fun parseControlSequences(value: String): ChatMessage {
 }
 
 fun List<ChatMessage>.toChatString(): String {
-    return json.stringify(ChatMessageJsonSerializer.list, this)
+    return json.encodeToString(ListSerializer(ChatMessageJsonSerializer), this)
 }
 
-internal val json = Json(JsonConfiguration.Stable.copy(encodeDefaults = false, ignoreUnknownKeys = true))
+internal val json = Json {
+    encodeDefaults = false
+    ignoreUnknownKeys = true
+}

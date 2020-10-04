@@ -11,12 +11,12 @@ object Int16Codec : Codec<Short> {
     override fun write(output: Output, value: Short) = writeShort(output, value)
 }
 
-object Int16ListCodec : ListCodec<Short>(Int16Codec)
+val Int16ListCodec = ListCodec(Int16Codec)
+val NullableInt16Codec = NullableCodec(Int16Codec)
 
-class Int16Field(initial: Short): Field<Short>(Int16Codec, initial)
-class Int16ListField(initial: MutableList<Short>): ListField<Short>(Int16ListCodec, initial)
+fun Paket.int16(initial: Short = 0) = field(Int16Codec, initial)
+fun Paket.listOfInt16(initial: MutableList<Short> = mutableListOf()) = field(Int16ListCodec, initial)
+fun Paket.nullableField(initial: Short? = null) = field(NullableInt16Codec, initial)
 
-fun Paket.int16(initial: Short = 0) = field(Int16Field(initial))
-fun Paket.listOfInt16(initial: MutableList<Short> = mutableListOf()) = field(Int16ListField(initial))
 @JvmName("listOfInt16RO")
 fun Paket.listOfInt16(initial: List<Short>) = listOfInt16(initial.toMutableList())

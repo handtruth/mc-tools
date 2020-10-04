@@ -9,11 +9,8 @@ dependencies {
 
     commonMainApi(project(":tools-shared"))
     commonMainImplementation(kotlinx("io"))
-    commonMainImplementation(kotlinx("serialization-runtime-common"))
+    commonMainImplementation(kotlinx("serialization-json"))
     commonMainImplementation("io.ktor:ktor-client-core")
 
-    "jvmMainImplementation"(kotlinx("serialization-runtime"))
-    "jvmMainImplementation"(ktor("io-jvm"))
-    "jvmMainImplementation"(ktor("client-core-jvm"))
     "jvmTestImplementation"(ktor("client-cio"))
 }

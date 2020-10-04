@@ -10,23 +10,17 @@ dependencies {
     val atomicfuVersion: String by project
 
     commonMainApi(kotlinx("io"))
-    commonMainApi(kotlinx("coroutines-core-common"))
-    commonMainApi(kotlinx("serialization-runtime-common"))
+    commonMainApi(kotlinx("coroutines-core"))
+    commonMainApi(kotlinx("serialization-core"))
     commonMainCompileOnly("io.ktor:ktor-io")
     commonMainCompileOnly("com.soywiz.korlibs.korio:korio")
     commonMainImplementation(project(":tools-zint"))
-    commonMainImplementation("org.jetbrains.kotlinx:atomicfu-common:$atomicfuVersion")
+    commonMainImplementation("org.jetbrains.kotlinx:atomicfu:$atomicfuVersion")
 
-    commonTestImplementation(project(":tools-nbt"))
     commonTestImplementation("io.ktor:ktor-io")
     commonTestImplementation("com.soywiz.korlibs.korio:korio")
 
-    "jvmMainApi"(kotlinx("coroutines-core"))
-    "jvmMainApi"(kotlinx("serialization-runtime"))
     "jvmMainImplementation"(kotlin("reflect"))
-    "jvmMainImplementation"("org.jetbrains.kotlinx:atomicfu:$atomicfuVersion")
-    "jvmMainCompileOnly"("io.ktor:ktor-io-jvm")
 
-    "jvmTestImplementation"("io.ktor:ktor-io-jvm")
     "jvmTestImplementation"("io.ktor:ktor-network")
 }

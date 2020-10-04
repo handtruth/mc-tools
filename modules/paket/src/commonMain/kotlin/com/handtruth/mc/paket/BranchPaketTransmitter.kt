@@ -30,8 +30,9 @@ internal class BranchPaketTransmitter<E : Enum<E>>(
     override var isCaught = false
 
     override suspend fun catchOrdinal(): Int {
-        if (isCaught || !parent.isCaught)
+        if (isCaught || !parent.isCaught) {
             parent.catchOrdinal()
+        }
         isCaught = true
         parent.peek(body)
         return idOrdinal

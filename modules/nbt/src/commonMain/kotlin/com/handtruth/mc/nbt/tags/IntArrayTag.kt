@@ -5,7 +5,6 @@ import com.handtruth.mc.nbt.NBTStringConfig
 import com.handtruth.mc.nbt.TagID
 import com.handtruth.mc.nbt.util.*
 import com.handtruth.mc.nbt.util.readSize
-import com.handtruth.mc.nbt.util.smartJoin
 import com.handtruth.mc.nbt.util.writeInt32
 import com.handtruth.mc.nbt.util.writeSize
 import kotlinx.io.Input

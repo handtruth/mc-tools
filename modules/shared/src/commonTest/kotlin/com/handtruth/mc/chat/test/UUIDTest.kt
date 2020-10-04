@@ -4,7 +4,6 @@ import com.handtruth.mc.minecraft.UUID
 import com.handtruth.mc.minecraft.UUIDSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
@@ -34,7 +33,6 @@ class UUIDTest {
         }
     }
 
-
     @Serializable
     data class WithDefaultUUID(@Serializable(with = UUIDSerializer.Default::class) val uuid: UUID)
 
@@ -47,15 +45,15 @@ class UUIDTest {
     @Serializable
     data class WithStringUUID(val uuid: String)
 
-    private val json = Json(JsonConfiguration.Stable)
+    private val json = Json {}
 
     @Test
     fun defaultSerializerTest() {
         val string = "fedcb9a8-7650-4321-1058-998512216559"
 
         val obj = WithDefaultUUID(UUID(string))
-        val serial = json.stringify(WithDefaultUUID.serializer(), obj)
-        val str = json.parse(WithStringUUID.serializer(), serial)
+        val serial = json.encodeToString(WithDefaultUUID.serializer(), obj)
+        val str = json.decodeFromString(WithStringUUID.serializer(), serial)
         assertEquals(string, str.uuid)
     }
 
@@ -64,8 +62,8 @@ class UUIDTest {
         val string = "{fedcb9a8-7650-4321-1058-998512216559}"
 
         val obj = WithGUIDUUID(UUID(string))
-        val serial = json.stringify(WithGUIDUUID.serializer(), obj)
-        val str = json.parse(WithStringUUID.serializer(), serial)
+        val serial = json.encodeToString(WithGUIDUUID.serializer(), obj)
+        val str = json.decodeFromString(WithStringUUID.serializer(), serial)
         assertEquals(string, str.uuid)
     }
 
@@ -74,8 +72,8 @@ class UUIDTest {
         val string = "fedcb9a8765043211058998512216559"
 
         val obj = WithMojangUUID(UUID(string))
-        val serial = json.stringify(WithMojangUUID.serializer(), obj)
-        val str = json.parse(WithStringUUID.serializer(), serial)
+        val serial = json.encodeToString(WithMojangUUID.serializer(), obj)
+        val str = json.decodeFromString(WithStringUUID.serializer(), serial)
         assertEquals(string, str.uuid)
     }
 }

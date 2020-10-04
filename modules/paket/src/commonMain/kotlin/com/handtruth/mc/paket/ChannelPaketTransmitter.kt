@@ -2,6 +2,7 @@
 
 package com.handtruth.mc.paket
 
+import com.handtruth.mc.paket.fields.Field
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -20,7 +21,6 @@ private class ChannelPaketSender(val output: SendChannel<Paket>) : PaketSender {
     override fun close() {
         output.close()
     }
-
 }
 
 private class ChannelPaketReceiver(val input: ReceiveChannel<Paket>) : PaketReceiver {
@@ -38,8 +38,9 @@ private class ChannelPaketReceiver(val input: ReceiveChannel<Paket>) : PaketRece
     }
 
     override suspend fun drop() {
-        if (!isCaught)
+        if (!isCaught) {
             catchOrdinal()
+        }
         pending = null
     }
 
@@ -67,7 +68,6 @@ private class ChannelPaketReceiver(val input: ReceiveChannel<Paket>) : PaketRece
     override fun close() {
         input.cancel()
     }
-
 }
 
 fun PaketSender(output: SendChannel<Paket>): PaketSender = ChannelPaketSender(output)

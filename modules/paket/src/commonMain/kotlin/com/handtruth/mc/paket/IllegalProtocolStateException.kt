@@ -10,6 +10,7 @@ internal inline fun validate(value: Boolean, message: () -> Any = { "Protocol st
         callsInPlace(message, InvocationKind.AT_MOST_ONCE)
         returns() implies value
     }
-    if (!value)
+    if (!value) {
         throw IllegalProtocolStateException(message().toString())
+    }
 }

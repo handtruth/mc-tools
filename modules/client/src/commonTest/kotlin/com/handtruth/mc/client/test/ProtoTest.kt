@@ -8,13 +8,12 @@ import com.soywiz.korio.net.createTcpClient
 import com.soywiz.korio.stream.toAsyncStream
 import io.ktor.test.dispatcher.testSuspend
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ProtoTest {
 
-    private val json = Json(JsonConfiguration.Stable)
+    private val json = Json {}
 
     @Test
     fun protocolTest() = testSuspend {
@@ -36,9 +35,8 @@ class ProtoTest {
         ts.send(pp)
         ts.drop()
 
-        val asJson = json.stringify(ServerStatus.serializer(), response.message)
-        val status = json.parse(ServerStatus.serializer(), asJson)
-        assertEquals(response.message, status)
+        val asJson = json.encodeToString(ServerStatus.serializer(), response.message)
+        val status = json.decodeFromString(ServerStatus.serializer(), asJson)
+        assertEquals(response.message, status.copy(description = status.description.flatten()))
     }
-
 }

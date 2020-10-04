@@ -11,12 +11,12 @@ object DoubleCodec : Codec<Double> {
     override fun write(output: Output, value: Double) = writeDouble(output, value)
 }
 
-object DoubleListCodec : ListCodec<Double>(DoubleCodec)
+val DoubleListCodec = ListCodec(DoubleCodec)
+val NullableDoubleCodec = NullableCodec(DoubleCodec)
 
-class DoubleField(initial: Double): Field<Double>(DoubleCodec, initial)
-class DoubleListField(initial: MutableList<Double>): ListField<Double>(DoubleListCodec, initial)
+fun Paket.double(initial: Double = .0) = field(DoubleCodec, initial)
+fun Paket.listOfDouble(initial: MutableList<Double> = mutableListOf()) = field(DoubleListCodec, initial)
+fun Paket.nullableDouble(initial: Double? = null) = field(NullableDoubleCodec, initial)
 
-fun Paket.double(initial: Double = .0) = field(DoubleField(initial))
-fun Paket.listOfDouble(initial: MutableList<Double> = mutableListOf()) = field(DoubleListField(initial))
 @JvmName("listOfDoubleRO")
 fun Paket.listOfDouble(initial: List<Double>) = listOfDouble(initial.toMutableList())

@@ -1,5 +1,4 @@
-MC:Tools Chat
-===========================================================
+# Module tools-chat
 
 There are some DSL and algorithms for chat object. This object represents a chat
 message, also Minecraft server sends this object in description field of the

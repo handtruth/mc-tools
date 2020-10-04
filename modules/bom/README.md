@@ -1,5 +1,4 @@
-MC:Tools BOM
-==================================================
+# Module tools-bom
 
 Bill of Materials project. This is not a library. You can use it to simplify
 dependency resolution in your projects. Bill of Materials module contains a big

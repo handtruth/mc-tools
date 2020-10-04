@@ -28,10 +28,11 @@ class BinaryFormatTest {
                 "shortTest" short 32767
                 "longTest"(9223372036854775807L)
                 "byteTest" byte 127
-                ("byteArrayTest (the first 1000 values of (n*n*255+n*7)%100, " +
-                        "starting with n=0 (0, 62, 34, 16, 8, ...))")(ByteArray(1000) {
-                        n -> ((n*n*255+n*7)%100).toByte()
-                })
+                "byteArrayTest (the first 1000 values of (n*n*255+n*7)%100, starting with n=0 (0, 62, 34, 16, 8, ...))"(
+                    ByteArray(1000) { n ->
+                        ((n * n * 255 + n * 7) % 100).toByte()
+                    }
+                )
                 "listTest (long)".listOf(11L, 12L, 13L, 14L, 15L)
                 "floatTest"(0.49823147f)
                 "doubleTest"(0.4931287132182315)
@@ -71,7 +72,7 @@ class BinaryFormatTest {
     fun deserializeBigNBT() {
         val expected = bigNBTObject
         val tag = javaNBT.read(open("bigtest.nbt"))
-        val actual = javaNBT.fromNBT(BigNBTObject.serializer(), tag)
+        val actual = javaNBT.decodeFromNBT(BigNBTObject.serializer(), tag)
         assertEquals(expected, actual)
         println(actual)
     }
@@ -79,7 +80,10 @@ class BinaryFormatTest {
     @Test
     fun russian() {
         val expected = NamedProperty("Русский", 0.5f)
-        val actual = javaNBT.load(NamedProperty.serializer(), javaNBT.dump(NamedProperty.serializer(), expected))
+        val actual = javaNBT.decodeFromByteArray(
+            NamedProperty.serializer(),
+            javaNBT.encodeToByteArray(NamedProperty.serializer(), expected)
+        )
         assertEquals(expected, actual)
         println(actual)
     }
@@ -89,7 +93,7 @@ class BinaryFormatTest {
         val input = open("easy.nbt")
         val root = buildCompoundTag {
             "hello world" {
-                "name" ("Bananrama")
+                "name"("Bananrama")
             }
         }
         val output = ByteArrayOutput()

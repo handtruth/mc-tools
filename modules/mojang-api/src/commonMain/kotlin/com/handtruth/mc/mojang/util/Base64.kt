@@ -5,13 +5,14 @@ import kotlinx.io.buffer.Buffer
 import kotlinx.io.text.readUtf8String
 import kotlinx.io.use
 
-private class Base64DecoderInput(val value: String): Input() {
+private class Base64DecoderInput(val value: String) : Input() {
     var index = 0
 
     fun read(): Int {
         val i = index++
-        if (i >= value.length)
+        if (i >= value.length) {
             return -1
+        }
         val a = tr(value[i])
         return when (i and 3) {
             0 -> {
@@ -20,8 +21,9 @@ private class Base64DecoderInput(val value: String): Input() {
             }
             1 -> {
                 val b = tr(value[index])
-                if (b == -1)
+                if (b == -1) {
                     index += 2
+                }
                 (((a shl 4) or (b ushr 2)) and 0b11111111)
             }
             2 -> {
@@ -47,8 +49,9 @@ private class Base64DecoderInput(val value: String): Input() {
     override fun fill(buffer: Buffer, startIndex: Int, endIndex: Int): Int {
         for (i in startIndex until endIndex) {
             val byte = read()
-            if (byte == -1)
+            if (byte == -1) {
                 return i - startIndex
+            }
             buffer.storeByteAt(i, byte.toByte())
         }
         return endIndex - startIndex

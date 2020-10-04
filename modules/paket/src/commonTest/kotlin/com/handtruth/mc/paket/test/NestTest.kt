@@ -70,7 +70,6 @@ class NestTest {
             launch {
                 ts.send(FirstPaket)
             }
-
         }
         coroutineScope {
             launch {
@@ -98,5 +97,4 @@ class NestTest {
             }
         }
     }
-
 }

@@ -7,10 +7,6 @@ import com.handtruth.mc.util.*
 import kotlinx.io.*
 import kotlinx.io.text.readUtf8String
 import kotlinx.io.text.writeUtf8String
-import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
-import kotlinx.serialization.stringify
 import kotlin.contracts.contract
 import kotlin.reflect.KClass
 
@@ -25,8 +21,8 @@ internal fun reverse(value: Int): Int {
 
 internal fun reverse(value: Long): Long {
     return (value shl 56) or (value ushr 56) or (value shl 48 and 0xFF0000_00000000L) or
-            (value ushr 48 and 0xFF00) or (value shl 24 and 0xFF00_00000000L) or (value ushr 24 and 0xFF0000) or
-            (value shl 8 and 0xFF_00000000L) or (value ushr 8 and 0xFF000000)
+        (value ushr 48 and 0xFF00) or (value shl 24 and 0xFF00_00000000L) or (value ushr 24 and 0xFF0000) or
+        (value shl 8 and 0xFF_00000000L) or (value ushr 8 and 0xFF000000)
 }
 
 internal fun reverse(value: Float): Float {
@@ -183,10 +179,11 @@ internal fun writeString(output: Output, conf: NBTBinaryConfig, value: String) {
         writeUtf8String(value)
     }
     val size = bytes.size()
-    if (conf.format == NBTBinaryConfig.Formats.Flat)
+    if (conf.format == NBTBinaryConfig.Formats.Flat) {
         writeInt16(output, conf, size.toShort())
-    else
+    } else {
         writeSize(output, conf, size)
+    }
     bytes.input().copyTo(output)
 }
 
@@ -202,9 +199,14 @@ internal fun Appendable.next(level: Int, pretty: Boolean) {
 }
 
 internal inline fun <reified T> smartJoin(
-    iter: Iterator<T>, builder: Appendable,
-    prefix: String = "", suffix: String = "", postfix: String = "", delimiter: String = ",",
-    level: Int = 0, pretty: Boolean = false,
+    iter: Iterator<T>,
+    builder: Appendable,
+    prefix: String = "",
+    suffix: String = "",
+    postfix: String = "",
+    delimiter: String = ",",
+    level: Int = 0,
+    pretty: Boolean = false,
     chain: Appendable.(T) -> Unit = { append(it.toString()) }
 ) {
     if (iter.hasNext()) {
@@ -220,8 +222,9 @@ internal inline fun <reified T> smartJoin(
         }
         builder.next(level, pretty)
         builder.append(postfix)
-    } else
+    } else {
         builder.append(prefix).append(postfix)
+    }
 }
 
 internal inline fun <reified T> joinArray(
@@ -273,12 +276,10 @@ internal fun deduceTag(reader: Reader): TagID {
                 }
                 return if (id != TagID.List) {
                     ++credit
-                    if (reader.read() != ';')
-                        TagID.List
-                    else
-                        id
-                } else
+                    if (reader.read() != ';') TagID.List else id
+                } else {
                     TagID.List
+                }
             }
             in '0'..'9', '-', '+', '.' -> {
                 while (true) {
@@ -302,7 +303,7 @@ internal fun deduceTag(reader: Reader): TagID {
                                         }
                                     }
                                 }
-                                else -> TagID.Int
+                                else -> error("unknown token")
                             }
                         }
                         '.' -> {
@@ -362,12 +363,15 @@ internal inline fun <reified T> readAnyInt(reader: Reader, suffix: Char?, parse:
 }
 
 internal inline fun <reified T> readArray(
-    reader: Reader, type: Char,
-    suffix: Char? = null, parse: (String) -> T
+    reader: Reader,
+    type: Char,
+    suffix: Char? = null,
+    parse: (String) -> T
 ): List<T> {
     reader.skipSpace()
-    if (reader.take(3) != "[$type;")
+    if (reader.take(3) != "[$type;") {
         error("not an array of '$type'")
+    }
     val result = mutableListOf<T>()
     cycle@ while (true) {
         reader.skipSpace()
@@ -387,7 +391,56 @@ internal inline fun <reified T> readArray(
     }
 }
 
-internal val json = Json(JsonConfiguration.Stable)
+internal fun readJsonString(raw: String): String {
+    var i = 1
+    var j = 0
+    return buildString {
+        while (true) {
+            if (j + 1 == raw.length) {
+                append(raw.substring(i, j))
+                break
+            }
+            if (raw[j] == '\\') {
+                val k = j + 1
+                if (k + 1 == raw.length) {
+                    append(raw.substring(i, k))
+                    break
+                }
+                append(raw.substring(i, j))
+                i = k + 1
+                when (val c = raw[k]) {
+                    '"', '\\', '/' -> append(c)
+                    'b' -> append('\b')
+                    'f' -> append(12.toChar())
+                    'n' -> append('\n')
+                    'r' -> append('\r')
+                    't' -> append('\t')
+                    'u' -> {
+                        var l = k + 1
+                        for (m in 0..3) {
+                            if (l + 1 == raw.length) {
+                                break
+                            }
+                            val a = raw[l]
+                            if (a !in '0'..'9' && a !in 'a'..'f' && a !in 'A'..'F') {
+                                break
+                            }
+                            l++
+                        }
+                        append(raw.substring(k + 1, l).toInt(16).toChar())
+                        i = l
+                    }
+                    else -> {
+                        append('\\')
+                        append(c)
+                    }
+                }
+                j = i - 1
+            }
+            j++
+        }
+    }
+}
 
 internal fun readString(reader: Reader): String {
     reader.skipSpace()
@@ -403,7 +456,7 @@ internal fun readString(reader: Reader): String {
                     }
                     '"' -> {
                         val raw = reader.previous(credit)
-                        return json.parse(String.serializer(), raw)
+                        return readJsonString(raw)
                     }
                 }
             }
@@ -460,12 +513,41 @@ internal inline fun <reified T> readAnyFloating(reader: Reader, suffix: Char, pa
     return parse(readAnyFloatingString(reader, suffix))
 }
 
+internal fun writeJsonString(appendable: Appendable, string: String) {
+    appendable.append('"')
+    var i = 0
+    var j = 0
+    fun escape(char: Char) {
+        appendable.append(string.substring(i, j))
+        appendable.append('\\')
+        appendable.append(char)
+        i = j + 1
+    }
+    while (true) {
+        if (j == string.length) {
+            appendable.append(string.substring(i, j))
+            break
+        }
+        when (string[j]) {
+            12.toChar() -> escape('f')
+            '\\' -> escape('\\')
+            '\b' -> escape('b')
+            '"' -> escape('"')
+            '\n' -> escape('n')
+            '\r' -> escape('r')
+        }
+        j++
+    }
+    appendable.append('"')
+}
+
 internal fun writeString(appendable: Appendable, quote: Boolean, value: String) {
     val shouldQuote = quote || value.isEmpty() ||
-            value[0].let { it !in 'a'..'z' && it !in 'A'..'Z' && it != '_' } ||
-            value.any { it !in 'a'..'z' && it !in 'A'..'Z' && it !in "-+_." && it !in '0'..'9' }
-    if (shouldQuote)
-        appendable.append(json.stringify(String.serializer(), value))
-    else
+        value[0].let { it !in 'a'..'z' && it !in 'A'..'Z' && it != '_' } ||
+        value.any { it !in 'a'..'z' && it !in 'A'..'Z' && it !in "-+_." && it !in '0'..'9' }
+    if (shouldQuote) {
+        writeJsonString(appendable, value)
+    } else {
         appendable.append(value)
+    }
 }

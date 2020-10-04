@@ -42,7 +42,7 @@ annotation class WithCodec(val codec: KClass<out Codec<*>>)
 @RequiresOptIn(
     level = RequiresOptIn.Level.ERROR,
     message = "IntelliJ IDEA marks everything with red in tests with internal keyword, that's why this annotation " +
-            "exists. You shouldn't use this API."
+        "exists. You shouldn't use this API."
 )
 @MustBeDocumented
 @Target(

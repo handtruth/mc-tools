@@ -11,12 +11,12 @@ object VarIntCodec : Codec<Int> {
     override fun write(output: Output, value: Int) = writeVarInt(output, value)
 }
 
-object VarIntListCodec : ListCodec<Int>(VarIntCodec)
+val VarIntListCodec = ListCodec(VarIntCodec)
+val NullableVarIntCodec = NullableCodec(VarIntCodec)
 
-class VarIntField(initial: Int) : Field<Int>(VarIntCodec, initial)
-class VarIntListField(initial: MutableList<Int>) : ListField<Int>(VarIntListCodec, initial)
+fun Paket.varInt(initial: Int = 0) = field(VarIntCodec, initial)
+fun Paket.nullableVarInt(initial: Int? = null) = field(NullableVarIntCodec, initial)
+fun Paket.listOfVarInt(initial: MutableList<Int> = mutableListOf()) = field(VarIntListCodec, initial)
 
-fun Paket.varInt(initial: Int = 0) = field(VarIntField(initial))
-fun Paket.listOfVarInt(initial: MutableList<Int> = mutableListOf()) = field(VarIntListField(initial))
 @JvmName("listOfVarIntRO")
 fun Paket.listOfVarInt(initial: List<Int>) = listOfVarInt(initial.toMutableList())

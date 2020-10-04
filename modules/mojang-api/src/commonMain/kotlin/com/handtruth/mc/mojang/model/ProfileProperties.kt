@@ -16,13 +16,13 @@ interface BaseProperty {
     fun encode(): String = toString()
 }
 
-interface PropertyFactory<out P: BaseProperty> {
+interface PropertyFactory<out P : BaseProperty> {
     fun create(value: String): P
 }
 
-interface JsonPropertyFactory<P: BaseProperty> : PropertyFactory<P> {
+interface JsonPropertyFactory<P : BaseProperty> : PropertyFactory<P> {
     fun serializer(): DeserializationStrategy<P>
-    override fun create(value: String): P = json.parse(serializer(), decodeBase64AsString(value))
+    override fun create(value: String): P = json.decodeFromString(serializer(), decodeBase64AsString(value))
 }
 
 class ProfileContext private constructor(val factories: Map<String, PropertyFactory<BaseProperty>>) {

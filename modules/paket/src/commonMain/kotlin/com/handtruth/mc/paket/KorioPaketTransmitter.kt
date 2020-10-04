@@ -34,8 +34,9 @@ private class KorioPaketReceiver(private val stream: AsyncInputStream) : Abstrac
             for (i in 0..4) {
                 val byte = stream.read()
                 pending[i] = byte.toByte()
-                if (byte and 0x80 == 0)
+                if (byte and 0x80 == 0) {
                     break
+                }
             }
             val inputSize = ByteArrayInput(pending)
             size = VarIntCodec.read(inputSize, null)
@@ -83,8 +84,9 @@ private class KorioPaketReceiver(private val stream: AsyncInputStream) : Abstrac
     }
 
     override suspend fun receive(paket: Paket) {
-        if (!isCaught)
+        if (!isCaught) {
             catchOrdinal()
+        }
         paket.read(buffer!!.input)
         drop()
     }

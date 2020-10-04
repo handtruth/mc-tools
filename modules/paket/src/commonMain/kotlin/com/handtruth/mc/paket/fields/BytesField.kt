@@ -15,19 +15,19 @@ object BytesCodec : Codec<Bytes> {
 }
 
 @ExperimentalPaketApi
-object BytesListCodec : ListCodec<Bytes>(BytesCodec)
+val BytesListCodec = ListCodec(BytesCodec)
 
 @ExperimentalPaketApi
-class BytesField(initial: Bytes) : Field<Bytes>(BytesCodec, initial)
+val NullableBytesCodec = NullableCodec(BytesCodec)
 
 @ExperimentalPaketApi
-class BytesListField(initial: MutableList<Bytes>) : ListField<Bytes>(BytesListCodec, initial)
+fun Paket.bytes(initial: Bytes = buildBytes { }) = field(BytesCodec, initial)
 
 @ExperimentalPaketApi
-fun Paket.bytes(initial: Bytes = buildBytes { }) = field(BytesField(initial))
+fun Paket.listOfBytes(initial: MutableList<Bytes>) = field(BytesListCodec, initial)
 
 @ExperimentalPaketApi
-fun Paket.listOfBytes(initial: MutableList<Bytes>) = field(BytesListField(initial))
+fun Paket.nullableBytes(initial: Bytes? = null) = field(NullableBytesCodec, initial)
 
 @ExperimentalPaketApi
 @JvmName("listOfBytesRO")

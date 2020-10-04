@@ -3,7 +3,6 @@ package com.handtruth.mc.nbt
 import com.handtruth.mc.nbt.tags.Tag
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.modules.SerialModule
 import kotlinx.serialization.modules.plus
 
 operator fun NBTBinaryCodec.plus(serial: NBTSerialFormat): NBTBinaryFormat =
@@ -28,22 +27,22 @@ operator fun NBTSerialFormat.plus(codec: NBTCodec): NBT = codec + this
 
 operator fun NBTBinaryFormat.plus(format: NBTStringFormat): NBT =
     object : NBT, NBTBinaryFormat by this, NBTStringFormat by format {
-        override val context = this@plus.context + format.context
+        override val serializersModule = this@plus.serializersModule + format.serializersModule
         override val serialConfig = format.serialConfig
-        override fun <T> fromNBT(deserializationStrategy: DeserializationStrategy<T>, tag: Tag<*>) =
-            format.fromNBT(deserializationStrategy, tag)
+        override fun <T> decodeFromNBT(deserializationStrategy: DeserializationStrategy<T>, tag: Tag<*>) =
+            format.decodeFromNBT(deserializationStrategy, tag)
 
-        override fun <T> toNBT(serializationStrategy: SerializationStrategy<T>, value: T) =
-            format.toNBT(serializationStrategy, value)
+        override fun <T> encodeToNBT(serializationStrategy: SerializationStrategy<T>, value: T) =
+            format.encodeToNBT(serializationStrategy, value)
     }
 
 operator fun NBTStringFormat.plus(format: NBTBinaryFormat): NBT =
     object : NBT, NBTStringFormat by this, NBTBinaryFormat by format {
-        override val context = this@plus.context + format.context
+        override val serializersModule = this@plus.serializersModule + format.serializersModule
         override val serialConfig = format.serialConfig
-        override fun <T> fromNBT(deserializationStrategy: DeserializationStrategy<T>, tag: Tag<*>) =
-            format.fromNBT(deserializationStrategy, tag)
+        override fun <T> decodeFromNBT(deserializationStrategy: DeserializationStrategy<T>, tag: Tag<*>) =
+            format.decodeFromNBT(deserializationStrategy, tag)
 
-        override fun <T> toNBT(serializationStrategy: SerializationStrategy<T>, value: T) =
-            format.toNBT(serializationStrategy, value)
+        override fun <T> encodeToNBT(serializationStrategy: SerializationStrategy<T>, value: T) =
+            format.encodeToNBT(serializationStrategy, value)
     }
