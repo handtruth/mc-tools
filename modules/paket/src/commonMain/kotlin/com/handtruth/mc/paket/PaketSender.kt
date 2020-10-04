@@ -3,9 +3,7 @@
 package com.handtruth.mc.paket
 
 import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.channels.consume
 import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.channels.toCollection
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.sync.Mutex

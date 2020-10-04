@@ -81,37 +81,38 @@ class ChatMessageTest {
     @Test
     fun parseSome() {
         val expected = buildChat {
-            + " "
-            + "Ассоци"
+            +" "
+            +"Ассоци"
             italic {
-                + "иции "
+                +"иции "
                 bold {
-                    + "с "
+                    +"с "
                     color(ChatMessage.Color.Gold) {
                         underlined {
-                            + "лет"
+                            +"лет"
                         }
-                        + "а"
+                        +"а"
                         color(ChatMessage.Color.DarkRed) {
-                            + "ю"
+                            +"ю"
                         }
                         italic(false) {
-                            + "щ"
+                            +"щ"
                         }
-                        + "им"
+                        +"им"
                     }
                 }
             }
-            + " "
+            +" "
             strikethrough {
-                + "квадра"
+                +"квадра"
             }
-            + "коп"
+            +"коп"
             obfuscated {
-                + "тером"
+                +"тером"
             }
         }
-        val actual = ChatMessage.parse("""
+        val actual = ChatMessage.parse(
+            """
             [
                 " ",
                 {
@@ -172,7 +173,8 @@ class ChatMessageTest {
                     "obfuscated": true
                 }
             ]
-        """.trimIndent())
+            """.trimIndent()
+        )
         assertEquals(expected, actual)
     }
 }

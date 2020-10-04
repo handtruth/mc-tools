@@ -11,12 +11,12 @@ object FloatCodec : Codec<Float> {
     override fun write(output: Output, value: Float) = writeFloat(output, value)
 }
 
-object FloatListCodec : ListCodec<Float>(FloatCodec)
+val FloatListCodec = ListCodec(FloatCodec)
+val NullableFloatCodec = NullableCodec(FloatCodec)
 
-class FloatField(initial: Float): Field<Float>(FloatCodec, initial)
-class FloatListField(initial: MutableList<Float>): ListField<Float>(FloatListCodec, initial)
+fun Paket.float(initial: Float = 0f) = field(FloatCodec, initial)
+fun Paket.listOfFloat(initial: MutableList<Float> = mutableListOf()) = field(FloatListCodec, initial)
+fun Paket.nullableFloat(initial: Float? = null) = field(NullableFloatCodec, initial)
 
-fun Paket.float(initial: Float = 0f) = field(FloatField(initial))
-fun Paket.listOfFloat(initial: MutableList<Float> = mutableListOf()) = field(FloatListField(initial))
 @JvmName("listOfFloatRO")
 fun Paket.listOfFloat(initial: List<Float>) = listOfFloat(initial.toMutableList())

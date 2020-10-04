@@ -15,7 +15,7 @@ interface Reader : Closeable {
 
 @Suppress("ControlFlowWithEmptyBody")
 internal fun Reader.skipSpace() {
-    while (read() in "\n\t\r \b");
+    while (read() in "\n\t\r \b") {}
     back()
 }
 
@@ -26,8 +26,9 @@ internal class StringReader(val source: String, var offset: Int = 0, val length:
     }
 
     override fun read(): Char {
-        if (offset >= length)
+        if (offset >= length) {
             throw EOFException("end of string")
+        }
         return source[offset++]
     }
 

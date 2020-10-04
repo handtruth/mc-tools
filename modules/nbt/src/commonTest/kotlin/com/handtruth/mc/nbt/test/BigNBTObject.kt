@@ -78,7 +78,7 @@ val bigNBTObject = BigNBTObject(
         shortTest = 32767,
         longTest = 9223372036854775807L,
         byteTest = 127,
-        byteArrayTest = ByteArray(1000) { n -> ((n*n*255+n*7)%100).toByte() },
+        byteArrayTest = ByteArray(1000) { n -> ((n * n * 255 + n * 7) % 100).toByte() },
         listTest = listOf(11L, 12L, 13L, 14L, 15L),
         floatTest = 0.49823147f,
         doubleTest = 0.4931287132182315,
@@ -104,4 +104,5 @@ val bigNBTObject = BigNBTObject(
             )
         ),
         stringTest = "HELLO WORLD THIS IS A TEST STRING ÅÄÖ!"
-    ))
+    )
+)

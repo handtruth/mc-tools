@@ -3,11 +3,9 @@ package com.handtruth.mc.util.test
 import com.handtruth.mc.util.*
 import kotlinx.io.buildBytes
 import kotlinx.io.readByte
-import kotlinx.io.readUByte
 import kotlinx.io.writeUByte
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
 
 class ZIntTest {
@@ -165,5 +163,4 @@ class ZIntTest {
             assertEquals("UZInt64 is too big", message)
         }
     }
-
 }

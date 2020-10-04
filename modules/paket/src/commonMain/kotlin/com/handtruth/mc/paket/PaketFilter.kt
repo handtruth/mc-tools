@@ -34,8 +34,9 @@ internal abstract class PaketFilter(private val parent: PaketReceiver) : PaketRe
     }
 
     override suspend fun receive(paket: Paket) {
-        if (!isCaught)
+        if (!isCaught) {
             catchOrdinal()
+        }
         parent.receive(paket)
     }
 }

@@ -28,8 +28,9 @@ internal abstract class PaketRouterBase(private val receiver: PaketReceiver) : C
             receiver.isCaught && current.value!!.let { !it.broken && return it }
             try {
                 while (true) {
-                    if (!receiver.isCaught)
+                    if (!receiver.isCaught) {
                         receiver.catchOrdinal()
+                    }
                     val route = select(receiver)
                     if (route != null) {
                         check(!route.broken)
@@ -97,8 +98,9 @@ internal abstract class PaketRouterBase(private val receiver: PaketReceiver) : C
         }
 
         override suspend fun receive(paket: Paket) {
-            if (!isCaught)
+            if (!isCaught) {
                 catchOrdinal()
+            }
             mutex.withLock {
                 receiver.receive(paket)
                 clear()

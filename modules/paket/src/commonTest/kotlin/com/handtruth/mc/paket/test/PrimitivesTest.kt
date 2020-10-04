@@ -48,7 +48,7 @@ class PrimitivesTest {
         override fun flush(source: Buffer, startIndex: Int, endIndex: Int) = Unit
     }
 
-    //@Test
+    // @Test
     fun testStringWriterSpeed() {
         val string = "Русская строка со словом ЖОПА"
         val t1 = measureTime {
@@ -73,7 +73,6 @@ class PrimitivesTest {
         val input = ByteArrayInput(bytes)
         assertEquals(-1L, readLong(input))
     }
-
 
     @Test
     fun readWriteLong() {

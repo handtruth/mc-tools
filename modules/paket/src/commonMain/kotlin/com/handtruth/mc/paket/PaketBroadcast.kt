@@ -2,7 +2,6 @@ package com.handtruth.mc.paket
 
 import com.handtruth.mc.paket.util.Knot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.sync.withLock
 import kotlinx.io.Closeable
 
 /**
@@ -37,7 +36,8 @@ private class PaketBroadcastSenderImpl private constructor(
     constructor(sender: PaketSender, receiver: PaketReceiver) : this(sender.asSynchronized(), receiver.broadcast())
 
     override fun openSubscription() = PaketTransmitter(
-         receiver.openSubscription(), notCloseableSender
+        receiver.openSubscription(),
+        notCloseableSender
     )
 
     override fun close() {
@@ -57,13 +57,15 @@ private class PaketBroadcastImpl(private val receiver: PaketReceiver) : Knot(), 
     }
 
     override suspend fun enter() {
-        if (!receiver.isCaught)
+        if (!receiver.isCaught) {
             receiver.catchOrdinal()
+        }
     }
 
     override suspend fun leave() {
-        if (receiver.isCaught)
+        if (receiver.isCaught) {
             receiver.drop()
+        }
     }
 
     inner class NodeReceiver : AbstractPaketReceiver() {
@@ -109,5 +111,4 @@ private class PaketBroadcastImpl(private val receiver: PaketReceiver) : Knot(), 
             fiber.close()
         }
     }
-
 }

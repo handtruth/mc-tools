@@ -16,8 +16,9 @@ interface PaketReceiver : PaketPeeking, Breakable {
     suspend fun catchOrdinal(): Int
     suspend fun drop()
     suspend fun receive(paket: Paket) {
-        if (!isCaught)
+        if (!isCaught) {
             catchOrdinal()
+        }
         peek(paket)
         drop()
     }
@@ -31,8 +32,9 @@ suspend inline fun <R> PaketReceiver.receive(block: PaketPeeking.() -> R): R {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
-    if (!isCaught)
+    if (!isCaught) {
         catchOrdinal()
+    }
     try {
         return block()
     } finally {

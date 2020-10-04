@@ -34,8 +34,9 @@ private class NestPaketTransmitterImpl(
     override val fullSize get() = size + headerSize
 
     override suspend fun catchOrdinal(): Int {
-        if (!ts.isCaught)
+        if (!ts.isCaught) {
             ts.catchOrdinal()
+        }
         isCaught = true
         ts.peek(head)
         headerSize = head.size - idField.size
@@ -56,8 +57,9 @@ private class NestPaketTransmitterImpl(
     }
 
     override suspend fun receive(paket: Paket) {
-        if (!isCaught)
+        if (!isCaught) {
             catchOrdinal()
+        }
         val nest = source.produce(paket)
         ts.receive(nest)
         clear()

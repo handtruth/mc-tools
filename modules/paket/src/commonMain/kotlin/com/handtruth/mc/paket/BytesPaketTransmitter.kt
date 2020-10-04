@@ -56,14 +56,16 @@ private class BytesPaketReceiver(private val input: ReceiveChannel<Bytes>) : Abs
     }
 
     override suspend fun drop() = breakableAction {
-        if (!isCaught)
+        if (!isCaught) {
             catchOrdinal()
+        }
         clear()
     }
 
     override suspend fun receive(paket: Paket) = breakableAction {
-        if (!isCaught)
+        if (!isCaught) {
             catchOrdinal()
+        }
         pending!!.input.use { paket.read(it) }
         clear()
     }
@@ -77,7 +79,6 @@ private class BytesPaketReceiver(private val input: ReceiveChannel<Bytes>) : Abs
         input.cancel()
         super.close()
     }
-
 }
 
 @ExperimentalPaketApi

@@ -1,12 +1,15 @@
 package com.handtruth.mc.nbt.util
 
 import com.handtruth.mc.nbt.tags.*
-import kotlinx.serialization.CompositeEncoder
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.modules.SerialModule
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.CompositeEncoder
+import kotlinx.serialization.modules.SerializersModule
 
-internal abstract class NBTCompositeEncoder(final override val context: SerialModule) : CompositeEncoder {
+internal abstract class NBTCompositeEncoder(
+    final override val serializersModule: SerializersModule
+) : CompositeEncoder {
     protected abstract fun <T : Any> placeTag(descriptor: SerialDescriptor, index: Int, tag: Tag<T>)
 
     override fun encodeBooleanElement(descriptor: SerialDescriptor, index: Int, value: Boolean) {
@@ -60,8 +63,9 @@ internal abstract class NBTCompositeEncoder(final override val context: SerialMo
         serializer: SerializationStrategy<T>,
         value: T?
     ) {
-        if (value != null)
+        if (value != null) {
             encodeSerializableElement(descriptor, index, serializer, value)
+        }
     }
 
     override fun <T> encodeSerializableElement(
@@ -71,7 +75,6 @@ internal abstract class NBTCompositeEncoder(final override val context: SerialMo
         value: T
     ) {
         when (value) {
-            is Unit -> encodeUnitElement(descriptor, index)
             is Boolean -> encodeBooleanElement(descriptor, index, value)
             is Byte -> encodeByteElement(descriptor, index, value)
             is Short -> encodeShortElement(descriptor, index, value)
@@ -85,7 +88,7 @@ internal abstract class NBTCompositeEncoder(final override val context: SerialMo
             is IntArray -> encodeIntArrayElement(descriptor, index, value)
             is LongArray -> encodeLongArrayElement(descriptor, index, value)
             else -> {
-                val encoder = NBTEncoder(context)
+                val encoder = NBTEncoder(serializersModule)
                 serializer.serialize(encoder, value)
                 placeTag(descriptor, index, encoder.tag)
             }
@@ -99,6 +102,4 @@ internal abstract class NBTCompositeEncoder(final override val context: SerialMo
     override fun encodeStringElement(descriptor: SerialDescriptor, index: Int, value: String) {
         placeTag(descriptor, index, StringTag(value))
     }
-
-    override fun encodeUnitElement(descriptor: SerialDescriptor, index: Int) {}
 }

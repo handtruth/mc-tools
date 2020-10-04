@@ -22,8 +22,9 @@ abstract class AbstractBreakable : Breakable {
     internal var cause: Throwable? = null
 
     protected inline fun <R> breakableAction(lambda: () -> R): R {
-        if (broken)
+        if (broken) {
             throw BrokenObjectException("object broken, consider recreate", cause)
+        }
         try {
             return lambda()
         } catch (e: CancellationException) {

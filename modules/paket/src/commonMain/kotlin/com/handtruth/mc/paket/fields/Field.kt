@@ -1,10 +1,11 @@
-package com.handtruth.mc.paket
+package com.handtruth.mc.paket.fields
 
+import com.handtruth.mc.paket.Codec
 import kotlinx.io.Input
 import kotlinx.io.Output
 import kotlin.reflect.KProperty
 
-open class Field<T>(private val codec: Codec<T>, initial: T) {
+class Field<T>(val codec: Codec<T>, initial: T) {
     val size: Int get() = codec.measure(value)
     fun read(input: Input) {
         value = codec.read(input, value)

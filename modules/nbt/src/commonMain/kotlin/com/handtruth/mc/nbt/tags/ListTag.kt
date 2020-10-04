@@ -85,8 +85,9 @@ class ListTag<T : Any>(
 
         override val id get() = TagID.List
         override fun wrap(value: List<Tag<Any>>): Tag<List<Tag<Any>>> {
-            if (value.isEmpty())
+            if (value.isEmpty()) {
                 return ListTag(mutableListOf(), EndTag)
+            }
             val resolver = value.first().id.resolver
             @Suppress("UNCHECKED_CAST")
             return ListTag(value.toMutableList(), resolver as TagResolver<Any>)
@@ -116,8 +117,9 @@ class ListTag<T : Any>(
         override fun get(index: Int) = value[index].value
         override fun indexOf(element: T): Int {
             for ((i, each) in value.withIndex())
-                if (element == each)
+                if (element == each) {
                     return i
+                }
             return -1
         }
 
@@ -125,8 +127,9 @@ class ListTag<T : Any>(
         override fun iterator() = listIterator()
         override fun lastIndexOf(element: T): Int {
             for (i in value.indices.reversed()) {
-                if (value[i].value == element)
+                if (value[i].value == element) {
                     return i
+                }
             }
             return -1
         }

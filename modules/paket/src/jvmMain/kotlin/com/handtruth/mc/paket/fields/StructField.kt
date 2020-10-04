@@ -18,12 +18,13 @@ import kotlin.reflect.jvm.jvmErasure
 annotation class PaketConstructor
 
 @ExperimentalPaketApi
-class StructCodec<T: Any>(`class`: KClass<T>) : Codec<T> {
+class StructCodec<T : Any>(`class`: KClass<T>) : Codec<T> {
     private val constructor = `class`.constructors
         .find { it.findAnnotation<PaketConstructor>() != null }
         ?: `class`.primaryConstructor ?: throw IllegalProtocolStateException("Unable to find constructor for paket")
 
     private val fields: List<KProperty1<T, *>>
+
     init {
         val allProperties = `class`.memberProperties.associateBy { it.name }
         fields = constructor.parameters.asReversed().map {
@@ -39,23 +40,25 @@ class StructCodec<T: Any>(`class`: KClass<T>) : Codec<T> {
     companion object {
         fun getEncoder(property: KProperty<*>): Codec<*> {
             val fieldMeta = property.findAnnotation<WithCodec>()
-            if (fieldMeta != null)
+            if (fieldMeta != null) {
                 return fieldMeta.codec.objectInstance ?: fieldMeta.codec.primaryConstructor?.let {
                     when (it.parameters.size) {
                         0 -> it.call()
                         1 -> {
-                            if (it.parameters.first().type.jvmErasure == KClass::class)
+                            if (it.parameters.first().type.jvmErasure == KClass::class) {
                                 it.call(property.returnType.jvmErasure)
-                            else
+                            } else {
                                 throw IllegalProtocolStateException(
                                     "Only class parameter supported " +
-                                            "for encoder class ${property.name}"
+                                        "for encoder class ${property.name}"
                                 )
+                            }
                         }
                         else -> throw IllegalProtocolStateException("Too many parameters in encoder constructor")
                     }
                 }
-                ?: throw IllegalProtocolStateException("Unable to get specified encoder for property ${property.name}")
+                    ?: throw IllegalProtocolStateException("Unable to get specified encoder for property ${property.name}")
+            }
             return when (val type = property.returnType.jvmErasure) {
                 Int::class -> VarIntCodec
                 Boolean::class -> BoolCodec
@@ -64,29 +67,32 @@ class StructCodec<T: Any>(`class`: KClass<T>) : Codec<T> {
                 Long::class -> VarLongCodec
                 UShort::class -> UInt16Codec
                 Path::class -> PathCodec
-                MutableList::class, List::class -> when (val it =
-                    property.returnType.arguments.first().type!!.jvmErasure) {
-                    Int::class -> VarIntListCodec
-                    Boolean::class -> BoolListCodec
-                    Byte::class -> Int8ListCodec
-                    String::class -> StringListCodec
-                    Long::class -> VarLongCodec
-                    UShort::class -> UInt16ListCodec
-                    Path::class -> PathListCodec
-                    else -> StructListCodec(it)
-                }
+                MutableList::class, List::class ->
+                    when (
+                        val it =
+                            property.returnType.arguments.first().type!!.jvmErasure
+                    ) {
+                        Int::class -> VarIntListCodec
+                        Boolean::class -> BoolListCodec
+                        Byte::class -> Int8ListCodec
+                        String::class -> StringListCodec
+                        Long::class -> VarLongCodec
+                        UShort::class -> UInt16ListCodec
+                        Path::class -> PathListCodec
+                        else -> StructListCodec(it)
+                    }
                 else -> StructCodec(type)
             }
         }
     }
 
-    override fun measure(value: T) = encoders.asSequence().zip(fields.asSequence()).sumBy {
-            (encoder, field) -> encoder.measure(field.get(value)!!)
+    override fun measure(value: T) = encoders.asSequence().zip(fields.asSequence()).sumBy { (encoder, field) ->
+        encoder.measure(field.get(value)!!)
     }
 
     override fun read(input: Input, old: T?) = constructor.call(
         *Array(encoders.size) { encoders[it].read(input, null) }
-         .apply { reverse() }
+            .apply { reverse() }
     )
 
     override fun write(output: Output, value: T) = encoders.asSequence()
@@ -96,17 +102,29 @@ class StructCodec<T: Any>(`class`: KClass<T>) : Codec<T> {
 }
 
 @ExperimentalPaketApi
-class StructListCodec<T: Any>(`class`: KClass<T>) : ListCodec<T>(StructCodec(`class`))
+inline fun <reified T : Any> StructCodec() = StructCodec(T::class)
 
 @ExperimentalPaketApi
-class StructField<T: Any>(initial: T, `class`: KClass<T>) : Field<T>(StructCodec(`class`), initial)
-@ExperimentalPaketApi
-class StructListField<T: Any>(initial: MutableList<T>, `class`: KClass<T>) :
-    ListField<T>(StructListCodec(`class`), initial)
+fun <T : Any> StructListCodec(`class`: KClass<T>) = ListCodec(StructCodec(`class`))
 
 @ExperimentalPaketApi
-inline fun <reified T: Any> Paket.struct(initial: T) = field(StructField(initial, T::class))
+inline fun <reified T : Any> StructListCodec() = StructListCodec(T::class)
+
 @ExperimentalPaketApi
-inline fun <reified T: Any> Paket.listOfStruct(initial: MutableList<T>) = field(StructListField(initial, T::class))
-@ExperimentalPaketApi @JvmName("listOfStructRO")
-inline fun <reified T: Any> Paket.listOfStruct(initial: List<T>) = listOfStruct(initial.toMutableList())
+fun <T : Any> NullableStructCodec(`class`: KClass<T>) = NullableCodec(StructCodec(`class`))
+
+@ExperimentalPaketApi
+inline fun <reified T : Any> NullableStructCodec() = NullableStructCodec(T::class)
+
+@ExperimentalPaketApi
+inline fun <reified T : Any> Paket.struct(initial: T) = field(StructCodec(), initial)
+
+@ExperimentalPaketApi
+inline fun <reified T : Any> Paket.nullableStruct(initial: T? = null) = field(NullableStructCodec(), initial)
+
+@ExperimentalPaketApi
+inline fun <reified T : Any> Paket.listOfStruct(initial: MutableList<T>) = field(StructListCodec(), initial)
+
+@ExperimentalPaketApi
+@JvmName("listOfStructRO")
+inline fun <reified T : Any> Paket.listOfStruct(initial: List<T>) = listOfStruct(initial.toMutableList())

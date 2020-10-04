@@ -1,49 +1,36 @@
 package com.handtruth.mc.nbt.util
 
 import kotlinx.serialization.*
-import kotlinx.serialization.modules.SerialModule
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.CompositeDecoder
+import kotlinx.serialization.modules.SerializersModule
 
 internal abstract class NBTIndexedDecoder(
-    override val context: SerialModule,
-    override val updateMode: UpdateMode
+    override val serializersModule: SerializersModule
 ) : CompositeDecoder {
     final override fun endStructure(descriptor: SerialDescriptor) {}
 
     protected var index = 0
 
     final override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
-        if (index >= decodeCollectionSize(descriptor))
-            return CompositeDecoder.READ_DONE
+        if (index >= decodeCollectionSize(descriptor)) {
+            return CompositeDecoder.DECODE_DONE
+        }
         return index++
-    }
-
-    final override fun <T : Any> updateNullableSerializableElement(
-        descriptor: SerialDescriptor,
-        index: Int,
-        deserializer: DeserializationStrategy<T?>,
-        old: T?
-    ): T? {
-        return decodeNullableSerializableElement(descriptor, index, deserializer)
-    }
-
-    final override fun <T> updateSerializableElement(
-        descriptor: SerialDescriptor,
-        index: Int,
-        deserializer: DeserializationStrategy<T>,
-        old: T
-    ): T {
-        return decodeSerializableElement(descriptor, index, deserializer)
     }
 
     abstract fun <T> decodeNonPrimitiveElement(
         descriptor: SerialDescriptor,
         index: Int,
-        deserializer: DeserializationStrategy<T>): T
+        deserializer: DeserializationStrategy<T>
+    ): T
 
     final override fun <T> decodeSerializableElement(
         descriptor: SerialDescriptor,
         index: Int,
-        deserializer: DeserializationStrategy<T>
+        deserializer: DeserializationStrategy<T>,
+        previousValue: T?
     ): T {
         @Suppress("UNCHECKED_CAST")
         return when (deserializer.descriptor.kind) {

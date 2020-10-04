@@ -1,7 +1,7 @@
 package com.handtruth.mc.nbt
 
-import kotlinx.serialization.modules.EmptyModule
-import kotlinx.serialization.modules.SerialModule
+import kotlinx.serialization.modules.EmptySerializersModule
+import kotlinx.serialization.modules.SerializersModule
 
 interface NBT : NBTCodec, NBTBinaryFormat, NBTStringFormat
 
@@ -14,5 +14,5 @@ fun NBT(
     binary: NBTBinaryConfig = NBTBinaryConfig.Default,
     string: NBTStringConfig = NBTStringConfig.Default,
     serial: NBTSerialConfig = NBTSerialConfig.Default,
-    module: SerialModule = EmptyModule
+    module: SerializersModule = EmptySerializersModule
 ): NBT = NBT(NBTBinaryCodec(binary), NBTStringCodec(string), NBTSerialFormat(serial, module))

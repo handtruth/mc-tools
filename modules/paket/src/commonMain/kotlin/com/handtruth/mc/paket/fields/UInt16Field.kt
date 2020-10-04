@@ -13,16 +13,20 @@ object UInt16Codec : Codec<UShort> {
 }
 
 @ExperimentalPaketApi
-object UInt16ListCodec : ListCodec<UShort>(UInt16Codec)
+val UInt16ListCodec = ListCodec(UInt16Codec)
 
 @ExperimentalPaketApi
-class UInt16Field(initial: UShort): Field<UShort>(UInt16Codec, initial)
-@ExperimentalPaketApi
-class UInt16ListField(initial: MutableList<UShort>): ListField<UShort>(UInt16ListCodec, initial)
+val NullableUInt16Codec = NullableCodec(UInt16Codec)
 
 @ExperimentalPaketApi
-fun Paket.uint16(initial: UShort = 0u) = field(UInt16Field(initial))
+fun Paket.uint16(initial: UShort = 0u) = field(UInt16Codec, initial)
+
 @ExperimentalPaketApi
-fun Paket.listOfUint16(initial: MutableList<UShort> = mutableListOf()) = field(UInt16ListField(initial))
-@ExperimentalPaketApi @JvmName("listOfUint16RO")
+fun Paket.nullableUint16(initial: UShort? = null) = field(NullableUInt16Codec, initial)
+
+@ExperimentalPaketApi
+fun Paket.listOfUint16(initial: MutableList<UShort> = mutableListOf()) = field(UInt16ListCodec, initial)
+
+@ExperimentalPaketApi
+@JvmName("listOfUint16RO")
 fun Paket.listOfUint16(initial: List<UShort>) = listOfUint16(initial.toMutableList())

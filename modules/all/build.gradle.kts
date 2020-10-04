@@ -1,7 +1,9 @@
-val libModules: List<String> by rootProject.extra
+val kotlinProjects: List<String> by extra
 
 dependencies {
-    for (lib in libModules) {
-        commonMainApi(project(":tools-$lib"))
+    for (lib in kotlinProjects) {
+        if (lib != "all") {
+            commonMainApi(project(":tools-$lib"))
+        }
     }
 }

@@ -10,6 +10,7 @@ inline fun validate(value: Boolean, message: () -> Any?) {
         callsInPlace(message, InvocationKind.AT_MOST_ONCE)
         returns() implies value
     }
-    if (!value)
+    if (!value) {
         throw NBTException(message().toString())
+    }
 }

@@ -9,13 +9,16 @@ class SerializerTest {
     @Test
     fun serializeTest() {
         val player = Player(
-            33, "Ktlo", Inventory(
+            33,
+            "Ktlo",
+            Inventory(
                 listOf(
                     Item("minecraft:stone", 34, Short.MIN_VALUE, mapOf("lol" to "kek", "popka" to "zopka")),
                     Item("minecraft:air", 0, 33, emptyMap())
                 ),
                 byteArrayOf(56, -35, 0, 98)
-            ), floatArrayOf(33.5f, 89.654f, -85.0f)
+            ),
+            floatArrayOf(33.5f, 89.654f, -85.0f)
         )
         val expected = buildCompoundTag {
             "id"(33)
@@ -27,7 +30,7 @@ class SerializerTest {
                         "count" byte 34
                         "durability"(Short.MIN_VALUE)
                         "pages" {
-                            "lol"  string "kek"
+                            "lol" string "kek"
                             "popka" string "zopka"
                         }
                     }
@@ -61,8 +64,8 @@ class SerializerTest {
     @Test
     fun notchianBigObject() {
         val expected = bigNBTObject
-        val bytes = javaNBT.dump(BigNBTObject.serializer(), expected)
-        val actual = javaNBT.load(BigNBTObject.serializer(), bytes)
+        val bytes = javaNBT.encodeToByteArray(BigNBTObject.serializer(), expected)
+        val actual = javaNBT.decodeFromByteArray(BigNBTObject.serializer(), bytes)
         assertEquals(expected, actual)
     }
 
@@ -72,8 +75,8 @@ class SerializerTest {
     @Test
     fun nullableField() {
         val expected = MyObject("one", null)
-        val data = javaNBT.dump(MyObject.serializer(), expected)
-        val actual = javaNBT.load(MyObject.serializer(), data)
+        val data = javaNBT.encodeToByteArray(MyObject.serializer(), expected)
+        val actual = javaNBT.decodeFromByteArray(MyObject.serializer(), data)
         assertEquals(expected, actual)
     }
 }

@@ -36,7 +36,8 @@ private class PaketSenderRouterImpl(private val ts: PaketTransmitter) : PaketSen
     override fun close() = ts.close()
 
     private class TSRoute(
-        val receiver: PaketReceiver, val sender: PaketSender
+        val receiver: PaketReceiver,
+        val sender: PaketSender
     ) : PaketTransmitter, PaketReceiver by receiver, PaketSender by sender {
         override val broken get() = receiver.broken
         override fun close() {
@@ -68,8 +69,9 @@ private class PaketRouterImpl(receiver: PaketReceiver) : PaketRouter, PaketRoute
                 val route = routes.poll() ?: break
                 if (!route.broken) {
                     acc += route
-                    if (route.condition(peeking))
+                    if (route.condition(peeking)) {
                         return route
+                    }
                 }
             }
         } finally {
@@ -78,10 +80,7 @@ private class PaketRouterImpl(receiver: PaketReceiver) : PaketRouter, PaketRoute
             acc.clear()
         }
         val default = default
-        return if (default != null && !default.broken)
-            default
-        else
-            null
+        return if (default != null && !default.broken) default else null
     }
 
     override fun route(condition: (PaketPeeking) -> Boolean): PaketReceiver {

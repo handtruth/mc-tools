@@ -16,7 +16,7 @@ class Mojang(private val client: HttpClient) {
     constructor(engine: HttpClientEngine) : this(HttpClient(engine))
 
     private suspend inline fun <T> invokeGetJsonRequest(url: String, deserializer: DeserializationStrategy<T>): T {
-        return json.parse(deserializer, client.get(url))
+        return json.decodeFromString(deserializer, client.get(url))
     }
 
     private inline val profileUrl get() = "https://sessionserver.mojang.com/session/minecraft/profile/"
@@ -24,7 +24,7 @@ class Mojang(private val client: HttpClient) {
     suspend fun getProfile(uuid: UUID, context: ProfileContext = ProfileContext.default): Profile {
         val content = client.get<String>(profileUrl + uuid.toMojangUUID())
         ProfileContext.use(context)
-        return json.parse(Profile.serializer(), content)
+        return json.decodeFromString(Profile.serializer(), content)
     }
 
     private inline val uuidByNameUrl get() = "https://api.mojang.com/users/profiles/minecraft/"
@@ -32,5 +32,4 @@ class Mojang(private val client: HttpClient) {
     suspend fun getUUIDbyName(name: String): PlayerByNameResponse {
         return invokeGetJsonRequest(uuidByNameUrl + name, PlayerByNameResponse.serializer())
     }
-
 }

@@ -21,7 +21,8 @@ private class CombinedPaketTransmitter(private val receiver: PaketReceiver, priv
 }
 
 fun PaketTransmitter.asSynchronized() = PaketTransmitter(
-    this as PaketReceiver, (this as PaketSender).asSynchronized()
+    this as PaketReceiver,
+    (this as PaketSender).asSynchronized()
 )
 
 operator fun PaketReceiver.plus(sender: PaketSender) = PaketTransmitter(this, sender)

@@ -34,7 +34,7 @@ inline fun <P : Paket, R> PaketPool<P>.take(block: (P) -> R): R {
     }
 }
 
-abstract class AbstractPaketPool<P: Paket>(capacity: Int = 25) : PaketPool<P> {
+abstract class AbstractPaketPool<P : Paket>(capacity: Int = 25) : PaketPool<P> {
     @Suppress("UNCHECKED_CAST")
     private inner class RealPool(capacity: Int) : DefaultPool<P>(capacity) {
         override fun produceInstance() = create().also {
@@ -51,7 +51,7 @@ abstract class AbstractPaketPool<P: Paket>(capacity: Int = 25) : PaketPool<P> {
     }
 }
 
-abstract class SinglePaket<P: SinglePaket<P>> : Paket(), PaketSingleton<P> {
+abstract class SinglePaket<P : SinglePaket<P>> : Paket(), PaketSingleton<P> {
     @Suppress("UNCHECKED_CAST")
     override fun produce() = this as P
 }

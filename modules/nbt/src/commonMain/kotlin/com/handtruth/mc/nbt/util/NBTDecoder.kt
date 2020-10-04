@@ -2,31 +2,34 @@ package com.handtruth.mc.nbt.util
 
 import com.handtruth.mc.nbt.tags.*
 import kotlinx.serialization.*
-import kotlinx.serialization.modules.SerialModule
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.encoding.CompositeDecoder
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.modules.SerializersModule
 
 internal class NBTDecoder(
     val tag: Tag<*>,
-    override val context: SerialModule,
-    override val updateMode: UpdateMode
+    override val serializersModule: SerializersModule
 ) : Decoder {
-    override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
-        return when(descriptor.kind) {
+    override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
+        return when (descriptor.kind) {
             StructureKind.LIST -> {
                 when (tag) {
-                    is ListTag<*> -> NBTListDecoder(tag, context, updateMode)
-                    is ByteArrayTag -> NBTByteArrayDecoder(tag, context, updateMode)
-                    is IntArrayTag -> NBTIntArrayDecoder(tag, context, updateMode)
-                    is LongArrayTag -> NBTLongArrayDecoder(tag, context, updateMode)
+                    is ListTag<*> -> NBTListDecoder(tag, serializersModule)
+                    is ByteArrayTag -> NBTByteArrayDecoder(tag, serializersModule)
+                    is IntArrayTag -> NBTIntArrayDecoder(tag, serializersModule)
+                    is LongArrayTag -> NBTLongArrayDecoder(tag, serializersModule)
                     else -> throw NBTException("tag ${tag.id} can't be treated as list")
                 }
             }
             StructureKind.MAP -> {
                 validate(tag is CompoundTag, Map::class, tag.id)
-                NBTMapDecoder(tag, context, updateMode)
+                NBTMapDecoder(tag, serializersModule)
             }
             StructureKind.CLASS -> {
                 validate(tag is CompoundTag) { "structures may only be associated with CompountTag" }
-                NBTStructDecoder(tag, context, updateMode)
+                NBTStructDecoder(tag, serializersModule)
             }
             else -> throw UnsupportedOperationException()
         }
@@ -85,6 +88,4 @@ internal class NBTDecoder(
         validate(tag is StringTag, String::class, tag.id)
         return tag.value
     }
-
-    override fun decodeUnit() = Unit
 }

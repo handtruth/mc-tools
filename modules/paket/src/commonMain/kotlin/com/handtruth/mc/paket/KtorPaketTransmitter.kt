@@ -41,8 +41,9 @@ private class KtorPaketReceiver(private val channel: ByteReadChannel) : Abstract
             for (i in 0..4) {
                 val byte = channel.readByte()
                 pending[i] = byte
-                if (byte.toInt() and 0x80 == 0)
+                if (byte.toInt() and 0x80 == 0) {
                     break
+                }
             }
             val inputSize = ByteArrayInput(pending)
             size = VarIntCodec.read(inputSize, null)
@@ -92,8 +93,9 @@ private class KtorPaketReceiver(private val channel: ByteReadChannel) : Abstract
     private var buffer: BytesInfo? = null
 
     override suspend fun receive(paket: Paket) {
-        if (!isCaught)
+        if (!isCaught) {
             catchOrdinal()
+        }
         paket.read(buffer!!.input)
         drop()
     }

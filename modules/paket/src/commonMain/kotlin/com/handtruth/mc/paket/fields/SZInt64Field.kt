@@ -14,17 +14,19 @@ object SZInt64Codec : Codec<Long> {
     override fun write(output: Output, value: Long) = writeSZInt64(output, value)
 }
 
-object SZInt64ListCodec : ListCodec<Long>(SZInt64Codec)
+val SZInt64ListCodec = ListCodec(SZInt64Codec)
+val NullableSZInt64Codec = NullableCodec(SZInt64Codec)
 
-class SZInt64Field(initial: Long) : Field<Long>(SZInt64Codec, initial)
-class SZInt64ListField(initial: MutableList<Long>) : ListField<Long>(SZInt64ListCodec, initial)
-
-fun Paket.szint64(initial: Long = 0) = field(SZInt64Field(initial))
+fun Paket.szint64(initial: Long = 0) = field(SZInt64Codec, initial)
 fun Paket.zint(initial: Long) = szint64(initial)
+fun Paket.nullableSzint64(initial: Long? = null) = field(NullableSZInt64Codec, initial)
+fun Paket.nullableZint(initial: Long?) = nullableSzint64(initial)
 
-fun Paket.listOfSzint64(initial: MutableList<Long> = mutableListOf()) = field(SZInt64ListField(initial))
+fun Paket.listOfSzint64(initial: MutableList<Long> = mutableListOf()) = field(SZInt64ListCodec, initial)
+
 @JvmName("listOfUzint64RO")
 fun Paket.listOfSzint64(initial: List<Long>) = listOfSzint64(initial.toMutableList())
 fun Paket.listOfZint(initial: MutableList<Long>) = listOfSzint64(initial)
+
 @JvmName("listOfZintRO")
 fun Paket.listOfZint(initial: List<Long>) = listOfSzint64(initial)

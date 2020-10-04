@@ -2,15 +2,13 @@ package com.handtruth.mc.nbt.util
 
 import com.handtruth.mc.nbt.tags.ByteArrayTag
 import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.SerialDescriptor
-import kotlinx.serialization.UpdateMode
-import kotlinx.serialization.modules.SerialModule
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.modules.SerializersModule
 
 internal class NBTByteArrayDecoder(
     private val tag: ByteArrayTag,
-    context: SerialModule,
-    updateMode: UpdateMode
-) : NBTIndexedDecoder(context, updateMode) {
+    serializersModule: SerializersModule
+) : NBTIndexedDecoder(serializersModule) {
 
     override fun decodeCollectionSize(descriptor: SerialDescriptor): Int {
         return tag.value.size
@@ -47,12 +45,14 @@ internal class NBTByteArrayDecoder(
     override fun <T : Any> decodeNullableSerializableElement(
         descriptor: SerialDescriptor,
         index: Int,
-        deserializer: DeserializationStrategy<T?>
+        deserializer: DeserializationStrategy<T?>,
+        previousValue: T?
     ): T? {
-        return if (index >= decodeCollectionSize(descriptor))
+        return if (index >= decodeCollectionSize(descriptor)) {
             null
-        else
-            decodeSerializableElement(descriptor, index, deserializer)
+        } else {
+            decodeSerializableElement(descriptor, index, deserializer, previousValue)
+        }
     }
 
     override fun <T> decodeNonPrimitiveElement(
@@ -67,9 +67,5 @@ internal class NBTByteArrayDecoder(
 
     override fun decodeStringElement(descriptor: SerialDescriptor, index: Int): String {
         throw NBTException("failed to cast byte to string")
-    }
-
-    override fun decodeUnitElement(descriptor: SerialDescriptor, index: Int) {
-        throw NBTException("failed to cast byte to Unit type")
     }
 }

@@ -4,10 +4,7 @@ pluginManagement {
         jcenter()
     }
     val kotlinVersion: String by settings
-    val gitAndroidVersion: String by settings
-    val androidGradleVersion: String by settings
     val atomicfuVersion: String by settings
-    val dokkaVersion: String by settings
     resolutionStrategy {
         eachPlugin {
             when {
@@ -15,31 +12,40 @@ pluginManagement {
                     useModule("org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicfuVersion")
                 requested.id.id.startsWith("org.jetbrains.kotlin") ->
                     useVersion(kotlinVersion)
-                requested.id.id.startsWith("com.android") ->
-                    useModule("com.android.tools.build:gradle:$androidGradleVersion")
             }
         }
     }
+    val gitVersionPlugin: String by settings
+    val dokkaVersion: String by settings
+    val ktlintVersion: String by settings
     plugins {
-        id("com.gladed.androidgitversion") version gitAndroidVersion
+        id("com.gladed.androidgitversion") version gitVersionPlugin
+        id("org.jetbrains.dokka") version dokkaVersion
+        id("org.jlleitschuh.gradle.ktlint") version ktlintVersion
     }
 }
 
-val prefix = "tools"
-rootProject.name = prefix
+rootProject.name = "tools"
 
-fun module(name: String) {
-    include(":$prefix-$name")
-    project(":$prefix-$name").projectDir = file("modules/$name")
+val kotlinProjects = listOf(
+    "nbt",
+    "paket",
+    "zint",
+    "shared",
+    "chat",
+    "client",
+    "mojang-api",
+    "all"
+)
+
+fun subproject(name: String) {
+    include(":${rootProject.name}-$name")
+    project(":${rootProject.name}-$name").projectDir = file("modules/$name")
 }
 
-module("nbt")
-module("paket")
-module("paket-tool")
-module("zint")
-module("shared")
-module("chat")
-module("client")
-module("mojang-api")
-module("all")
-module("bom")
+subproject("bom")
+kotlinProjects.forEach { subproject(it) }
+
+gradle.allprojects {
+    extra["kotlinProjects"] = kotlinProjects
+}

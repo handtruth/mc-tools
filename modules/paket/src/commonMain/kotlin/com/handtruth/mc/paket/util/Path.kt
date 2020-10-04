@@ -1,15 +1,13 @@
 package com.handtruth.mc.paket.util
 
 import com.handtruth.mc.paket.ExperimentalPaketApi
-import kotlinx.serialization.Decoder
-import kotlinx.serialization.Encoder
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializer
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 @ExperimentalPaketApi
-@Serializer(forClass = Path::class)
 object PathSerializer : KSerializer<Path> {
     private val serializer = ListSerializer(String.serializer())
 
@@ -26,7 +24,7 @@ object PathSerializer : KSerializer<Path> {
 
 @ExperimentalPaketApi
 @Suppress("NON_PUBLIC_PRIMARY_CONSTRUCTOR_OF_INLINE_CLASS")
-inline class Path @PublishedApi internal constructor(val segments: List<String>): Comparable<Path>, Iterable<String> {
+inline class Path @PublishedApi internal constructor(val segments: List<String>) : Comparable<Path>, Iterable<String> {
     constructor(path: String, delimiter: String = "/") : this(parse(path, delimiter))
     companion object {
         val empty = Path(emptyList())
@@ -36,15 +34,17 @@ inline class Path @PublishedApi internal constructor(val segments: List<String>)
         private fun parse(path: String, delimiter: String): List<String> {
             val iter = path.split(delimiter).asSequence().filter { it.isNotEmpty() }.iterator()
             if (!iter.hasNext()) {
-                return if (path == delimiter)
+                return if (path == delimiter) {
                     listOf(delimiter)
-                else
+                } else {
                     emptyList()
+                }
             }
-            val first = if (path.startsWith(delimiter))
+            val first = if (path.startsWith(delimiter)) {
                 "/${iter.next()}"
-            else
+            } else {
                 iter.next()
+            }
             val result = mutableListOf(first)
             while (iter.hasNext())
                 result += iter.next()
@@ -57,8 +57,9 @@ inline class Path @PublishedApi internal constructor(val segments: List<String>)
     override fun compareTo(other: Path): Int {
         for ((a, b) in segments.zip(other.segments)) {
             val result = a.compareTo(b)
-            if (result != 0)
+            if (result != 0) {
                 return result
+            }
         }
         val a = segments.size
         val b = other.segments.size
@@ -77,8 +78,9 @@ inline class Path @PublishedApi internal constructor(val segments: List<String>)
                 result.removeAt(i)
                 --i
                 result.removeAt(i)
-                if (i == 0)
+                if (i == 0) {
                     ++i
+                }
             }
         }
         return Path(result.filter { it != "." })

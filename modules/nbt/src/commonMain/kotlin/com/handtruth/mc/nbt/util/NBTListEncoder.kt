@@ -4,14 +4,14 @@ import com.handtruth.mc.nbt.tags.EndTag
 import com.handtruth.mc.nbt.tags.ListTag
 import com.handtruth.mc.nbt.tags.Tag
 import com.handtruth.mc.nbt.tags.TagResolver
-import kotlinx.serialization.SerialDescriptor
-import kotlinx.serialization.modules.SerialModule
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.modules.SerializersModule
 
 internal class NBTListEncoder(
-    context: SerialModule,
+    serializersModule: SerializersModule,
     private val parent: NBTEncoder,
     resolver: TagResolver<*>
-) : NBTCompositeEncoder(context) {
+) : NBTCompositeEncoder(serializersModule) {
     var root: ListTag<*> = ListTag(mutableListOf(), resolver)
         private set
 

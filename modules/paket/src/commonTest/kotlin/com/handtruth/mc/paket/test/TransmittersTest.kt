@@ -155,5 +155,4 @@ class TransmittersTest {
         ts.drop()
         assertEquals(0, channel.availableForRead)
     }
-
 }

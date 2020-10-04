@@ -11,12 +11,12 @@ object BoolCodec : Codec<Boolean> {
     override fun write(output: Output, value: Boolean) = writeBoolean(output, value)
 }
 
-object BoolListCodec : ListCodec<Boolean>(BoolCodec)
+val BoolListCodec = ListCodec(BoolCodec)
+val NullableBoolCodec = NullableCodec(BoolCodec)
 
-class BoolField(initial: Boolean) : Field<Boolean>(BoolCodec, initial)
-class BoolListField(initial: MutableList<Boolean>) : ListField<Boolean>(BoolListCodec, initial)
+fun Paket.bool(initial: Boolean = false) = field(BoolCodec, initial)
+fun Paket.listOfBool(initial: MutableList<Boolean>) = field(BoolListCodec, initial)
+fun Paket.nullableBool(initial: Boolean? = null) = field(NullableBoolCodec, initial)
 
-fun Paket.bool(initial: Boolean = false) = field(BoolField(initial))
-fun Paket.listOfBool(initial: MutableList<Boolean>) = field(BoolListField(initial))
 @JvmName("listOfBoolRO")
 fun Paket.listOfBool(initial: List<Boolean>) = listOfBool(initial.toMutableList())

@@ -18,8 +18,9 @@ class CompoundTag(
             writeString(output, conf, key)
             value.writeBinary(output, conf)
         }
-        if (!isRoot)
+        if (!isRoot) {
             output.writeByte(0)
+        }
     }
 
     override fun writeText(output: Appendable, conf: NBTStringConfig, level: Int) {
@@ -42,13 +43,15 @@ class CompoundTag(
             val tags = TagID.values()
             val result: MutableMap<String, Tag<*>> = hashMapOf()
             while (true) {
-                if (input.exhausted())
+                if (input.exhausted()) {
                     return CompoundTag(result, true)
+                }
                 val tagId = input.readByte().toInt()
                 validate(tagId in tags.indices) { "unknown tag ID in compound tag: $tagId" }
                 val tag = tags[tagId]
-                if (tag == TagID.End)
+                if (tag == TagID.End) {
                     break
+                }
                 val key = readString(input, conf)
                 val value = tag.resolver.readBinary(input, conf)
                 val previous = result.put(key, value)
@@ -59,8 +62,9 @@ class CompoundTag(
 
         override fun readText(input: Reader, conf: NBTStringConfig): CompoundTag {
             input.skipSpace()
-            if (input.read() != '{')
+            if (input.read() != '{') {
                 error("not an compound tag")
+            }
             val result: MutableMap<String, Tag<*>> = hashMapOf()
             cycle@while (true) {
                 when (deduceTag(input)) {

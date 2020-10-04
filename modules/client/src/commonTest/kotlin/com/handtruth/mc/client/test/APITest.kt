@@ -33,7 +33,8 @@ class APITest {
                 protocol = -1
             ),
             players = ServerStatus.Players(
-                max = 250, online = 19,
+                max = 250,
+                online = 19,
                 sample = listOf(
                     Player(
                         id = UUID("c683771d-8246-4e14-9db0-528b63c265cb"),
@@ -99,7 +100,7 @@ class APITest {
         }
     }
 
-    @ExperimentalCoroutinesApi @Test
+    @Test
     fun pingVanilla() = testSuspend {
         MinecraftClient("vanilla.mc.handtruth.com", 25565).use { client ->
             val ping = client.ping()

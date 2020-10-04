@@ -2,16 +2,13 @@ package com.handtruth.mc.nbt.util
 
 import com.handtruth.mc.nbt.tags.CompoundTag
 import com.handtruth.mc.nbt.tags.Tag
-import kotlinx.serialization.SerialDescriptor
-import kotlinx.serialization.UpdateMode
-import kotlinx.serialization.modules.SerialModule
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.modules.SerializersModule
 
 internal class NBTStructDecoder(
     private val tag: CompoundTag,
-    context: SerialModule,
-    updateMode: UpdateMode
-) : NBTCompositeDecoder(context, updateMode) {
-
+    serializersModule: SerializersModule
+) : NBTCompositeDecoder(serializersModule) {
     override fun decodeCollectionSize(descriptor: SerialDescriptor) = descriptor.elementsCount
 
     override fun retrieveTag(descriptor: SerialDescriptor, index: Int): Tag<*> {

@@ -23,5 +23,4 @@ class AlternativeFormats {
         val tag = kbt.read(open("kbt.nbt"))
         println(tag)
     }
-
 }

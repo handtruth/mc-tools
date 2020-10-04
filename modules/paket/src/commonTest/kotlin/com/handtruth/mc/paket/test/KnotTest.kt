@@ -37,14 +37,14 @@ class KnotTest {
             counter.value = count + 1
             maximum.value = max(count, max)
             status.value = States.IN
-            //println("ENTER")
+            // println("ENTER")
         }
 
         override suspend fun leave() {
             check(state == States.IN)
             counter.value = count - 1
             status.value = States.OUT
-            //println("LEAVE")
+            // println("LEAVE")
         }
     }
 
@@ -71,15 +71,16 @@ class KnotTest {
         coroutineScope {
             repeat(fc) {
                 launch(dispatcher) {
-                    //println("G")
+                    // println("G")
                     fibers[it].weave {
                         assertTrue(knot.isActive)
                         yield()
                         ohh.inc()
                         assertEquals(Subject.States.IN, knot.state)
                     }
-                    if (it % close == 0)
+                    if (it % close == 0) {
                         fibers[it].close()
+                    }
                 }
             }
         }
@@ -112,7 +113,6 @@ class KnotTest {
 
         assertEquals(Subject.States.OUT, knot.state)
 
-        //assertEquals(remains.size * 1000, lol.value, "body 2")
+        // assertEquals(remains.size * 1000, lol.value, "body 2")
     }
-
 }

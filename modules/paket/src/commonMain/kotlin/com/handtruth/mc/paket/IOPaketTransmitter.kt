@@ -6,8 +6,8 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.Input
 import kotlinx.io.Output
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.coroutineContext
 
 private class OutputPaketSender(
     val channel: Output,
@@ -60,8 +60,9 @@ private class InputPaketReceiver(val channel: Input, private val ioContext: Coro
     }
 
     override suspend fun receive(paket: Paket) {
-        if (!isCaught)
+        if (!isCaught) {
             catchOrdinal()
+        }
         paket.read(channel)
         val estimate = size - paket.size
         val skipped = channel.discard(estimate)

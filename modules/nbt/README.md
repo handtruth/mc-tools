@@ -1,5 +1,4 @@
-MC:Tools NBT
-=======================================================
+# Module tools-nbt
 
 This module provides some utilities to work with Named Binary Tags format in
 Kotlin.

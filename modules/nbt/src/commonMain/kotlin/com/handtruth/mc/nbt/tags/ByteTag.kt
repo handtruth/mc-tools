@@ -4,7 +4,6 @@ import com.handtruth.mc.nbt.NBTBinaryConfig
 import com.handtruth.mc.nbt.NBTStringConfig
 import com.handtruth.mc.nbt.TagID
 import com.handtruth.mc.nbt.util.Reader
-import com.handtruth.mc.nbt.util.StringReader
 import com.handtruth.mc.nbt.util.readAnyInt
 import kotlinx.io.Input
 import kotlinx.io.Output

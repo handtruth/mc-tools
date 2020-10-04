@@ -73,6 +73,9 @@ class ProtocolTest {
         var pListVarLong by listOfVarLong(pListVarLong)
         var pListPath by listOfPath(pListPath.map { Path(it) })
 
+        var pNullBool by nullableBool(null)
+        var pNullZint by nullableZint(23L)
+
         companion object : PaketCreator<ExamplePaket> {
             override fun produce() = ExamplePaket()
         }

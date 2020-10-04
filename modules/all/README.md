@@ -1,5 +1,4 @@
-MC:Tools All
-======================================================
+# Module tools-all
 
 All libraries as one dependency. Useful, when your code depends on all modules.
 

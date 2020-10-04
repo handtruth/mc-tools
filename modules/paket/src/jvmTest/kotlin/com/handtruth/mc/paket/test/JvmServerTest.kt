@@ -68,12 +68,14 @@ class JvmServerTest {
     }
 
     private suspend fun execClient(ts: PaketTransmitter) {
-        val c = corespondent<ServerTest.IDS>(ts)
+        val c = correspondent<ServerTest.IDS>(ts)
         c.send(ServerTest.FirstPaket().apply { payload = 232323232323 })
         c.branch<ServerTest.SubIDS>(ServerTest.IDS.Second) send ServerTest.OnePaket
-        val data = c.branch<ServerTest.SubIDS>(ServerTest.IDS.Second).request(ServerTest.TwoPaket().apply { data = "hi lol" }) { peek(
-            ServerTest.TwoPaket
-        ).data }
+        val data = c.branch<ServerTest.SubIDS>(ServerTest.IDS.Second).request(ServerTest.TwoPaket().apply { data = "hi lol" }) {
+            peek(
+                ServerTest.TwoPaket
+            ).data
+        }
         println("response: $data")
         c.branch<ServerTest.SubIDS>(ServerTest.IDS.Second) send ServerTest.ThreePaket
         c send ServerTest.ThirdPaket

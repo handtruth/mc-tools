@@ -1,15 +1,10 @@
 package com.handtruth.mc.paket
 
-import com.handtruth.mc.paket.util.Codecs
 import com.handtruth.mc.paket.util.Path
 import com.handtruth.mc.util.*
 import kotlinx.io.*
 import kotlinx.io.text.readUtf8String
 import kotlinx.io.text.writeUtf8String
-import kotlinx.serialization.SerialDescriptor
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.StructureKind
-import kotlin.reflect.KClass
 
 internal fun sizeVarInt(value: Int) = sizeUZInt32(value.toUInt())
 
@@ -97,8 +92,9 @@ internal fun readPath(input: Input): Path {
     val result = mutableListOf<String>()
     do {
         val part = readString(input)
-        if (part.isEmpty())
+        if (part.isEmpty()) {
             break
+        }
         result += part
     } while (true)
     return Path(result)
@@ -163,14 +159,4 @@ internal fun writeBytes(output: Output, bytes: Bytes) {
     bytes.input().copyTo(output)
 }
 
-internal fun forbidNulls(): Nothing = throw SerializationException("null values a prohibited")
-
-internal fun <T> codecOf(descriptor: SerialDescriptor, index: Int) =
-    (descriptor.getElementAnnotations(index).find { it is WithCodec } as? WithCodec)?.let {
-        @Suppress("UNCHECKED_CAST")
-        Codecs.getInstance(it.codec as KClass<out Codec<T>>)
-    }
-
-internal fun isMapOrList(descriptor: SerialDescriptor) = descriptor.kind.let {
-    it == StructureKind.LIST || it == StructureKind.MAP
-}
+internal fun errNulls(): Nothing = error("nulls can't be encoded with paket format")
