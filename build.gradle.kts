@@ -22,7 +22,7 @@ androidGitVersion {
     prefix = "v"
 }
 
-val groupString = "com.handtruth.example"
+val groupString = "com.handtruth.mc"
 val versionString: String = androidGitVersion.name()
 
 allprojects {
