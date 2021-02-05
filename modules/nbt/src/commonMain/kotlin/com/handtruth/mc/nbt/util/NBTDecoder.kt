@@ -1,7 +1,7 @@
 package com.handtruth.mc.nbt.util
 
-import com.handtruth.mc.nbt.tags.*
-import kotlinx.serialization.*
+import com.handtruth.mc.nbt.NBTSerialFormat
+import com.handtruth.mc.types.Dynamic
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.encoding.CompositeDecoder
@@ -9,83 +9,79 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.modules.SerializersModule
 
 internal class NBTDecoder(
-    val tag: Tag<*>,
+    val value: Any,
+    val conf: NBTSerialFormat,
     override val serializersModule: SerializersModule
 ) : Decoder {
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
         return when (descriptor.kind) {
             StructureKind.LIST -> {
-                when (tag) {
-                    is ListTag<*> -> NBTListDecoder(tag, serializersModule)
-                    is ByteArrayTag -> NBTByteArrayDecoder(tag, serializersModule)
-                    is IntArrayTag -> NBTIntArrayDecoder(tag, serializersModule)
-                    is LongArrayTag -> NBTLongArrayDecoder(tag, serializersModule)
-                    else -> throw NBTException("tag ${tag.id} can't be treated as list")
+                when (value) {
+                    is List<*> -> NBTListDecoder(value, conf, serializersModule)
+                    is BooleanArray -> NBTBooleanArrayDecoder(value, conf, serializersModule)
+                    is ByteArray -> NBTByteArrayDecoder(value, conf, serializersModule)
+                    is ShortArray -> NBTShortArrayDecoder(value, conf, serializersModule)
+                    is IntArray -> NBTIntArrayDecoder(value, conf, serializersModule)
+                    is LongArray -> NBTLongArrayDecoder(value, conf, serializersModule)
+                    else -> throw NBTException("tag $value can't be treated as list")
                 }
             }
             StructureKind.MAP -> {
-                validate(tag is CompoundTag, Map::class, tag.id)
-                NBTMapDecoder(tag, serializersModule)
+                validate(value is Dynamic, Dynamic::class, value)
+                NBTMapDecoder(value, conf, serializersModule)
             }
             StructureKind.CLASS -> {
-                validate(tag is CompoundTag) { "structures may only be associated with CompountTag" }
-                NBTStructDecoder(tag, serializersModule)
+                validate(value is Dynamic) { "structures may only be associated with CompountTag, got ${value::class}" }
+                NBTStructDecoder(value, conf, serializersModule)
             }
             else -> throw UnsupportedOperationException()
         }
     }
 
-    override fun decodeBoolean(): Boolean {
-        validate(tag is ByteTag, Boolean::class, tag.id)
-        return tag.byte.toInt() != 0
+    private inline fun <reified T : Any> decodeAs(): T {
+        validate(value is T, T::class, value)
+        return value
     }
 
-    override fun decodeByte(): Byte {
-        validate(tag is ByteTag, Byte::class, tag.id)
-        return tag.byte
+    override fun decodeBoolean(): Boolean {
+        return when (value) {
+            is Boolean -> value
+            is Byte -> value != 0
+            else -> notValid(Boolean::class, value)
+        }
     }
+
+    override fun decodeByte() = decodeAs<Byte>()
 
     override fun decodeChar(): Char {
-        validate(tag is ShortTag, Char::class, tag.id)
-        return tag.short.toChar()
+        return when (value) {
+            is Short -> value.toChar()
+            is Char -> value
+            else -> notValid(Char::class, value)
+        }
     }
 
-    override fun decodeDouble(): Double {
-        validate(tag is DoubleTag, Double::class, tag.id)
-        return tag.number
-    }
+    override fun decodeDouble() = decodeAs<Double>()
 
     override fun decodeEnum(enumDescriptor: SerialDescriptor): Int {
-        validate(tag is StringTag, Int::class, tag.id)
-        return enumDescriptor.getElementIndex(tag.value)
+        return when (value) {
+            is Int -> value
+            is String -> enumDescriptor.getElementIndex(value)
+            else -> notValid(Int::class, value)
+        }
     }
 
-    override fun decodeFloat(): Float {
-        validate(tag is FloatTag, Float::class, tag.id)
-        return tag.number
-    }
+    override fun decodeFloat() = decodeAs<Float>()
 
-    override fun decodeInt(): Int {
-        validate(tag is IntTag, Int::class, tag.id)
-        return tag.integer
-    }
+    override fun decodeInt() = decodeAs<Int>()
 
-    override fun decodeLong(): Long {
-        validate(tag is LongTag, Long::class, tag.id)
-        return tag.long
-    }
+    override fun decodeLong() = decodeAs<Long>()
 
-    override fun decodeNotNullMark() = tag is EndTag
+    override fun decodeNotNullMark() = true
 
     override fun decodeNull() = null
 
-    override fun decodeShort(): Short {
-        validate(tag is ShortTag, Short::class, tag.id)
-        return tag.short
-    }
+    override fun decodeShort() = decodeAs<Short>()
 
-    override fun decodeString(): String {
-        validate(tag is StringTag, String::class, tag.id)
-        return tag.value
-    }
+    override fun decodeString() = decodeAs<String>()
 }

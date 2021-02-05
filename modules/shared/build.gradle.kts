@@ -7,4 +7,5 @@ dependencies {
 
     commonMainImplementation(kotlinx("serialization-core"))
     commonTestImplementation(kotlinx("serialization-json"))
+    commonMainApi(project(":tools-types"))
 }

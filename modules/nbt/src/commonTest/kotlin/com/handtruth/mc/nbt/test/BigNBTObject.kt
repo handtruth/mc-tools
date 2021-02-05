@@ -1,14 +1,9 @@
 package com.handtruth.mc.nbt.test
 
-import com.handtruth.mc.nbt.NBTListType
-import com.handtruth.mc.nbt.TagID
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 private const val errorValue = 1e-4
-
-@Serializable
-data class BigNBTObject(@SerialName("Level") val level: Level)
 
 @Serializable
 data class Level(
@@ -17,7 +12,7 @@ data class Level(
     val byteTest: Byte,
     @SerialName("byteArrayTest (the first 1000 values of (n*n*255+n*7)%100, starting with n=0 (0, 62, 34, 16, 8, ...))")
     val byteArrayTest: ByteArray,
-    @SerialName("listTest (long)") @NBTListType(TagID.Long)
+    @SerialName("listTest (long)")
     val listTest: List<Long>,
     val floatTest: Float,
     val doubleTest: Double,
@@ -73,36 +68,34 @@ data class Compound(
 @Serializable
 data class NamedProperty(val name: String, val value: Float)
 
-val bigNBTObject = BigNBTObject(
-    Level(
-        shortTest = 32767,
-        longTest = 9223372036854775807L,
-        byteTest = 127,
-        byteArrayTest = ByteArray(1000) { n -> ((n * n * 255 + n * 7) % 100).toByte() },
-        listTest = listOf(11L, 12L, 13L, 14L, 15L),
-        floatTest = 0.49823147f,
-        doubleTest = 0.4931287132182315,
-        intTest = 2147483647,
-        listTestCompound = listOf(
-            Compound(
-                createdOn = 1264099775885L,
-                name = "Compound tag #0"
-            ),
-            Compound(
-                createdOn = 1264099775885L,
-                name = "Compound tag #1"
-            )
+val bigNBTObject = Level(
+    shortTest = 32767,
+    longTest = 9223372036854775807L,
+    byteTest = 127,
+    byteArrayTest = ByteArray(1000) { n -> ((n * n * 255 + n * 7) % 100).toByte() },
+    listTest = listOf(11L, 12L, 13L, 14L, 15L),
+    floatTest = 0.49823147f,
+    doubleTest = 0.4931287132182315,
+    intTest = 2147483647,
+    listTestCompound = listOf(
+        Compound(
+            createdOn = 1264099775885L,
+            name = "Compound tag #0"
         ),
-        compounds = mapOf(
-            "egg" to NamedProperty(
-                name = "Eggbert",
-                value = 0.5f
-            ),
-            "ham" to NamedProperty(
-                name = "Hampus",
-                value = 0.75f
-            )
+        Compound(
+            createdOn = 1264099775885L,
+            name = "Compound tag #1"
+        )
+    ),
+    compounds = mapOf(
+        "egg" to NamedProperty(
+            name = "Eggbert",
+            value = 0.5f
         ),
-        stringTest = "HELLO WORLD THIS IS A TEST STRING ÅÄÖ!"
-    )
+        "ham" to NamedProperty(
+            name = "Hampus",
+            value = 0.75f
+        )
+    ),
+    stringTest = "HELLO WORLD THIS IS A TEST STRING ÅÄÖ!"
 )

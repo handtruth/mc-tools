@@ -1,7 +1,5 @@
 package com.handtruth.mc.nbt
 
-import com.handtruth.mc.nbt.tags.CompoundTag
-import com.handtruth.mc.nbt.tags.Tag
 import com.handtruth.mc.nbt.util.NBTDecoder
 import com.handtruth.mc.nbt.util.NBTEncoder
 import com.handtruth.mc.nbt.util.Reader
@@ -12,27 +10,32 @@ import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 
 interface NBTSerialFormat : SerialFormat {
+    val tagsModule: TagsModule
     val serialConfig: NBTSerialConfig
-    fun <T> decodeFromNBT(deserializationStrategy: DeserializationStrategy<T>, tag: Tag<*>): T
-    fun <T> encodeToNBT(serializationStrategy: SerializationStrategy<T>, value: T): Tag<*>
+    fun <T> decodeFromNBT(deserializationStrategy: DeserializationStrategy<T>, value: Any): T
+    fun <T> encodeToNBT(serializationStrategy: SerializationStrategy<T>, value: T): Any
 }
 
 interface NBTBinaryFormat : BinaryFormat, NBTBinaryCodec, NBTSerialFormat {
-    fun <T> decodeFromInput(deserializer: DeserializationStrategy<T>, input: Input): T {
-        return decodeFromNBT(deserializer, read(input))
-    }
-
     override fun <T> decodeFromByteArray(deserializer: DeserializationStrategy<T>, bytes: ByteArray): T {
-        return decodeFromNBT(deserializer, read(bytes))
-    }
-
-    fun <T> decodeFromByteArray(serializer: SerializationStrategy<T>, output: Output, value: T) {
-        write(output, encodeToNBT(serializer, value) as CompoundTag)
+        return decodeFromNBT(deserializer, read(bytes).second)
     }
 
     override fun <T> encodeToByteArray(serializer: SerializationStrategy<T>, value: T): ByteArray {
-        return write(encodeToNBT(serializer, value) as CompoundTag)
+        return write("", encodeToNBT(serializer, value))
     }
+}
+
+fun <T> NBTBinaryFormat.decodeFromInput(deserializer: DeserializationStrategy<T>, input: Input): T {
+    return decodeFromNBT(deserializer, read(input).second)
+}
+
+fun <T> NBTBinaryFormat.encodeToOutput(
+    serializer: SerializationStrategy<T>,
+    output: Output,
+    value: T
+) {
+    write(output, "", encodeToNBT(serializer, value))
 }
 
 interface NBTStringFormat : StringFormat, NBTStringCodec, NBTSerialFormat {
@@ -54,16 +57,17 @@ interface NBTStringFormat : StringFormat, NBTStringCodec, NBTSerialFormat {
 }
 
 private class NBTSerialFormatImpl(
+    override val tagsModule: TagsModule,
     override val serialConfig: NBTSerialConfig,
     override val serializersModule: SerializersModule
 ) : NBTSerialFormat {
-    override fun <T> decodeFromNBT(deserializationStrategy: DeserializationStrategy<T>, tag: Tag<*>): T {
-        val decoder = NBTDecoder(tag, serializersModule)
+    override fun <T> decodeFromNBT(deserializationStrategy: DeserializationStrategy<T>, value: Any): T {
+        val decoder = NBTDecoder(value, this, serializersModule)
         return deserializationStrategy.deserialize(decoder)
     }
 
-    override fun <T> encodeToNBT(serializationStrategy: SerializationStrategy<T>, value: T): Tag<*> {
-        val encoder = NBTEncoder(serializersModule)
+    override fun <T> encodeToNBT(serializationStrategy: SerializationStrategy<T>, value: T): Any {
+        val encoder = NBTEncoder(this, serializersModule)
         serializationStrategy.serialize(encoder, value)
         return encoder.tag
     }
@@ -71,6 +75,7 @@ private class NBTSerialFormatImpl(
 
 @Suppress("FunctionName")
 fun NBTSerialFormat(
+    tagsModule: TagsModule = TagsModule.Default,
     serialConfig: NBTSerialConfig = NBTSerialConfig.Default,
     serializersModule: SerializersModule = EmptySerializersModule
-): NBTSerialFormat = NBTSerialFormatImpl(serialConfig, serializersModule)
+): NBTSerialFormat = NBTSerialFormatImpl(tagsModule, serialConfig, serializersModule)

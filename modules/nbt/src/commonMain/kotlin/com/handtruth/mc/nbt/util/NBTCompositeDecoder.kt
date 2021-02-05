@@ -1,56 +1,51 @@
 package com.handtruth.mc.nbt.util
 
-import com.handtruth.mc.nbt.tags.*
+import com.handtruth.mc.nbt.NBTSerialFormat
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.modules.SerializersModule
 
 internal abstract class NBTCompositeDecoder(
+    conf: NBTSerialFormat,
     serializersModule: SerializersModule
-) : NBTIndexedDecoder(serializersModule) {
-    protected abstract fun retrieveTag(descriptor: SerialDescriptor, index: Int): Tag<*>
+) : NBTIndexedDecoder(conf, serializersModule) {
+    protected abstract fun retrieveTag(descriptor: SerialDescriptor, index: Int): Any?
+
+    private fun ensureRetrieveTag(descriptor: SerialDescriptor, index: Int): Any {
+        return retrieveTag(descriptor, index) ?: throw NBTException("no such element")
+    }
+
+    private inline fun <reified T : Any> retrieveAs(descriptor: SerialDescriptor, index: Int): T {
+        val value = ensureRetrieveTag(descriptor, index)
+        validate(value is T, T::class, value)
+        return value
+    }
 
     override fun decodeBooleanElement(descriptor: SerialDescriptor, index: Int): Boolean {
-        val tag = retrieveTag(descriptor, index)
-        validate(tag is ByteTag, Boolean::class, tag.id)
-        return tag.byte.toInt() != 0
+        return when (val value = ensureRetrieveTag(descriptor, index)) {
+            is Boolean -> value
+            is Byte -> value != 0.toByte()
+            else -> notValid(Boolean::class, value)
+        }
     }
 
-    override fun decodeByteElement(descriptor: SerialDescriptor, index: Int): Byte {
-        val tag = retrieveTag(descriptor, index)
-        validate(tag is ByteTag, Byte::class, tag.id)
-        return tag.byte
-    }
+    override fun decodeByteElement(descriptor: SerialDescriptor, index: Int) = retrieveAs<Byte>(descriptor, index)
 
     override fun decodeCharElement(descriptor: SerialDescriptor, index: Int): Char {
-        val tag = retrieveTag(descriptor, index)
-        validate(tag is ShortTag, Char::class, tag.id)
-        return tag.short.toChar()
+        return when (val value = ensureRetrieveTag(descriptor, index)) {
+            is Short -> value.toChar()
+            is Char -> value
+            else -> notValid(Char::class, value)
+        }
     }
 
-    override fun decodeDoubleElement(descriptor: SerialDescriptor, index: Int): Double {
-        val tag = retrieveTag(descriptor, index)
-        validate(tag is DoubleTag, Double::class, tag.id)
-        return tag.number
-    }
+    override fun decodeDoubleElement(descriptor: SerialDescriptor, index: Int) = retrieveAs<Double>(descriptor, index)
 
-    override fun decodeFloatElement(descriptor: SerialDescriptor, index: Int): Float {
-        val tag = retrieveTag(descriptor, index)
-        validate(tag is FloatTag, Float::class, tag.id)
-        return tag.number
-    }
+    override fun decodeFloatElement(descriptor: SerialDescriptor, index: Int) = retrieveAs<Float>(descriptor, index)
 
-    override fun decodeIntElement(descriptor: SerialDescriptor, index: Int): Int {
-        val tag = retrieveTag(descriptor, index)
-        validate(tag is IntTag, Int::class, tag.id)
-        return tag.integer
-    }
+    override fun decodeIntElement(descriptor: SerialDescriptor, index: Int) = retrieveAs<Int>(descriptor, index)
 
-    override fun decodeLongElement(descriptor: SerialDescriptor, index: Int): Long {
-        val tag = retrieveTag(descriptor, index)
-        validate(tag is LongTag, Long::class, tag.id)
-        return tag.long
-    }
+    override fun decodeLongElement(descriptor: SerialDescriptor, index: Int) = retrieveAs<Long>(descriptor, index)
 
     override fun <T : Any> decodeNullableSerializableElement(
         descriptor: SerialDescriptor,
@@ -61,7 +56,7 @@ internal abstract class NBTCompositeDecoder(
         if (this is NBTStructDecoder) {
             println(descriptor.getElementName(index))
         }
-        if (retrieveTag(descriptor, index) is EndTag) {
+        if (retrieveTag(descriptor, index) == null) {
             return null
         }
         return decodeSerializableElement(descriptor, index, deserializer, previousValue)
@@ -72,20 +67,12 @@ internal abstract class NBTCompositeDecoder(
         index: Int,
         deserializer: DeserializationStrategy<T>
     ): T {
-        val tag = retrieveTag(descriptor, index)
-        val decoder = NBTDecoder(tag, serializersModule)
+        val tag = retrieveTag(descriptor, index) ?: NBTException("not found")
+        val decoder = NBTDecoder(tag, conf, serializersModule)
         return deserializer.deserialize(decoder)
     }
 
-    override fun decodeShortElement(descriptor: SerialDescriptor, index: Int): Short {
-        val tag = retrieveTag(descriptor, index)
-        validate(tag is ShortTag, Short::class, tag.id)
-        return tag.short
-    }
+    override fun decodeShortElement(descriptor: SerialDescriptor, index: Int) = retrieveAs<Short>(descriptor, index)
 
-    override fun decodeStringElement(descriptor: SerialDescriptor, index: Int): String {
-        val tag = retrieveTag(descriptor, index)
-        validate(tag is StringTag, String::class, tag.id)
-        return tag.value
-    }
+    override fun decodeStringElement(descriptor: SerialDescriptor, index: Int) = retrieveAs<String>(descriptor, index)
 }

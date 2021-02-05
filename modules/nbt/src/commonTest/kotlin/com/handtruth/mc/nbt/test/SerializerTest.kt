@@ -1,6 +1,13 @@
 package com.handtruth.mc.nbt.test
 
-import com.handtruth.mc.nbt.*
+import com.handtruth.mc.nbt.NBTBinaryCodec
+import com.handtruth.mc.nbt.NBTBinaryConfig
+import com.handtruth.mc.nbt.NBTSerialFormat
+import com.handtruth.mc.nbt.plus
+import com.handtruth.mc.types.Dynamic
+import com.handtruth.mc.types.buildDynamic
+import com.handtruth.mc.types.contentDeepHashCode
+import com.handtruth.mc.types.contentToString
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -20,37 +27,37 @@ class SerializerTest {
             ),
             floatArrayOf(33.5f, 89.654f, -85.0f)
         )
-        val expected = buildCompoundTag {
-            "id"(33)
-            "name"("Ktlo")
+        val expected = buildDynamic {
+            "id" assign 33
+            "name" assign "Ktlo"
             "inventory" {
-                "items".compounds {
-                    add {
-                        "id"("minecraft:stone")
-                        "count" byte 34
-                        "durability"(Short.MIN_VALUE)
+                "items" assign buildList<Dynamic> {
+                    this += buildDynamic {
+                        "id" assign "minecraft:stone"
+                        "count" assign 34.toByte()
+                        "durability" assign Short.MIN_VALUE
                         "pages" {
-                            "lol" string "kek"
-                            "popka" string "zopka"
+                            "lol" assign "kek"
+                            "popka" assign "zopka"
                         }
                     }
-                    add {
-                        "id"("minecraft:air")
-                        "count" byte 0
-                        "durability" short 33
+                    this += buildDynamic {
+                        "id" assign "minecraft:air"
+                        "count" assign 0.toByte()
+                        "durability" assign 33.toShort()
                         "pages" {
                             // Empty
                         }
                     }
                 }
-                "metadata".byteArray(56, -35, 0, 98)
+                "metadata" assign byteArrayOf(56, -35, 0, 98)
             }
-            "moment".listOf(33.5f, 89.654f, -85.0f)
+            "moment" assign listOf(33.5f, 89.654f, -85.0f)
         }
         val actual = player2nbt(player)
-        assertEquals(expected, actual)
-        assertEquals(expected.toString(), actual.toString())
-        assertEquals(expected.hashCode(), actual.hashCode())
+        assertDynamicEquals(expected, actual)
+        assertEquals(expected.contentToString(true), actual.contentToString(true))
+        assertEquals(expected.contentDeepHashCode(), actual.contentDeepHashCode())
         println(actual)
 
         // Deserialize
@@ -59,13 +66,13 @@ class SerializerTest {
         println(actualPlayer)
     }
 
-    val javaNBT = NBTBinaryCodec(NBTBinaryConfig.Java) + NBTSerialFormat()
+    val javaNBT = NBTBinaryCodec(binaryConfig = NBTBinaryConfig.Java) + NBTSerialFormat()
 
     @Test
     fun notchianBigObject() {
         val expected = bigNBTObject
-        val bytes = javaNBT.encodeToByteArray(BigNBTObject.serializer(), expected)
-        val actual = javaNBT.decodeFromByteArray(BigNBTObject.serializer(), bytes)
+        val bytes = javaNBT.encodeToByteArray(Level.serializer(), expected)
+        val actual = javaNBT.decodeFromByteArray(Level.serializer(), bytes)
         assertEquals(expected, actual)
     }
 

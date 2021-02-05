@@ -1,52 +1,33 @@
 package com.handtruth.mc.nbt.tags
 
-import com.handtruth.mc.nbt.NBTBinaryConfig
-import com.handtruth.mc.nbt.NBTStringConfig
-import com.handtruth.mc.nbt.TagID
+import com.handtruth.mc.nbt.NBTBinaryCodec
+import com.handtruth.mc.nbt.NBTStringCodec
 import com.handtruth.mc.nbt.util.*
-import com.handtruth.mc.nbt.util.readSize
-import com.handtruth.mc.nbt.util.writeInt32
-import com.handtruth.mc.nbt.util.writeSize
 import kotlinx.io.Input
 import kotlinx.io.Output
 
-class IntArrayTag(override var value: IntArray) : MutableTag<IntArray>(
-    TagID.IntArray
-) {
-    override fun writeBinary(output: Output, conf: NBTBinaryConfig) {
-        writeSize(output, conf, value.size)
-        value.forEach { writeInt32(output, conf, it) }
+object IntArrayTag : Tag<IntArray> {
+    override val type = IntArray::class
+
+    override fun readBinary(input: Input, conf: NBTBinaryCodec): IntArray {
+        val size = readSize(input, conf.binaryConfig)
+        validate(size >= 0) { "byte array size is negative: $size" }
+        return IntArray(size) { readInt32(input, conf.binaryConfig) }
     }
 
-    override fun writeText(output: Appendable, conf: NBTStringConfig, level: Int) {
-        joinArray(value.iterator(), output, conf, 'I', "")
+    override fun readText(input: Reader, conf: NBTStringCodec): IntArray {
+        val list = readArray(input, 'I', null) { it.toInt() }
+        return list.toIntArray()
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-        other as IntArrayTag
-        if (!value.contentEquals(other.value)) return false
-        return true
+    override fun writeBinary(output: Output, conf: NBTBinaryCodec, value: IntArray) {
+        writeSize(output, conf.binaryConfig, value.size)
+        value.forEach { writeInt32(output, conf.binaryConfig, it) }
     }
 
-    override fun hashCode(): Int {
-        return value.contentHashCode()
+    override fun writeText(output: Appendable, conf: NBTStringCodec, value: IntArray, level: Int) {
+        joinArray(value.iterator(), output, conf.stringConfig, "I", "")
     }
 
-    companion object : TagResolver<IntArray> {
-        override fun readBinary(input: Input, conf: NBTBinaryConfig): IntArrayTag {
-            val size = readSize(input, conf)
-            validate(size >= 0) { "byte array size is negative: $size" }
-            return IntArrayTag(IntArray(size) { readInt32(input, conf) })
-        }
-
-        override fun readText(input: Reader, conf: NBTStringConfig): IntArrayTag {
-            val list = readArray(input, 'I', null) { it.toInt() }
-            return IntArrayTag(list.toIntArray())
-        }
-
-        override val id get() = TagID.IntArray
-        override fun wrap(value: IntArray) = IntArrayTag(value)
-    }
+    override fun toString() = "TAG_IntArray"
 }

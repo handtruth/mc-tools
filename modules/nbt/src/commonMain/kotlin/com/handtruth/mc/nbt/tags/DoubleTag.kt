@@ -1,43 +1,29 @@
 package com.handtruth.mc.nbt.tags
 
-import com.handtruth.mc.nbt.NBTBinaryConfig
-import com.handtruth.mc.nbt.NBTStringConfig
-import com.handtruth.mc.nbt.TagID
+import com.handtruth.mc.nbt.NBTBinaryCodec
+import com.handtruth.mc.nbt.NBTStringCodec
 import com.handtruth.mc.nbt.util.Reader
 import com.handtruth.mc.nbt.util.readAnyFloating
 import com.handtruth.mc.nbt.util.readDouble
 import com.handtruth.mc.nbt.util.writeDouble
 import kotlinx.io.Input
 import kotlinx.io.Output
-import kotlin.reflect.KProperty
 
-class DoubleTag(var number: Double) : MutableTag<Double>(TagID.Double) {
-    override var value
-        get() = number
-        set(value) {
-            number = value
-        }
+object DoubleTag : Tag<Double> {
+    override val type = Double::class
 
-    override fun writeBinary(output: Output, conf: NBTBinaryConfig) {
-        writeDouble(output, conf, number)
+    override fun readBinary(input: Input, conf: NBTBinaryCodec) = readDouble(input, conf.binaryConfig)
+
+    override fun readText(input: Reader, conf: NBTStringCodec) = readAnyFloating(input, 'd') { it.toDouble() }
+
+    override fun writeBinary(output: Output, conf: NBTBinaryCodec, value: Double) {
+        writeDouble(output, conf.binaryConfig, value)
     }
 
-    override fun writeText(output: Appendable, conf: NBTStringConfig, level: Int) {
-        output.append(number.toString())
+    override fun writeText(output: Appendable, conf: NBTStringCodec, value: Double, level: Int) {
+        output.append(value.toString())
         output.append('d')
     }
 
-    operator fun getValue(thisRef: Any?, property: KProperty<*>) = number
-    operator fun setValue(thisRef: Any?, property: KProperty<*>, newValue: Double) {
-        number = newValue
-    }
-
-    companion object : TagResolver<Double> {
-        override fun readBinary(input: Input, conf: NBTBinaryConfig) = DoubleTag(readDouble(input, conf))
-        override fun readText(input: Reader, conf: NBTStringConfig) =
-            DoubleTag(readAnyFloating(input, 'd') { it.toDouble() })
-
-        override val id get() = TagID.Double
-        override fun wrap(value: Double) = DoubleTag(value)
-    }
+    override fun toString() = "TAG_Double"
 }
