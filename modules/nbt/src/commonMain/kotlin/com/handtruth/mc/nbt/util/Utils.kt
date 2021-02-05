@@ -1,9 +1,9 @@
 package com.handtruth.mc.nbt.util
 
-import com.handtruth.mc.nbt.NBTBinaryConfig
-import com.handtruth.mc.nbt.NBTStringConfig
-import com.handtruth.mc.nbt.TagID
+import com.handtruth.mc.nbt.*
+import com.handtruth.mc.nbt.tags.*
 import com.handtruth.mc.util.*
+import kotlinx.datetime.*
 import kotlinx.io.*
 import kotlinx.io.text.readUtf8String
 import kotlinx.io.text.writeUtf8String
@@ -20,9 +20,10 @@ internal fun reverse(value: Int): Int {
 }
 
 internal fun reverse(value: Long): Long {
-    return (value shl 56) or (value ushr 56) or (value shl 48 and 0xFF0000_00000000L) or
-        (value ushr 48 and 0xFF00) or (value shl 24 and 0xFF00_00000000L) or (value ushr 24 and 0xFF0000) or
-        (value shl 8 and 0xFF_00000000L) or (value ushr 8 and 0xFF000000)
+    var result = (value shl 56) or (value ushr 56) or (value shl 48 and 0xFF0000_00000000L)
+    result = result or (value ushr 48 and 0xFF00) or (value shl 24 and 0xFF00_00000000L)
+    result = result or (value ushr 24 and 0xFF0000) or (value shl 8 and 0xFF_00000000L)
+    return result or (value ushr 8 and 0xFF000000)
 }
 
 internal fun reverse(value: Float): Float {
@@ -49,59 +50,95 @@ internal fun writeInt16(output: Output, conf: NBTBinaryConfig, short: Short) {
     output.writeShort(value)
 }
 
+internal fun readFlatInt32(input: Input, conf: NBTBinaryConfig): Int {
+    val integer = input.readInt()
+    return when (conf.endian) {
+        NBTBinaryConfig.ByteOrders.Big -> integer
+        NBTBinaryConfig.ByteOrders.Little -> reverse(integer)
+    }
+}
+
 internal fun readInt32(input: Input, conf: NBTBinaryConfig): Int {
     return when (conf.format) {
-        NBTBinaryConfig.Formats.Flat -> {
-            val integer = input.readInt()
-            when (conf.endian) {
-                NBTBinaryConfig.ByteOrders.Big -> integer
-                NBTBinaryConfig.ByteOrders.Little -> reverse(integer)
-            }
-        }
+        NBTBinaryConfig.Formats.Flat -> readFlatInt32(input, conf)
         NBTBinaryConfig.Formats.ZigZag -> readUZInt32(input).toInt()
         NBTBinaryConfig.Formats.ZInt -> readSZInt32(input)
     }
 }
 
-internal fun writeInt32(output: Output, conf: NBTBinaryConfig, integer: Int) {
+internal fun readUInt32(input: Input, conf: NBTBinaryConfig): UInt {
+    return when (conf.format) {
+        NBTBinaryConfig.Formats.Flat -> readFlatInt32(input, conf).toUInt()
+        NBTBinaryConfig.Formats.ZigZag, NBTBinaryConfig.Formats.ZInt -> readUZInt32(input)
+    }
+}
+
+internal fun writeFlatInt32(output: Output, conf: NBTBinaryConfig, integer: Int) {
+    val value = when (conf.endian) {
+        NBTBinaryConfig.ByteOrders.Big -> integer
+        NBTBinaryConfig.ByteOrders.Little -> reverse(integer)
+    }
+    output.writeInt(value)
+}
+
+internal fun writeInt32(output: Output, conf: NBTBinaryConfig, value: Int) {
     when (conf.format) {
-        NBTBinaryConfig.Formats.Flat -> {
-            val value = when (conf.endian) {
-                NBTBinaryConfig.ByteOrders.Big -> integer
-                NBTBinaryConfig.ByteOrders.Little -> reverse(integer)
-            }
-            output.writeInt(value)
-        }
-        NBTBinaryConfig.Formats.ZigZag -> writeUZInt32(output, integer.toUInt())
-        NBTBinaryConfig.Formats.ZInt -> writeSZInt32(output, integer)
+        NBTBinaryConfig.Formats.Flat -> writeFlatInt32(output, conf, value)
+        NBTBinaryConfig.Formats.ZigZag -> writeUZInt32(output, value.toUInt())
+        NBTBinaryConfig.Formats.ZInt -> writeSZInt32(output, value)
+    }
+}
+
+internal fun writeUInt32(output: Output, conf: NBTBinaryConfig, value: UInt) {
+    when (conf.format) {
+        NBTBinaryConfig.Formats.Flat -> writeFlatInt32(output, conf, value.toInt())
+        NBTBinaryConfig.Formats.ZigZag, NBTBinaryConfig.Formats.ZInt -> writeUZInt32(output, value)
+    }
+}
+
+internal fun readFlatInt64(input: Input, conf: NBTBinaryConfig): Long {
+    val long = input.readLong()
+    return when (conf.endian) {
+        NBTBinaryConfig.ByteOrders.Big -> long
+        NBTBinaryConfig.ByteOrders.Little -> reverse(long)
     }
 }
 
 internal fun readInt64(input: Input, conf: NBTBinaryConfig): Long {
     return when (conf.format) {
-        NBTBinaryConfig.Formats.Flat -> {
-            val long = input.readLong()
-            when (conf.endian) {
-                NBTBinaryConfig.ByteOrders.Big -> long
-                NBTBinaryConfig.ByteOrders.Little -> reverse(long)
-            }
-        }
+        NBTBinaryConfig.Formats.Flat -> readFlatInt64(input, conf)
         NBTBinaryConfig.Formats.ZigZag -> readUZInt64(input).toLong()
         NBTBinaryConfig.Formats.ZInt -> readSZInt64(input)
     }
 }
 
+internal fun readUInt64(input: Input, conf: NBTBinaryConfig): ULong {
+    return when (conf.format) {
+        NBTBinaryConfig.Formats.Flat -> readFlatInt64(input, conf).toULong()
+        NBTBinaryConfig.Formats.ZigZag, NBTBinaryConfig.Formats.ZInt -> readUZInt64(input)
+    }
+}
+
+internal fun writeFlatInt64(output: Output, conf: NBTBinaryConfig, long: Long) {
+    val value = when (conf.endian) {
+        NBTBinaryConfig.ByteOrders.Big -> long
+        NBTBinaryConfig.ByteOrders.Little -> reverse(long)
+    }
+    output.writeLong(value)
+}
+
 internal fun writeInt64(output: Output, conf: NBTBinaryConfig, long: Long) {
     when (conf.format) {
-        NBTBinaryConfig.Formats.Flat -> {
-            val value = when (conf.endian) {
-                NBTBinaryConfig.ByteOrders.Big -> long
-                NBTBinaryConfig.ByteOrders.Little -> reverse(long)
-            }
-            output.writeLong(value)
-        }
+        NBTBinaryConfig.Formats.Flat -> writeFlatInt64(output, conf, long)
         NBTBinaryConfig.Formats.ZigZag -> writeUZInt64(output, long.toULong())
         NBTBinaryConfig.Formats.ZInt -> writeSZInt64(output, long)
+    }
+}
+
+internal fun writeUInt64(output: Output, conf: NBTBinaryConfig, long: ULong) {
+    when (conf.format) {
+        NBTBinaryConfig.Formats.Flat -> writeFlatInt64(output, conf, long.toLong())
+        NBTBinaryConfig.Formats.ZigZag, NBTBinaryConfig.Formats.ZInt -> writeUZInt64(output, long)
     }
 }
 
@@ -187,8 +224,6 @@ internal fun writeString(output: Output, conf: NBTBinaryConfig, value: String) {
     bytes.input().copyTo(output)
 }
 
-internal fun quoteString(value: String) = value.replace("\"", "\\\"")
-
 internal fun Appendable.next(level: Int, pretty: Boolean) {
     if (pretty) {
         append("\n")
@@ -231,7 +266,7 @@ internal inline fun <reified T> joinArray(
     iterator: Iterator<T>,
     builder: Appendable,
     conf: NBTStringConfig,
-    type: Char,
+    type: String,
     suffix: String
 ) {
     smartJoin(
@@ -244,18 +279,21 @@ internal inline fun <reified T> joinArray(
     )
 }
 
-internal fun validate(value: Boolean, expected: KClass<*>, actual: TagID) {
+internal fun notValid(expected: KClass<*>, actual: Any): Nothing =
+    throw NBTException("deserialization not possible: unable to translate $actual tag to $expected type")
+
+internal fun validate(value: Boolean, expected: KClass<*>, actual: Any) {
     contract {
         returns() implies value
     }
-    validate(value) {
-        "deserialization not possible: unable to translate $actual tag to $expected type"
+    if (!value) {
+        notValid(expected, actual)
     }
 }
 
 internal enum class CurrentElement { Key, Value }
 
-internal fun deduceTag(reader: Reader): TagID {
+internal fun deduceTag(reader: Reader, conf: NBTStringCodec): Tag<*> {
     reader.skipSpace()
     var credit = 0
     fun read(): Char {
@@ -263,34 +301,81 @@ internal fun deduceTag(reader: Reader): TagID {
         ++credit
         return c
     }
+
+    fun back() {
+        reader.back()
+        --credit
+    }
+
+    fun booleanCheck(reminder: String): Tag<*> {
+        if (BooleanTag !in conf.tagsModule) {
+            return StringTag
+        }
+        for (c in reminder) {
+            if (c != read()) {
+                return StringTag
+            }
+        }
+        val next = read()
+        return if (next !in 'a'..'z' && next !in 'A'..'Z' && next != '_' && next != '-' && next !in '0'..'9') {
+            BooleanTag
+        } else {
+            StringTag
+        }
+    }
     try {
         when (read()) {
-            '{' -> return TagID.Compound
-            '}', ']' -> return TagID.End
-            '[' -> {
-                val id = when (read()) {
-                    'B' -> TagID.ByteArray
-                    'I' -> TagID.IntArray
-                    'L' -> TagID.LongArray
-                    else -> TagID.List
+            '{' -> {
+                if (UUIDTag in conf.tagsModule) {
+                    back()
+                    if (isUUIDToken(reader)) {
+                        return UUIDTag
+                    }
                 }
-                return if (id != TagID.List) {
+                return CompoundTag
+            }
+            '}', ']' -> return EndTag
+            '[' -> {
+                val tag = when (read()) {
+                    'b' -> if (BooleanArrayTag in conf.tagsModule) BooleanArrayTag else ListTag
+                    'B' -> if (ByteArrayTag in conf.tagsModule) ByteArrayTag else ListTag
+                    'S' -> if (ShortArrayTag in conf.tagsModule) ShortArrayTag else ListTag
+                    'I' -> if (IntArrayTag in conf.tagsModule) IntArrayTag else ListTag
+                    'L' -> if (LongArrayTag in conf.tagsModule) LongArrayTag else ListTag
+                    else -> ListTag
+                }
+                return if (tag != ListTag) {
                     ++credit
-                    if (reader.read() != ';') TagID.List else id
+                    if (reader.read() != ';') ListTag else tag
                 } else {
-                    TagID.List
+                    ListTag
                 }
             }
             in '0'..'9', '-', '+', '.' -> {
+                if (InstantTag in conf.tagsModule) {
+                    back()
+                    if (readTime(reader, conf.stringConfig, false) != null) {
+                        return InstantTag
+                    }
+                    read()
+                }
                 while (true) {
                     when (read()) {
                         in '0'..'9' -> {
                         }
-                        'b' -> return TagID.Byte
-                        's' -> return TagID.Short
-                        'l' -> return TagID.Long
-                        'f' -> return TagID.Float
-                        'd' -> return TagID.Double
+                        'u' -> {
+                            return when (read()) {
+                                'b' -> if (UByteTag in conf.tagsModule) UByteTag else IntTag
+                                's' -> if (UShortTag in conf.tagsModule) UShortTag else IntTag
+                                'l' -> if (ULongTag in conf.tagsModule) ULongTag else IntTag
+                                else -> if (UIntTag in conf.tagsModule) UIntTag else IntTag
+                            }
+                        }
+                        'b' -> return ByteTag
+                        's' -> return ShortTag
+                        'l' -> return LongTag
+                        'f' -> return FloatTag
+                        'd' -> return DoubleTag
                         'e', 'E' -> {
                             when (read()) {
                                 in '0'..'9', '-', '+' -> {
@@ -298,8 +383,8 @@ internal fun deduceTag(reader: Reader): TagID {
                                         when (read()) {
                                             in '0'..'9' -> {
                                             }
-                                            'f' -> return TagID.Float
-                                            /*'d'*/ else -> return TagID.Double
+                                            'f' -> return FloatTag
+                                            /*'d'*/ else -> return DoubleTag
                                         }
                                     }
                                 }
@@ -311,24 +396,27 @@ internal fun deduceTag(reader: Reader): TagID {
                                 when (read()) {
                                     in '0'..'9' -> {
                                     }
-                                    'f' -> return TagID.Float
-                                    /*'d'*/ else -> return TagID.Double
+                                    'f' -> return FloatTag
+                                    /*'d'*/ else -> return DoubleTag
                                 }
                             }
                         }
-                        else -> return TagID.Int
+                        else -> return IntTag
                     }
                 }
             }
-            '"', in 'a'..'z', in 'A'..'Z', '_' -> return TagID.String
-            else -> error("unknown token")
+            't' -> return booleanCheck("rue")
+            'f' -> return booleanCheck("alse")
+            '\'' -> if (CharTag in conf.tagsModule) return CharTag
+            '"', in 'a'..'z', in 'A'..'Z', '_' -> return StringTag
         }
     } finally {
         reader.back(credit)
     }
+    error("unknown token")
 }
 
-internal fun readAnyIntString(reader: Reader, suffix: Char?): String {
+internal fun readAnyIntString(reader: Reader, suffix: Char?, unsigned: Boolean = false): String {
     reader.skipSpace()
     var credit = 0
     fun read(): Char {
@@ -338,52 +426,92 @@ internal fun readAnyIntString(reader: Reader, suffix: Char?): String {
     }
 
     val string: String
-    cycle@ while (true) {
-        when (read()) {
-            in '0'..'9', '-', '+' -> {
+    if (unsigned) {
+        while (true) {
+            when (read()) {
+                in '0'..'9', '-', '+' -> {
+                }
+                'u' -> {
+                    val next = read()
+                    reader.back(2)
+                    if (next == suffix) {
+                        string = reader.previous(credit - 2)
+                        reader.read()
+                        reader.read()
+                        break
+                    } else {
+                        string = reader.previous(credit - 2)
+                        reader.read()
+                        break
+                    }
+                }
+                else -> {
+                    reader.back()
+                    string = reader.previous(credit - 1)
+                    break
+                }
             }
-            suffix -> {
-                reader.back()
-                string = reader.previous(credit - 1)
-                reader.read()
-                break@cycle
-            }
-            else -> {
-                reader.back()
-                string = reader.previous(credit - 1)
-                break@cycle
+        }
+    } else {
+        while (true) {
+            when (read()) {
+                in '0'..'9', '-', '+' -> {
+                }
+                suffix -> {
+                    reader.back()
+                    string = reader.previous(credit - 1)
+                    reader.read()
+                    break
+                }
+                else -> {
+                    reader.back()
+                    string = reader.previous(credit - 1)
+                    break
+                }
             }
         }
     }
     return string
 }
 
-internal inline fun <reified T> readAnyInt(reader: Reader, suffix: Char?, parse: (String) -> T): T {
-    return parse(readAnyIntString(reader, suffix))
+internal inline fun <reified T> readAnyInt(
+    reader: Reader,
+    suffix: Char?,
+    unsigned: Boolean = false,
+    parse: (String) -> T
+): T {
+    return parse(readAnyIntString(reader, suffix, unsigned))
 }
 
 internal inline fun <reified T> readArray(
     reader: Reader,
     type: Char,
     suffix: Char? = null,
+    unsigned: Boolean = false,
     parse: (String) -> T
 ): List<T> {
     reader.skipSpace()
-    if (reader.take(3) != "[$type;") {
-        error("not an array of '$type'")
+    if (unsigned) {
+        if (reader.take(4) != "[U$type;") {
+            error("not an array of 'U$type'")
+        }
+    } else {
+        if (reader.take(3) != "[$type;") {
+            error("not an array of '$type'")
+        }
     }
     val result = mutableListOf<T>()
-    cycle@ while (true) {
+    while (true) {
         reader.skipSpace()
-        when (reader.read()) {
-            ']' -> return result
+        return when (reader.read()) {
+            ']' -> result
             else -> {
                 reader.back()
-                result += readAnyInt(reader, suffix, parse)
+                result += readAnyInt(reader, suffix, unsigned, parse)
                 reader.skipSpace()
                 when (reader.read()) {
-                    ',' -> continue@cycle
-                    ']' -> return result
+                    ',' -> continue
+                    ']' -> result
                     else -> error("unexpected token")
                 }
             }
@@ -407,37 +535,60 @@ internal fun readJsonString(raw: String): String {
                     break
                 }
                 append(raw.substring(i, j))
-                i = k + 1
-                when (val c = raw[k]) {
-                    '"', '\\', '/' -> append(c)
-                    'b' -> append('\b')
-                    'f' -> append(12.toChar())
-                    'n' -> append('\n')
-                    'r' -> append('\r')
-                    't' -> append('\t')
-                    'u' -> {
-                        var l = k + 1
-                        for (m in 0..3) {
-                            if (l + 1 == raw.length) {
-                                break
-                            }
-                            val a = raw[l]
-                            if (a !in '0'..'9' && a !in 'a'..'f' && a !in 'A'..'F') {
-                                break
-                            }
-                            l++
-                        }
-                        append(raw.substring(k + 1, l).toInt(16).toChar())
-                        i = l
-                    }
-                    else -> {
-                        append('\\')
-                        append(c)
-                    }
-                }
+                val (toAppend, index) = readEscaped(raw, k)
+                i = index
+                append(toAppend)
                 j = i - 1
             }
             j++
+        }
+    }
+}
+
+internal fun readEscaped(string: String, start: Int): Pair<Char, Int> {
+    return when (val c = string[start]) {
+        '"', '\\', '/' -> c to (start + 1)
+        'b' -> '\b' to (start + 1)
+        'f' -> 12.toChar() to (start + 1)
+        'n' -> '\n' to (start + 1)
+        'r' -> '\r' to (start + 1)
+        't' -> '\t' to (start + 1)
+        'u' -> {
+            var l = start + 1
+            for (m in 0..3) {
+                if (l == string.length) {
+                    break
+                }
+                val a = string[l]
+                if (a !in '0'..'9' && a !in 'a'..'f' && a !in 'A'..'F') {
+                    break
+                }
+                l++
+            }
+            string.substring(start + 1, l).toInt(16).toChar() to l
+        }
+        else -> '\\' to start
+    }
+}
+
+internal fun readChar(reader: Reader): Char {
+    reader.skipSpace()
+    check(reader.read() == '\'') { "not a character token" }
+    var credit = 0
+    while (true) {
+        ++credit
+        when (reader.read()) {
+            '\\' -> {
+                ++credit
+                reader.read()
+            }
+            '\'' -> {
+                reader.back()
+                val raw = reader.previous(credit - 1)
+                reader.read()
+                val c = raw[0]
+                return if (c == '\\') readEscaped(raw, 1).first else c
+            }
         }
     }
 }
@@ -541,13 +692,127 @@ internal fun writeJsonString(appendable: Appendable, string: String) {
     appendable.append('"')
 }
 
-internal fun writeString(appendable: Appendable, quote: Boolean, value: String) {
-    val shouldQuote = quote || value.isEmpty() ||
-        value[0].let { it !in 'a'..'z' && it !in 'A'..'Z' && it != '_' } ||
-        value.any { it !in 'a'..'z' && it !in 'A'..'Z' && it !in "-+_." && it !in '0'..'9' }
+internal fun writeString(appendable: Appendable, quote: Boolean, value: String, conf: NBTStringCodec) {
+    var shouldQuote = quote || value.isEmpty()
+    shouldQuote = shouldQuote || (BooleanTag in conf.tagsModule && (value == "true" || value == "false"))
+    shouldQuote = shouldQuote || value[0].let { it !in 'a'..'z' && it !in 'A'..'Z' && it != '_' }
+    shouldQuote = shouldQuote || value.any { it !in 'a'..'z' && it !in 'A'..'Z' && it !in "-+_." && it !in '0'..'9' }
     if (shouldQuote) {
         writeJsonString(appendable, value)
     } else {
         appendable.append(value)
+    }
+}
+
+internal fun readTime(reader: Reader, conf: NBTStringConfig, consume: Boolean): Instant? {
+    var credit = 0
+    try {
+        while (true) {
+            val c = reader.read()
+            ++credit
+            if (c !in "0123456789WZT+-.:") break
+        }
+        reader.back()
+        val timeString = reader.previous(credit - 1)
+        try {
+            return Instant.parse(timeString)
+        } catch (e: Exception) {
+        }
+        try {
+            return LocalDateTime.parse(timeString).toInstant(conf.timeZone)
+        } catch (e: Exception) {
+        }
+        try {
+            return LocalDate.parse(timeString).atStartOfDayIn(conf.timeZone)
+        } catch (e: Exception) {
+        }
+        return null
+    } finally {
+        if (!consume) {
+            reader.back(credit - 1)
+        }
+    }
+}
+
+internal fun isUUIDToken(reader: Reader): Boolean {
+    var credit = 0
+    fun read(): Char {
+        val c = reader.read()
+        ++credit
+        return c
+    }
+
+    fun checkNext(count: Int): Boolean {
+        repeat(count) {
+            val char = read()
+            if (char !in '0'..'9' && char !in 'a'..'f' && char !in 'A'..'F') {
+                return false
+            }
+        }
+        return true
+    }
+    try {
+        if (read() != '{') {
+            return false
+        }
+        if (!checkNext(8)) {
+            return false
+        }
+        repeat(3) {
+            if (read() != '-') {
+                return false
+            }
+            if (!checkNext(4)) {
+                return false
+            }
+        }
+        if (read() != '-') {
+            return false
+        }
+        if (!checkNext(12)) {
+            return false
+        }
+        return read() == '}'
+    } finally {
+        reader.back(credit)
+    }
+}
+
+internal inline fun compressBooleansRead(input: Input, size: Int, insert: (Int, Boolean) -> Unit) {
+    val fullBytesCount = size ushr 3
+    val reminder = size and 7
+    var offset = 0
+    for (i in 0 until fullBytesCount) {
+        val byte = input.readByte().toInt()
+        for (j in (0 until 8).reversed()) {
+            insert(offset++, byte ushr j and 1 == 1)
+        }
+    }
+    if (reminder != 0) {
+        val byte = input.readByte().toInt()
+        for (j in ((7 - reminder) until 7).reversed()) {
+            insert(offset++, byte ushr j and 1 == 1)
+        }
+    }
+}
+
+internal inline fun compressBooleansWrite(output: Output, size: Int, get: (Int) -> Boolean) {
+    val fullBytesCount = size ushr 3
+    val reminder = size and 7
+    var offset = 0
+    for (i in 0 until fullBytesCount) {
+        var byte = 0
+        for (j in 0 until 8) {
+            byte = byte shl 1 or (if (get(offset++)) 1 else 0)
+        }
+        output.writeByte(byte.toByte())
+    }
+    if (reminder != 0) {
+        var byte = 0
+        for (j in 0 until reminder) {
+            byte = byte shl 1 or (if (get(offset++)) 1 else 0)
+        }
+        byte = byte shl (7 - reminder)
+        output.writeByte(byte.toByte())
     }
 }

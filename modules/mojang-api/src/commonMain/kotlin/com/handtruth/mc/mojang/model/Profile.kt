@@ -1,11 +1,10 @@
-@file:UseSerializers(UUIDSerializer.Mojang::class, ProfilePropertyDeserializer::class)
+@file:UseSerializers(UUID.Serializer.Mojang::class, ProfilePropertyDeserializer::class)
 
 package com.handtruth.mc.mojang.model
 
-import com.handtruth.mc.minecraft.UUID
-import com.handtruth.mc.minecraft.UUIDSerializer
 import com.handtruth.mc.minecraft.model.Player
 import com.handtruth.mc.mojang.util.ProfilePropertyDeserializer
+import com.handtruth.mc.types.UUID
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 

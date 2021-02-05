@@ -1,42 +1,28 @@
 package com.handtruth.mc.nbt.tags
 
-import com.handtruth.mc.nbt.NBTBinaryConfig
-import com.handtruth.mc.nbt.NBTStringConfig
-import com.handtruth.mc.nbt.TagID
+import com.handtruth.mc.nbt.NBTBinaryCodec
+import com.handtruth.mc.nbt.NBTStringCodec
 import com.handtruth.mc.nbt.util.Reader
 import com.handtruth.mc.nbt.util.readAnyInt
 import com.handtruth.mc.nbt.util.readInt32
 import com.handtruth.mc.nbt.util.writeInt32
 import kotlinx.io.Input
 import kotlinx.io.Output
-import kotlin.reflect.KProperty
 
-class IntTag(var integer: Int) : MutableTag<Int>(TagID.Int) {
-    override var value
-        get() = integer
-        set(value) {
-            integer = value
-        }
+object IntTag : Tag<Int> {
+    override val type = Int::class
 
-    override fun writeBinary(output: Output, conf: NBTBinaryConfig) {
-        writeInt32(output, conf, integer)
+    override fun readBinary(input: Input, conf: NBTBinaryCodec) = readInt32(input, conf.binaryConfig)
+
+    override fun readText(input: Reader, conf: NBTStringCodec) = readAnyInt(input, null) { it.toInt() }
+
+    override fun writeBinary(output: Output, conf: NBTBinaryCodec, value: Int) {
+        writeInt32(output, conf.binaryConfig, value)
     }
 
-    override fun writeText(output: Appendable, conf: NBTStringConfig, level: Int) {
-        output.append(integer.toString())
+    override fun writeText(output: Appendable, conf: NBTStringCodec, value: Int, level: Int) {
+        output.append(value.toString())
     }
 
-    operator fun getValue(thisRef: Any?, property: KProperty<*>) = integer
-    operator fun setValue(thisRef: Any?, property: KProperty<*>, newValue: Int) {
-        integer = newValue
-    }
-
-    companion object : TagResolver<Int> {
-        override fun readBinary(input: Input, conf: NBTBinaryConfig) = IntTag(readInt32(input, conf))
-        override fun readText(input: Reader, conf: NBTStringConfig) =
-            IntTag(readAnyInt(input, null) { it.toInt() })
-
-        override val id get() = TagID.Int
-        override fun wrap(value: Int) = IntTag(value)
-    }
+    override fun toString() = "TAG_Int"
 }

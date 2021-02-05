@@ -1,12 +1,12 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
-import org.jetbrains.kotlin.gradle.plugin.KotlinMultiplatformPluginWrapper
-import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.dokka.gradle.DokkaPlugin
-import org.jlleitschuh.gradle.ktlint.KtlintPlugin
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.plugin.KotlinMultiplatformPluginWrapper
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
+import org.jlleitschuh.gradle.ktlint.KtlintPlugin
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 plugins {
@@ -33,6 +33,7 @@ allprojects {
         maven("https://mvn.handtruth.com")
         maven("https://dl.bintray.com/korlibs/korlibs")
         jcenter()
+        maven("https://kotlin.bintray.com/kotlinx")
     }
 }
 
@@ -105,11 +106,13 @@ fun Project.kotlinProject() {
                     enableLanguageFeature("InlineClasses")
                     useExperimentalAnnotation("kotlin.RequiresOptIn")
                     useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
+                    useExperimentalAnnotation("kotlin.ExperimentalStdlibApi")
                     useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
                     useExperimentalAnnotation("com.handtruth.mc.paket.ExperimentalPaketApi")
                     useExperimentalAnnotation("kotlin.time.ExperimentalTime")
                     useExperimentalAnnotation("kotlinx.coroutines.ExperimentalCoroutinesApi")
                     useExperimentalAnnotation("kotlinx.serialization.ExperimentalSerializationApi")
+                    useExperimentalAnnotation("kotlin.experimental.ExperimentalTypeInference")
                 }
                 dependencies {
                     val handtruthPlatform = dependencies.platform("com.handtruth.internal:platform:$platformVersion")
@@ -161,6 +164,7 @@ fun Project.kotlinProject() {
         enableExperimentalRules.set(true)
         outputColorName.set("RED")
         disabledRules.add("no-wildcard-imports")
+        disabledRules.add("import-ordering")
 
         reporters {
             reporter(ReporterType.PLAIN)

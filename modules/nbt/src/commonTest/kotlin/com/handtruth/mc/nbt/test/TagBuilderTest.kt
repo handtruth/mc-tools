@@ -1,41 +1,60 @@
 package com.handtruth.mc.nbt.test
 
-import com.handtruth.mc.nbt.*
+import com.handtruth.mc.nbt.NBT
+import com.handtruth.mc.nbt.NBTBinaryConfig
+import com.handtruth.mc.nbt.tags.*
+import com.handtruth.mc.nbt.write
+import com.handtruth.mc.types.Dynamic
+import com.handtruth.mc.types.buildDynamic
+import com.handtruth.mc.types.dynamic
 import kotlinx.io.ByteArrayInput
 import kotlinx.io.ByteArrayOutput
 import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class TagBuilderTest {
 
-    val javaNBT = NBTBinaryCodec(NBTBinaryConfig.Java) + NBTSerialFormat()
+    val javaNBT = NBT(binary = NBTBinaryConfig.Java)
 
     @Test
     fun buildRootTag() {
-        val tag = buildCompoundTag {
-            "group"("Them")
-            "id"(568)
-            "members" compounds {
-                add {
-                    "name"("Ktlo")
-                    "id"(398.toShort())
+        val tag = buildDynamic {
+            "group" assign "Them"
+            "id" assign 568
+            "members" assign buildList {
+                dynamic {
+                    "name" assign "Ktlo"
+                    "id" assign 398.toShort()
                 }
-                add {
-                    "name"("Xydgiz")
-                    "id"((-3).toShort())
+                dynamic {
+                    "name" assign "Xydgiz"
+                    "id" assign (-3).toShort()
                 }
             }
-            "metadata".array(3, 5, 8, 9, 16, -15)
-            "byteArray".byteArray(-3, 5, 76, 81)
-            "intArray".intArray(58, -98, 334)
-            "longArray".longArray(4842, -6496462, 24554679784123)
+            "metadata" assign intArrayOf(3, 5, 8, 9, 16, -15)
+            "byteArray" assign byteArrayOf(-3, 5, 76, 81)
+            "intArray" assign intArrayOf(58, -98, 334)
+            "longArray" assign longArrayOf(4842, -6496462, 24554679784123)
         }
-        println(tag.toString(NBTStringConfig.Default.copy(pretty = true)))
+        println(javaNBT.write(tag))
         val output = ByteArrayOutput()
-        javaNBT.write(output, tag)
+        javaNBT.write(output, "", tag)
         val bytes = output.toByteArray()
         val input = ByteArrayInput(bytes)
         val actual = javaNBT.read(input)
-        assertEquals(tag, actual)
+        assertDynamicEquals(tag, actual.second as Dynamic)
+    }
+
+    @Test
+    fun printAllTags() {
+        val tags = listOf(
+            BooleanArrayTag, BooleanTag, ByteArrayTag, ByteTag, CharTag,
+            CompoundTag, DoubleTag, EndTag, FloatTag, InstantTag, IntArrayTag,
+            IntTag, ListTag, LongArrayTag, LongTag, ShortArrayTag, ShortTag,
+            StringTag, UByteTag, UIntTag, ULongTag, UShortTag, UUIDTag
+        )
+        for (tag in tags) {
+            assertTrue { tag.toString().startsWith("TAG_") }
+        }
     }
 }

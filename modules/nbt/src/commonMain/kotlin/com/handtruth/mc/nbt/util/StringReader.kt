@@ -53,7 +53,7 @@ internal class StringReader(val source: String, var offset: Int = 0, val length:
                 else -> ++column
             }
         }
-        return Position(line + 1, column + 1, offset)
+        return Position(line + 1, column, offset)
     }
 
     override fun take(forward: Int): String {

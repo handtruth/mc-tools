@@ -1,12 +1,14 @@
 package com.handtruth.mc.nbt.util
 
-import kotlinx.serialization.*
+import com.handtruth.mc.nbt.NBTSerialFormat
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.modules.SerializersModule
 
 internal abstract class NBTIndexedDecoder(
+    val conf: NBTSerialFormat,
     override val serializersModule: SerializersModule
 ) : CompositeDecoder {
     final override fun endStructure(descriptor: SerialDescriptor) {}

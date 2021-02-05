@@ -1,32 +1,32 @@
 package com.handtruth.mc.nbt.util
 
-import com.handtruth.mc.nbt.tags.CompoundTag
-import com.handtruth.mc.nbt.tags.StringTag
-import com.handtruth.mc.nbt.tags.Tag
+import com.handtruth.mc.nbt.NBTSerialFormat
+import com.handtruth.mc.types.MutableDynamic
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.modules.SerializersModule
 
 internal class NBTMapEncoder(
+    conf: NBTSerialFormat,
     serializersModule: SerializersModule,
     private val parent: NBTEncoder
-) : NBTCompositeEncoder(serializersModule) {
-    private val map: MutableMap<String, Tag<*>> = hashMapOf()
+) : NBTCompositeEncoder(conf, serializersModule) {
+    private val value = MutableDynamic()
 
     override fun endStructure(descriptor: SerialDescriptor) {
-        parent.tag = CompoundTag(map)
+        parent.tag = value
     }
 
     private var key = ""
     private var current: CurrentElement = CurrentElement.Key
 
-    override fun <T : Any> placeTag(descriptor: SerialDescriptor, index: Int, tag: Tag<T>) {
+    override fun <T : Any> placeTag(descriptor: SerialDescriptor, index: Int, value: T) {
         when (current) {
             CurrentElement.Key -> {
-                key = (tag as StringTag).value
+                key = value as String
                 current = CurrentElement.Value
             }
             CurrentElement.Value -> {
-                map[key] = tag
+                this.value[key] = value
                 current = CurrentElement.Key
             }
         }

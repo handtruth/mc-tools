@@ -1,11 +1,11 @@
 package com.handtruth.mc.mojang.test
 
-import com.handtruth.mc.minecraft.UUID
 import com.handtruth.mc.mojang.Mojang
 import com.handtruth.mc.mojang.model.*
 import com.handtruth.mc.mojang.util.decodeBase64AsString
 import com.handtruth.mc.mojang.util.json
-import io.ktor.test.dispatcher.testSuspend
+import com.handtruth.mc.types.UUID
+import io.ktor.test.dispatcher.*
 import kotlinx.serialization.Serializable
 import kotlin.test.*
 
@@ -24,7 +24,7 @@ class MojangAPITest {
         println("Got ID of Ktlo")
         assertFalse(data.demo)
         assertFalse(data.legacy)
-        assertEquals(UUID("7bd9e814-d23f-483c-bb4a-91c192ff5351"), data.id)
+        assertEquals(UUID.parse("7bd9e814-d23f-483c-bb4a-91c192ff5351"), data.id)
         val profile = mojang.getProfile(data.id)
         assertEquals("Ktlo", profile.name)
         assertEquals(data.id, profile.id)
@@ -63,7 +63,7 @@ class MojangAPITest {
         assertEquals(exampleDecoded, decodeBase64AsString(exampleEncoded))
         val profile = json.decodeFromString(Profile.serializer(), str)
         assertEquals("IQuant", profile.name)
-        assertEquals(UUID("c14a227a1b9541efb223ad1aeb299050"), profile.id)
+        assertEquals(UUID.parse("c14a227a1b9541efb223ad1aeb299050"), profile.id)
         assertEquals(
             ExampleProperty(
                 "Русский текст, как всегда",
@@ -104,7 +104,7 @@ class MojangAPITest {
 
     @Test
     fun playersVariant() {
-        val playerA = PlayerByNameResponse("Ktlo", UUID.empty, legacy = true, demo = true)
+        val playerA = PlayerByNameResponse("Ktlo", UUID.nil, legacy = true, demo = true)
         val string = json.encodeToString(PlayerByNameResponse.serializer(), playerA)
         val playerB = json.decodeFromString(PlayerByNameResponse.serializer(), string)
         assertEquals(playerA, playerB)

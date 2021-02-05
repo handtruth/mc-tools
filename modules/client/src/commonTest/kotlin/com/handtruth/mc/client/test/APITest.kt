@@ -5,9 +5,9 @@ import com.handtruth.mc.chat.buildChat
 import com.handtruth.mc.client.MinecraftClient
 import com.handtruth.mc.client.model.ServerStatus
 import com.handtruth.mc.client.use
-import com.handtruth.mc.minecraft.UUID
 import com.handtruth.mc.minecraft.model.Player
-import io.ktor.test.dispatcher.testSuspend
+import com.handtruth.mc.types.UUID
+import io.ktor.test.dispatcher.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withTimeout
@@ -37,15 +37,15 @@ class APITest {
                 online = 19,
                 sample = listOf(
                     Player(
-                        id = UUID("c683771d-8246-4e14-9db0-528b63c265cb"),
+                        id = UUID.parse("c683771d-8246-4e14-9db0-528b63c265cb"),
                         name = "Popka"
                     ),
                     Player(
-                        id = UUID("80d86712-45be-445e-b16c-5861eacd9624"),
+                        id = UUID.parse("80d86712-45be-445e-b16c-5861eacd9624"),
                         name = "Zopka"
                     ),
                     Player(
-                        id = UUID("12b53aaf-4a1c-48d9-a3f3-3b40e220c541"),
+                        id = UUID.parse("12b53aaf-4a1c-48d9-a3f3-3b40e220c541"),
                         name = "Player"
                     )
                 )

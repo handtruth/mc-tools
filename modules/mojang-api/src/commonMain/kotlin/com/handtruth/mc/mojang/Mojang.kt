@@ -1,13 +1,13 @@
 package com.handtruth.mc.mojang
 
-import com.handtruth.mc.minecraft.UUID
 import com.handtruth.mc.mojang.model.PlayerByNameResponse
 import com.handtruth.mc.mojang.model.Profile
 import com.handtruth.mc.mojang.model.ProfileContext
 import com.handtruth.mc.mojang.util.json
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.HttpClientEngine
-import io.ktor.client.request.get
+import com.handtruth.mc.types.UUID
+import io.ktor.client.*
+import io.ktor.client.engine.*
+import io.ktor.client.request.*
 import kotlinx.serialization.DeserializationStrategy
 
 class Mojang(private val client: HttpClient) {

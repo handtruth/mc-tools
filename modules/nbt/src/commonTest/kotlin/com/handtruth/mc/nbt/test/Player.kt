@@ -1,8 +1,7 @@
 package com.handtruth.mc.nbt.test
 
 import com.handtruth.mc.nbt.NBTSerialFormat
-import com.handtruth.mc.nbt.tags.CompoundTag
-import com.handtruth.mc.nbt.tags.Tag
+import com.handtruth.mc.types.Dynamic
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -54,5 +53,5 @@ data class Player(val id: Int, val name: String, val inventory: Inventory, val m
     }
 }
 
-fun player2nbt(player: Player) = NBTSerialFormat().encodeToNBT(Player.serializer(), player) as CompoundTag
-fun nbt2player(tag: Tag<*>) = NBTSerialFormat().decodeFromNBT(Player.serializer(), tag)
+fun player2nbt(player: Player) = NBTSerialFormat().encodeToNBT(Player.serializer(), player) as Dynamic
+fun nbt2player(tag: Any) = NBTSerialFormat().decodeFromNBT(Player.serializer(), tag)
