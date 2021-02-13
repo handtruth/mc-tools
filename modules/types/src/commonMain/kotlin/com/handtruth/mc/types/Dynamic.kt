@@ -1,6 +1,8 @@
 package com.handtruth.mc.types
 
 import com.handtruth.mc.util.ReferenceSet
+import kotlinx.io.Bytes
+import kotlinx.io.readByte
 
 interface Dynamic : Iterable<Map.Entry<String, Any>> {
     val fields: Map<String, Any>
@@ -67,7 +69,7 @@ private fun listEquals(a: List<*>, b: List<*>): Boolean {
     return true
 }
 
-private fun arraysEquals(a: Any, b: Any) = when {
+private fun arraysEquals(a: Any, b: Any): Boolean = when {
     a is BooleanArray && b is BooleanArray -> a.contentEquals(b)
     a is CharArray && b is CharArray -> a.contentEquals(b)
     a is ByteArray && b is ByteArray -> a.contentEquals(b)
@@ -81,6 +83,29 @@ private fun arraysEquals(a: Any, b: Any) = when {
     a is FloatArray && b is FloatArray -> a.contentEquals(b)
     a is DoubleArray && b is DoubleArray -> a.contentEquals(b)
     a is Array<*> && b is Array<*> -> listEquals(a.asList(), b.asList())
+    a is Bytes && b is Bytes -> {
+        val size = a.size()
+        if (size != b.size()) {
+            false
+        } else {
+            if (size == 0) {
+                true
+            } else {
+                a.input().preview {
+                    val inA = this
+                    b.input().preview {
+                        val inB = this
+                        repeat(size) {
+                            if (inA.readByte() != inB.readByte()) {
+                                return@preview false
+                            }
+                        }
+                        true
+                    }
+                }
+            }
+        }
+    }
     else -> false
 }
 
@@ -209,6 +234,7 @@ private fun ContentToStringContext.appendValueAsString(value: Any?) {
         is ULongArray -> append(value.contentToString())
         is FloatArray -> append(value.contentToString())
         is DoubleArray -> append(value.contentToString())
+        is Char -> append("'$value'")
         else -> append(value.toString())
     }
 }
@@ -247,7 +273,7 @@ fun Dynamic?.contentDeepHashCode(): Int {
     return mapHashCode(fields)
 }
 
-private fun valueHashCode(value: Any?) = when (value) {
+private fun valueHashCode(value: Any?): Int = when (value) {
     null -> 0
     is Dynamic -> mapHashCode(value.fields)
     is Collection<*> -> collectionHashCode(value)
@@ -265,6 +291,14 @@ private fun valueHashCode(value: Any?) = when (value) {
     is ULongArray -> value.contentHashCode()
     is FloatArray -> value.contentHashCode()
     is DoubleArray -> value.contentHashCode()
+    is Bytes -> value.input().preview {
+        val size = value.size()
+        var result = size.inv()
+        repeat(size) {
+            result = result.rotateLeft(2) + readByte()
+        }
+        result
+    }
     else -> value.hashCode()
 }
 

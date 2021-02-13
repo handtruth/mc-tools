@@ -7,6 +7,8 @@ import com.handtruth.mc.types.buildDynamic
 import com.handtruth.mc.types.dynamic
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toInstant
+import kotlinx.io.buildBytes
+import kotlinx.io.text.writeUtf8String
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -15,7 +17,7 @@ class MCSDBTest {
     private val nbt = NBT(
         tags = TagsModule.MCSDB,
         binary = NBTBinaryConfig.KBT,
-        string = NBTStringConfig.Handtruth,
+        string = NBTStringConfig.Handtruth.copy(pretty = true),
         serial = NBTSerialConfig.Default,
         module = EmptySerializersModule
     )
@@ -42,7 +44,9 @@ class MCSDBTest {
                 uuid: {bf810f1c-ca49-41c8-9141-871452464ebb},
                 instant: 1337-12-06T23:42:13,
                 empty-compound: {},
-                empty-bytes: [B;],
+                empty-bytes: (),
+                space-bytes: ( ),
+                big-bytes: (U2VkIHV0IHBlcnNwaWNpYXRpcyB1bmRlIG9tbmlzIGlzdGUgbmF0dXMgZXJyb3Igc2l0IHZvbHVwdGF0ZW0gYWNjdXNhbnRpdW0gZG9sb3JlbXF1ZSBsYXVkYW50aXVtLCB0b3RhbSByZW0gYXBlcmlhbSwgZWFxdWUgaXBzYSBxdWFlIGFiIGlsbG8gaW52ZW50b3JlIHZlcml0YXRpcyBldCBxdWFzaSBhcmNoaXRlY3RvIGJlYXRhZSB2aXRhZSBkaWN0YSBzdW50IGV4cGxpY2Fiby4gTmVtbyBlbmltIGlwc2FtIHZvbHVwdGF0ZW0gcXVpYSB2b2x1cHRhcyBzaXQgYXNwZXJuYXR1ciBhdXQgb2RpdCBhdXQgZnVnaXQsIHNlZCBxdWlhIGNvbnNlcXV1bnR1ciBtYWduaSBkb2xvcmVzIGVvcyBxdWkgcmF0aW9uZSB2b2x1cHRhdGVtIHNlcXVpIG5lc2NpdW50LiBOZXF1ZSBwb3JybyBxdWlzcXVhbSBlc3QsIHF1aSBkb2xvcmVtIGlwc3VtIHF1aWEgZG9sb3Igc2l0IGFtZXQsIGNvbnNlY3RldHVyLCBhZGlwaXNjaSB2ZWxpdCwgc2VkIHF1aWEgbm9uIG51bXF1YW0gZWl1cyBtb2RpIHRlbXBvcmEgaW5jaWR1bnQgdXQgbGFib3JlIGV0IGRvbG9yZSBtYWduYW0gYWxpcXVhbSBxdWFlcmF0IHZvbHVwdGF0ZW0uIFV0IGVuaW0gYWQgbWluaW1hIHZlbmlhbSwgcXVpcyBub3N0cnVtIGV4ZXJjaXRhdGlvbmVtIHVsbGFtIGNvcnBvcmlzIHN1c2NpcGl0IGxhYm9yaW9zYW0sIG5pc2kgdXQgYWxpcXVpZCBleCBlYSBjb21tb2RpIGNvbnNlcXVhdHVyPyBRdWlzIGF1dGVtIHZlbCBldW0gaXVyZSByZXByZWhlbmRlcml0IHF1aSBpbiBlYSB2b2x1cHRhdGUgdmVsaXQgZXNzZSBxdWFtIG5paGlsIG1vbGVzdGlhZSBjb25zZXF1YXR1ciwgdmVsIGlsbHVtIHF1aSBkb2xvcmVtIGV1bSBmdWdpYXQgcXVvIHZvbHVwdGFzIG51bGxhIHBhcmlhdHVyPw==),
                 empty-list: [],
                 list-of-compounds: [
                     {
@@ -77,7 +81,24 @@ class MCSDBTest {
             "uuid" assign UUID.parseDefault("bf810f1c-ca49-41c8-9141-871452464ebb")
             "instant" assign LocalDateTime.parse("1337-12-06T23:42:13").toInstant(nbt.stringConfig.timeZone)
             "empty-compound" {}
-            "empty-bytes" assign byteArrayOf()
+            "empty-bytes" assign buildBytes { }
+            "space-bytes" assign buildBytes { }
+            "big-bytes" assign buildBytes {
+                writeUtf8String(
+                    "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium " +
+                        "doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore " +
+                        "veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim " +
+                        "ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia " +
+                        "consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque " +
+                        "porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, " +
+                        "adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et " +
+                        "dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis " +
+                        "nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex " +
+                        "ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea " +
+                        "voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem " +
+                        "eum fugiat quo voluptas nulla pariatur?"
+                )
+            }
             "empty-list" list emptyList<Nothing>()
             "list-of-compounds" list {
                 dynamic {
@@ -92,6 +113,7 @@ class MCSDBTest {
             }
         }
         val tag1 = nbt.read(string) as Dynamic
+        println(nbt.write(tag1))
         assertDynamicEquals(expected, tag1)
         val bytes = nbt.write("MCSDB", tag1)
         val (name, tag2) = nbt.read(bytes)

@@ -48,7 +48,7 @@ class TagBuilderTest {
     @Test
     fun printAllTags() {
         val tags = listOf(
-            BooleanArrayTag, BooleanTag, ByteArrayTag, ByteTag, CharTag,
+            BooleanArrayTag, BooleanTag, ByteArrayTag, BytesTag, ByteTag, CharTag,
             CompoundTag, DoubleTag, EndTag, FloatTag, InstantTag, IntArrayTag,
             IntTag, ListTag, LongArrayTag, LongTag, ShortArrayTag, ShortTag,
             StringTag, UByteTag, UIntTag, ULongTag, UShortTag, UUIDTag

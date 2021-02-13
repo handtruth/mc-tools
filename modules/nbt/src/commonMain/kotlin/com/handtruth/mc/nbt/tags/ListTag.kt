@@ -101,7 +101,8 @@ object ListTag : Tag<List<*>> {
                 prefix = "[",
                 postfix = "]",
                 pretty = conf.stringConfig.pretty,
-                level = level
+                level = level,
+                identString = conf.stringConfig.identString
             ) {
                 val item = conf.checkItem(tag, it)
                 tag.writeText(this, conf, item, level + 1)

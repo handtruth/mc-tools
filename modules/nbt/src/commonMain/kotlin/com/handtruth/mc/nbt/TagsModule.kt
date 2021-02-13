@@ -30,7 +30,7 @@ interface TagsModule {
 
         val MCSDB: TagsModule = TagsModuleImplementation(
             EndTag, BooleanTag, ByteTag, ShortTag, IntTag, LongTag, UByteTag, UShortTag, UIntTag, ULongTag,
-            FloatTag, DoubleTag, CharTag, StringTag, UUIDTag, InstantTag, CompoundTag, ByteArrayTag, ListTag
+            FloatTag, DoubleTag, CharTag, StringTag, UUIDTag, InstantTag, CompoundTag, BytesTag, ListTag
         )
     }
 }

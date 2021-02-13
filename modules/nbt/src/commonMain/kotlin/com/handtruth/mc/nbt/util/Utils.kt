@@ -224,11 +224,11 @@ internal fun writeString(output: Output, conf: NBTBinaryConfig, value: String) {
     bytes.input().copyTo(output)
 }
 
-internal fun Appendable.next(level: Int, pretty: Boolean) {
+internal fun Appendable.next(level: Int, pretty: Boolean, identString: String) {
     if (pretty) {
         append("\n")
         repeat(level) {
-            append("    ")
+            append(identString)
         }
     }
 }
@@ -242,20 +242,21 @@ internal inline fun <reified T> smartJoin(
     delimiter: String = ",",
     level: Int = 0,
     pretty: Boolean = false,
+    identString: String = "",
     chain: Appendable.(T) -> Unit = { append(it.toString()) }
 ) {
     if (iter.hasNext()) {
         builder.append(prefix)
-        builder.next(level + 1, pretty)
+        builder.next(level + 1, pretty, identString)
         builder.chain(iter.next())
         builder.append(suffix)
         for (each in iter) {
             builder.append(delimiter)
-            builder.next(level + 1, pretty)
+            builder.next(level + 1, pretty, identString)
             builder.chain(each)
             builder.append(suffix)
         }
-        builder.next(level, pretty)
+        builder.next(level, pretty, identString)
         builder.append(postfix)
     } else {
         builder.append(prefix).append(postfix)
@@ -409,6 +410,7 @@ internal fun deduceTag(reader: Reader, conf: NBTStringCodec): Tag<*> {
             'f' -> return booleanCheck("alse")
             '\'' -> if (CharTag in conf.tagsModule) return CharTag
             '"', in 'a'..'z', in 'A'..'Z', '_' -> return StringTag
+            '(' -> if (BytesTag in conf.tagsModule) return BytesTag
         }
     } finally {
         reader.back(credit)

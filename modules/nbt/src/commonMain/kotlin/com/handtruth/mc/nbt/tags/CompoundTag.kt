@@ -83,7 +83,8 @@ object CompoundTag : Tag<Dynamic> {
             prefix = "{",
             postfix = "}",
             pretty = conf.stringConfig.pretty,
-            level = level
+            level = level,
+            identString = conf.stringConfig.identString
         ) { (key, value) ->
             writeString(this, conf.stringConfig.quoteKeys, key, conf)
             append(if (conf.stringConfig.pretty) ": " else ":")

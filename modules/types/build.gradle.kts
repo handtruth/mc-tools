@@ -5,6 +5,7 @@ plugins {
 dependencies {
     fun kotlinx(name: String) = "org.jetbrains.kotlinx:kotlinx-$name"
 
+    commonMainImplementation(kotlinx("io"))
     commonMainImplementation(kotlinx("serialization-core"))
     commonTestImplementation(kotlinx("serialization-json"))
 }
