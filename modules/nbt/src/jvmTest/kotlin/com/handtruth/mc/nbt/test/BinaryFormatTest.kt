@@ -7,8 +7,7 @@ import com.handtruth.mc.nbt.plus
 import com.handtruth.mc.types.Dynamic
 import com.handtruth.mc.types.buildDynamic
 import com.handtruth.mc.types.dynamic
-import kotlinx.io.ByteArrayInput
-import kotlinx.io.ByteArrayOutput
+import io.ktor.utils.io.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -66,11 +65,13 @@ class BinaryFormatTest {
         }
         assertEquals("Level", actual.first)
         assertDynamicEquals(expected, actual.second as Dynamic)
-        val expectedOutput = ByteArrayOutput()
-        val actualOutput = ByteArrayOutput()
-        javaNBT.write(expectedOutput, "Level", expected)
-        javaNBT.write(actualOutput, "Level", actual.second)
-        assertEquals(expectedOutput.toByteArray().toList(), actualOutput.toByteArray().toList())
+        val expectedOutput = buildPacket {
+            javaNBT.write(this, "Level", expected)
+        }
+        val actualOutput = buildPacket {
+            javaNBT.write(this, "Level", actual.second)
+        }
+        assertEquals(expectedOutput.readBytes().toList(), actualOutput.readBytes().toList())
     }
 
     @Test
@@ -99,11 +100,12 @@ class BinaryFormatTest {
         val root = buildDynamic {
             "name" assign "Bananrama"
         }
-        val output = ByteArrayOutput()
-        javaNBT.write(output, "hello world", root)
-        val decode = ByteArrayInput(output.toByteArray())
-        val easy1 = javaNBT.read(decode)
-        val easy2 = javaNBT.read(input)
-        assertEquals(easy1, easy2)
+        buildPacket {
+            javaNBT.write(this, "hello world", root)
+        }.use { decode ->
+            val easy1 = javaNBT.read(decode)
+            val easy2 = javaNBT.read(input)
+            assertEquals(easy1, easy2)
+        }
     }
 }

@@ -1,63 +1,96 @@
 package com.handtruth.mc.client
 
 import com.handtruth.mc.client.model.ServerStatus
+import com.handtruth.mc.client.proto.*
 import com.handtruth.mc.client.proto.HandshakePaket
-import com.handtruth.mc.client.proto.PingPongPaket
-import com.handtruth.mc.client.proto.RequestPaket
+import com.handtruth.mc.client.proto.Header
+import com.handtruth.mc.client.proto.PaketID
 import com.handtruth.mc.client.proto.ResponsePaket
-import com.handtruth.mc.paket.PaketTransmitter
-import com.handtruth.mc.paket.receive
-import com.soywiz.korio.net.AsyncClient
-import com.soywiz.korio.net.createTcpClient
-import com.soywiz.korio.stream.toAsyncStream
-import kotlinx.coroutines.NonCancellable
+import com.handtruth.mc.paket.transmitter.Transmitter
+import com.handtruth.mc.paket.transmitter.receive
+import com.handtruth.mc.paket.transmitter.send
+import io.ktor.network.selector.*
+import io.ktor.network.sockets.*
+import io.ktor.util.*
+import io.ktor.utils.io.core.*
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.withContext
 import kotlin.random.Random
 import kotlin.time.measureTime
 
 class MinecraftClient internal constructor(
-    private val ts: PaketTransmitter,
-    private val client: AsyncClient
-) {
+    private val socket: Socket,
+    private val ts: Transmitter
+) : Closeable {
+    private val header = Header()
+
+    internal suspend fun handshake(version: UInt, address: String, port: UShort) {
+        ts.send {
+            header.id = PaketID.HandshakeRequestResponse
+            ts.insert(header)
+            val handshake = HandshakePaket(
+                version = version,
+                address = address,
+                port = port,
+                state = HandshakePaket.States.Status
+            )
+            ts.insert(handshake)
+        }
+    }
 
     suspend fun getStatus(): ServerStatus {
-        ts.send(RequestPaket)
-        return ts.receive(ResponsePaket).message
+        header.id = PaketID.HandshakeRequestResponse
+        ts.send(header)
+        val response = ResponsePaket()
+        ts.receive {
+            it.extract(header)
+            it.extract(response)
+        }
+        return response.message
     }
 
     suspend fun ping() = flow {
+        header.id = PaketID.PingPong
         val paket = PingPongPaket()
         while (true) {
             paket.payload = Random.nextLong()
             val duration = measureTime {
-                ts.send(paket)
-                ts.receive(paket)
+                ts.send {
+                    it.insert(header)
+                    it.insert(paket)
+                }
+                ts.receive {
+                    it.extract(header)
+                    it.extract(paket)
+                }
             }
             emit(duration)
         }
     }
 
-    suspend fun disconnect() {
+    override fun close() {
         ts.close()
-        client.close()
+        socket.close()
     }
 }
 
+@OptIn(InternalAPI::class)
 @Suppress("FunctionName")
-suspend fun MinecraftClient(address: String, port: Int): MinecraftClient {
-    val client = createTcpClient(address, port)
-    val ts = PaketTransmitter(client.toAsyncStream())
-    ts.send(HandshakePaket(address = address, port = port, state = HandshakePaket.States.Status))
-    return MinecraftClient(ts, client)
-}
-
-suspend inline fun <R> MinecraftClient.use(block: (MinecraftClient) -> R): R {
+suspend fun MinecraftClient(
+    selector: SelectorManager,
+    address: String,
+    port: Int,
+    version: UInt = UInt.MAX_VALUE,
+    shadowAddress: String = address,
+    shadowPort: UShort = port.toUShort()
+): MinecraftClient {
+    val socket = aSocket(selector).tcp().connect(address, port)
+    val ts = Transmitter(socket.openReadChannel(), socket.openWriteChannel())
+    val client = MinecraftClient(socket, ts)
     try {
-        return block(this)
-    } finally {
-        withContext(NonCancellable) {
-            disconnect()
-        }
+        client.handshake(version, shadowAddress, shadowPort)
+    } catch (thr: Throwable) {
+        client.close()
+        throw thr
     }
+    return client
 }

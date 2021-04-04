@@ -6,8 +6,7 @@ import com.handtruth.mc.nbt.util.Reader
 import com.handtruth.mc.nbt.util.readAnyInt
 import com.handtruth.mc.nbt.util.readInt16
 import com.handtruth.mc.nbt.util.writeInt16
-import kotlinx.io.Input
-import kotlinx.io.Output
+import io.ktor.utils.io.core.*
 
 object ShortTag : Tag<Short> {
     override val type = Short::class

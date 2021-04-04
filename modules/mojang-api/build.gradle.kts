@@ -8,7 +8,6 @@ dependencies {
     fun ktor(name: String) = "io.ktor:ktor-$name"
 
     commonMainApi(project(":tools-shared"))
-    commonMainImplementation(kotlinx("io"))
     commonMainImplementation(kotlinx("serialization-json"))
     commonMainImplementation("io.ktor:ktor-client-core")
 

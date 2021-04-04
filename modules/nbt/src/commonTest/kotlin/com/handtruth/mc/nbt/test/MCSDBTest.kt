@@ -1,17 +1,14 @@
 package com.handtruth.mc.nbt.test
 
 import com.handtruth.mc.nbt.*
-import com.handtruth.mc.types.Dynamic
-import com.handtruth.mc.types.UUID
-import com.handtruth.mc.types.buildDynamic
-import com.handtruth.mc.types.dynamic
+import com.handtruth.mc.types.*
+import io.ktor.utils.io.core.*
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toInstant
-import kotlinx.io.buildBytes
-import kotlinx.io.text.writeUtf8String
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class MCSDBTest {
     private val nbt = NBT(
@@ -61,63 +58,83 @@ class MCSDBTest {
                 ]
             }
         """.trimIndent()
-        val expected = buildDynamic {
-            "true" assign true
-            "false" assign false
-            "string1" assign "true_"
-            "byte" byte -23
-            "short" short -237
-            "int" int -1111333
-            "long" long -7638209798
-            "ubyte" ubyte 23u
-            "ushort" ushort 237u
-            "uint" uint 1111333u
-            "ulong" ulong 7638209798u
-            "float" float .125f
-            "double" double -1488.5
-            "char" assign 'A'
-            "string2" assign "some string"
-            "string3" assign null
-            "uuid" assign UUID.parseDefault("bf810f1c-ca49-41c8-9141-871452464ebb")
-            "instant" assign LocalDateTime.parse("1337-12-06T23:42:13").toInstant(nbt.stringConfig.timeZone)
-            "empty-compound" {}
-            "empty-bytes" assign buildBytes { }
-            "space-bytes" assign buildBytes { }
-            "big-bytes" assign buildBytes {
-                writeUtf8String(
-                    "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium " +
-                        "doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore " +
-                        "veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim " +
-                        "ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia " +
-                        "consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque " +
-                        "porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, " +
-                        "adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et " +
-                        "dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis " +
-                        "nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex " +
-                        "ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea " +
-                        "voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem " +
-                        "eum fugiat quo voluptas nulla pariatur?"
-                )
-            }
-            "empty-list" list emptyList<Nothing>()
-            "list-of-compounds" list {
-                dynamic {
-                    "name" assign "object"
-                    "age" assign 30u
-                    "list-of-bools1" assign listOf(true, true, false, false, true, false, false, true, true, true)
-                    "list-of-bools2" assign listOf(
-                        true, true, false, false, true, false, false, true,
-                        true, true, true, false, false, false, true, true
-                    )
-                }
-            }
-        }
         val tag1 = nbt.read(string) as Dynamic
         println(nbt.write(tag1))
-        assertDynamicEquals(expected, tag1)
+        checkTag(tag1)
         val bytes = nbt.write("MCSDB", tag1)
-        val (name, tag2) = nbt.read(bytes)
+        val (name, tag3) = nbt.read(bytes)
         assertEquals("MCSDB", name)
-        assertDynamicEquals(expected, tag2 as Dynamic)
+        checkTag(tag3 as Dynamic)
+    }
+
+    val expected = buildDynamic {
+        "true" assign true
+        "false" assign false
+        "string1" assign "true_"
+        "byte" byte -23
+        "short" short -237
+        "int" int -1111333
+        "long" long -7638209798
+        "ubyte" ubyte 23u
+        "ushort" ushort 237u
+        "uint" uint 1111333u
+        "ulong" ulong 7638209798u
+        "float" float .125f
+        "double" double -1488.5
+        "char" assign 'A'
+        "string2" assign "some string"
+        "string3" assign null
+        "uuid" assign UUID.parseDefault("bf810f1c-ca49-41c8-9141-871452464ebb")
+        "instant" assign LocalDateTime.parse("1337-12-06T23:42:13").toInstant(nbt.stringConfig.timeZone)
+        "empty-compound" {}
+        "empty-list" list emptyList<Nothing>()
+        "list-of-compounds" list {
+            dynamic {
+                "name" assign "object"
+                "age" assign 30u
+                "list-of-bools1" assign listOf(true, true, false, false, true, false, false, true, true, true)
+                "list-of-bools2" assign listOf(
+                    true, true, false, false, true, false, false, true,
+                    true, true, true, false, false, false, true, true
+                )
+            }
+        }
+    }
+
+    private val expectedBigBytes = buildPacket {
+        writeText(
+            "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium " +
+                "doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore " +
+                "veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim " +
+                "ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia " +
+                "consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque " +
+                "porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, " +
+                "adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et " +
+                "dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis " +
+                "nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex " +
+                "ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea " +
+                "voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem " +
+                "eum fugiat quo voluptas nulla pariatur?"
+        )
+    }.copy().use { it.readBytes() }
+
+    private fun checkTag(tag: Dynamic) {
+        val emptyBytes = tag.getOrNull("empty-bytes")
+        assertTrue(emptyBytes is ByteReadPacket)
+        assertEquals(0L, emptyBytes.remaining)
+        val spaceBytes = tag.getOrNull("space-bytes")
+        assertTrue(spaceBytes is ByteReadPacket)
+        assertEquals(0L, spaceBytes.remaining)
+        val bigBytes = tag.getOrNull("big-bytes")
+        assertTrue(bigBytes is ByteReadPacket)
+        val bigBytesData = bigBytes.copy().use { it.readBytes() }
+        println(expectedBigBytes.toList())
+        println(bigBytesData.toList())
+        assertTrue(expectedBigBytes.contentEquals(bigBytesData))
+        val tag2 = tag.copy()
+        tag2["empty-bytes"] = null
+        tag2["space-bytes"] = null
+        tag2["big-bytes"] = null
+        assertDynamicEquals(expected, tag2)
     }
 }

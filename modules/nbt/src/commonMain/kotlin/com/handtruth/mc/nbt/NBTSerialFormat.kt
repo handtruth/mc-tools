@@ -3,8 +3,7 @@ package com.handtruth.mc.nbt
 import com.handtruth.mc.nbt.util.NBTDecoder
 import com.handtruth.mc.nbt.util.NBTEncoder
 import com.handtruth.mc.nbt.util.Reader
-import kotlinx.io.Input
-import kotlinx.io.Output
+import io.ktor.utils.io.core.*
 import kotlinx.serialization.*
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule

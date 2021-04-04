@@ -7,14 +7,14 @@ import com.handtruth.mc.nbt.util.Reader
 import com.handtruth.mc.nbt.util.readSize
 import com.handtruth.mc.nbt.util.skipSpace
 import com.handtruth.mc.nbt.util.writeSize
-import kotlinx.io.*
+import io.ktor.utils.io.core.*
 
-object BytesTag : Tag<Bytes> {
-    override val type = Bytes::class
+object BytesTag : Tag<ByteReadPacket> {
+    override val type = ByteReadPacket::class
 
-    override fun readBinary(input: Input, conf: NBTBinaryCodec): Bytes {
+    override fun readBinary(input: Input, conf: NBTBinaryCodec): ByteReadPacket {
         val size = readSize(input, conf.binaryConfig)
-        return buildBytes {
+        return buildPacket {
             // TODO: Improve, when fixed
             repeat(size) {
                 writeByte(input.readByte())
@@ -22,10 +22,10 @@ object BytesTag : Tag<Bytes> {
         }
     }
 
-    override fun readText(input: Reader, conf: NBTStringCodec): Bytes {
+    override fun readText(input: Reader, conf: NBTStringCodec): ByteReadPacket {
         input.skipSpace()
         check(input.read() == '(') { "bytes token expected" }
-        return buildBytes {
+        return buildPacket {
             var state = 0
             var nextValue = 0
             val endReached: Boolean
@@ -68,7 +68,8 @@ object BytesTag : Tag<Bytes> {
             } else {
                 while (true) {
                     when (input.read()) {
-                        '\n', '\t', '\r', ' ', '\b', '=' -> {}
+                        '\n', '\t', '\r', ' ', '\b', '=' -> {
+                        }
                         ')' -> break
                         else -> error("illegal character in bytes tag token")
                     }
@@ -84,16 +85,14 @@ object BytesTag : Tag<Bytes> {
         }
     }
 
-    override fun writeBinary(output: Output, conf: NBTBinaryCodec, value: Bytes) {
-        val size = value.size()
+    override fun writeBinary(output: Output, conf: NBTBinaryCodec, value: ByteReadPacket) {
+        val size = value.remaining.toInt()
         writeSize(output, conf.binaryConfig, size)
         if (size != 0) {
             if (conf.binaryConfig.moveBytes) {
-                value.input().pipe(output, size)
+                value.use { it.pipe(output, size) }
             } else {
-                value.input().preview {
-                    pipe(output, size)
-                }
+                value.copy().use { it.pipe(output, size) }
             }
         }
     }
@@ -174,14 +173,14 @@ object BytesTag : Tag<Bytes> {
         output.append(')')
     }
 
-    override fun writeText(output: Appendable, conf: NBTStringCodec, value: Bytes, level: Int) {
-        val size = value.size()
+    override fun writeText(output: Appendable, conf: NBTStringCodec, value: ByteReadPacket, level: Int) {
+        val size = value.remaining.toInt()
         if (size != 0) {
             if (conf.stringConfig.moveBytes) {
-                value.input().writeBase64(output, size, conf.stringConfig, level)
+                value.use { it.writeBase64(output, size, conf.stringConfig, level) }
             } else {
-                value.input().preview {
-                    writeBase64(output, size, conf.stringConfig, level)
+                value.copy().use {
+                    it.writeBase64(output, size, conf.stringConfig, level)
                 }
             }
         } else {

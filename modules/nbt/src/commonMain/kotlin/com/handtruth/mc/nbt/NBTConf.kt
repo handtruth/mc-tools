@@ -13,7 +13,7 @@ data class NBTBinaryConfig internal constructor(
     }
 
     enum class Formats {
-        Flat, ZigZag, ZInt
+        Flat, LEB128, ZInt
     }
 
     companion object {
@@ -33,7 +33,7 @@ data class NBTBinaryConfig internal constructor(
         inline val Bedrock get() = BedrockDisk
         val BedrockNet = NBTBinaryConfig(
             endian = ByteOrders.Little,
-            format = Formats.ZigZag,
+            format = Formats.LEB128,
             compressBooleans = false,
             moveBytes = false
         )

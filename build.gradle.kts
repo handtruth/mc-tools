@@ -82,22 +82,14 @@ fun Project.kotlinProject() {
         jvm {
             compilations.all {
                 kotlinOptions {
+                    //useIR = true
                     jvmTarget = "1.8"
                 }
             }
-        }
-        /*
-        js {
-            browser {
-                testTask {
-                    useKarma {
-                        usePhantomJS()
-                    }
-                }
+            if (this@kotlinProject.name == "tools-zint") {
+                withJava()
             }
-            nodejs()
         }
-        */
         sourceSets {
             fun kotlinx(name: String) = "org.jetbrains.kotlinx:kotlinx-$name"
             fun ktor(name: String) = "io.ktor:ktor-$name"

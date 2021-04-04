@@ -1,26 +1,22 @@
 plugins {
-    kotlin("plugin.serialization")
     id("kotlinx-atomicfu")
+    kotlin("plugin.serialization")
+}
+
+kotlin {
+    explicitApi()
 }
 
 dependencies {
-    fun kotlinx(name: String) = "org.jetbrains.kotlinx:kotlinx-$name"
-    fun kommon(name: String) = "com.handtruth.kommon:kommon-$name"
+    commonMainImplementation(project(":tools-zint"))
+    commonMainApi("io.ktor:ktor-io")
+    commonMainApi("org.jetbrains.kotlinx:kotlinx-serialization-core")
 
     val atomicfuVersion: String by project
-
-    commonMainApi(kotlinx("io"))
-    commonMainApi(kotlinx("coroutines-core"))
-    commonMainApi(kotlinx("serialization-core"))
-    commonMainCompileOnly("io.ktor:ktor-io")
-    commonMainCompileOnly("com.soywiz.korlibs.korio:korio")
-    commonMainImplementation(project(":tools-zint"))
     commonMainImplementation("org.jetbrains.kotlinx:atomicfu:$atomicfuVersion")
-
-    commonTestImplementation("io.ktor:ktor-io")
-    commonTestImplementation("com.soywiz.korlibs.korio:korio")
-
-    "jvmMainImplementation"(kotlin("reflect"))
-
-    "jvmTestImplementation"("io.ktor:ktor-network")
+    commonTestImplementation("io.ktor:ktor-test-dispatcher")
+    commonTestImplementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf")
+    commonTestImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json")
+    jvmTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-debug")
+    jvmTestImplementation("org.jetbrains.kotlinx:lincheck:2.12")
 }

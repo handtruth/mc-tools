@@ -5,6 +5,7 @@ import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.CompositeDecoder
+import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.modules.SerializersModule
 
 internal abstract class NBTIndexedDecoder(
@@ -47,5 +48,9 @@ internal abstract class NBTIndexedDecoder(
             PrimitiveKind.STRING -> decodeStringElement(descriptor, index) as T
             else -> decodeNonPrimitiveElement(descriptor, index, deserializer)
         }
+    }
+
+    final override fun decodeInlineElement(descriptor: SerialDescriptor, index: Int): Decoder {
+        throw UnsupportedOperationException()
     }
 }

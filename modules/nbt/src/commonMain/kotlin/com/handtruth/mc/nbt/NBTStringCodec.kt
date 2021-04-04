@@ -4,7 +4,7 @@ import com.handtruth.mc.nbt.util.Position
 import com.handtruth.mc.nbt.util.Reader
 import com.handtruth.mc.nbt.util.StringReader
 import com.handtruth.mc.nbt.util.deduceTag
-import kotlinx.io.use
+import io.ktor.utils.io.core.*
 
 interface NBTStringCodec : TagsContainer {
     val stringConfig: NBTStringConfig

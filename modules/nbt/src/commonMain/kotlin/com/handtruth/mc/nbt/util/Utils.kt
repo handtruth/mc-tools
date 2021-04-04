@@ -3,10 +3,9 @@ package com.handtruth.mc.nbt.util
 import com.handtruth.mc.nbt.*
 import com.handtruth.mc.nbt.tags.*
 import com.handtruth.mc.util.*
+import io.ktor.utils.io.charsets.*
+import io.ktor.utils.io.core.*
 import kotlinx.datetime.*
-import kotlinx.io.*
-import kotlinx.io.text.readUtf8String
-import kotlinx.io.text.writeUtf8String
 import kotlin.contracts.contract
 import kotlin.reflect.KClass
 
@@ -61,15 +60,15 @@ internal fun readFlatInt32(input: Input, conf: NBTBinaryConfig): Int {
 internal fun readInt32(input: Input, conf: NBTBinaryConfig): Int {
     return when (conf.format) {
         NBTBinaryConfig.Formats.Flat -> readFlatInt32(input, conf)
-        NBTBinaryConfig.Formats.ZigZag -> readUZInt32(input).toInt()
-        NBTBinaryConfig.Formats.ZInt -> readSZInt32(input)
+        NBTBinaryConfig.Formats.LEB128 -> input.readUZInt().toInt()
+        NBTBinaryConfig.Formats.ZInt -> input.readSZInt()
     }
 }
 
 internal fun readUInt32(input: Input, conf: NBTBinaryConfig): UInt {
     return when (conf.format) {
         NBTBinaryConfig.Formats.Flat -> readFlatInt32(input, conf).toUInt()
-        NBTBinaryConfig.Formats.ZigZag, NBTBinaryConfig.Formats.ZInt -> readUZInt32(input)
+        NBTBinaryConfig.Formats.LEB128, NBTBinaryConfig.Formats.ZInt -> input.readUZInt()
     }
 }
 
@@ -84,15 +83,15 @@ internal fun writeFlatInt32(output: Output, conf: NBTBinaryConfig, integer: Int)
 internal fun writeInt32(output: Output, conf: NBTBinaryConfig, value: Int) {
     when (conf.format) {
         NBTBinaryConfig.Formats.Flat -> writeFlatInt32(output, conf, value)
-        NBTBinaryConfig.Formats.ZigZag -> writeUZInt32(output, value.toUInt())
-        NBTBinaryConfig.Formats.ZInt -> writeSZInt32(output, value)
+        NBTBinaryConfig.Formats.LEB128 -> output.writeUZInt(value.toUInt())
+        NBTBinaryConfig.Formats.ZInt -> output.writeSZInt(value)
     }
 }
 
 internal fun writeUInt32(output: Output, conf: NBTBinaryConfig, value: UInt) {
     when (conf.format) {
         NBTBinaryConfig.Formats.Flat -> writeFlatInt32(output, conf, value.toInt())
-        NBTBinaryConfig.Formats.ZigZag, NBTBinaryConfig.Formats.ZInt -> writeUZInt32(output, value)
+        NBTBinaryConfig.Formats.LEB128, NBTBinaryConfig.Formats.ZInt -> output.writeUZInt(value)
     }
 }
 
@@ -107,15 +106,15 @@ internal fun readFlatInt64(input: Input, conf: NBTBinaryConfig): Long {
 internal fun readInt64(input: Input, conf: NBTBinaryConfig): Long {
     return when (conf.format) {
         NBTBinaryConfig.Formats.Flat -> readFlatInt64(input, conf)
-        NBTBinaryConfig.Formats.ZigZag -> readUZInt64(input).toLong()
-        NBTBinaryConfig.Formats.ZInt -> readSZInt64(input)
+        NBTBinaryConfig.Formats.LEB128 -> input.readUZLong().toLong()
+        NBTBinaryConfig.Formats.ZInt -> input.readSZLong()
     }
 }
 
 internal fun readUInt64(input: Input, conf: NBTBinaryConfig): ULong {
     return when (conf.format) {
         NBTBinaryConfig.Formats.Flat -> readFlatInt64(input, conf).toULong()
-        NBTBinaryConfig.Formats.ZigZag, NBTBinaryConfig.Formats.ZInt -> readUZInt64(input)
+        NBTBinaryConfig.Formats.LEB128, NBTBinaryConfig.Formats.ZInt -> input.readUZLong()
     }
 }
 
@@ -130,15 +129,15 @@ internal fun writeFlatInt64(output: Output, conf: NBTBinaryConfig, long: Long) {
 internal fun writeInt64(output: Output, conf: NBTBinaryConfig, long: Long) {
     when (conf.format) {
         NBTBinaryConfig.Formats.Flat -> writeFlatInt64(output, conf, long)
-        NBTBinaryConfig.Formats.ZigZag -> writeUZInt64(output, long.toULong())
-        NBTBinaryConfig.Formats.ZInt -> writeSZInt64(output, long)
+        NBTBinaryConfig.Formats.LEB128 -> output.writeUZLong(long.toULong())
+        NBTBinaryConfig.Formats.ZInt -> output.writeSZLong(long)
     }
 }
 
 internal fun writeUInt64(output: Output, conf: NBTBinaryConfig, long: ULong) {
     when (conf.format) {
         NBTBinaryConfig.Formats.Flat -> writeFlatInt64(output, conf, long.toLong())
-        NBTBinaryConfig.Formats.ZigZag, NBTBinaryConfig.Formats.ZInt -> writeUZInt64(output, long)
+        NBTBinaryConfig.Formats.LEB128, NBTBinaryConfig.Formats.ZInt -> output.writeUZLong(long)
     }
 }
 
@@ -182,7 +181,7 @@ internal fun readSize(input: Input, conf: NBTBinaryConfig): Int {
                 NBTBinaryConfig.ByteOrders.Little -> reverse(it)
             }
         }
-        NBTBinaryConfig.Formats.ZigZag, NBTBinaryConfig.Formats.ZInt -> readUZInt32(input).toInt()
+        NBTBinaryConfig.Formats.LEB128, NBTBinaryConfig.Formats.ZInt -> input.readUZInt().toInt()
     }
 }
 
@@ -194,34 +193,33 @@ internal fun writeSize(output: Output, conf: NBTBinaryConfig, size: Int) {
                 NBTBinaryConfig.ByteOrders.Little -> reverse(size)
             }
         )
-        NBTBinaryConfig.Formats.ZigZag, NBTBinaryConfig.Formats.ZInt -> writeUZInt32(output, size.toUInt())
+        NBTBinaryConfig.Formats.LEB128, NBTBinaryConfig.Formats.ZInt -> output.writeUZInt(size.toUInt())
     }
 }
 
 internal fun readString(input: Input, conf: NBTBinaryConfig): String {
-    val size =
-        if (conf.format == NBTBinaryConfig.Formats.Flat) readInt16(input, conf).toInt() else readSize(input, conf)
-    val bytes = buildBytes {
-        // TODO: Redo when fixed
-        repeat(size) {
-            writeByte(input.readByte())
-        }
+    val size = if (conf.format == NBTBinaryConfig.Formats.Flat) {
+        readInt16(input, conf).toInt()
+    } else {
+        readSize(input, conf)
     }
+
     validate(size >= 0) { "string size is negative: $size" }
-    return bytes.input().readUtf8String()
+    return input.readTextExactBytes(size, Charsets.UTF_8)
 }
 
 internal fun writeString(output: Output, conf: NBTBinaryConfig, value: String) {
-    val bytes = buildBytes {
-        writeUtf8String(value)
+    buildPacket {
+        writeText(value)
+    }.use { bytes ->
+        val size = bytes.remaining.toInt()
+        if (conf.format == NBTBinaryConfig.Formats.Flat) {
+            writeInt16(output, conf, size.toShort())
+        } else {
+            writeSize(output, conf, size)
+        }
+        bytes.copyTo(output)
     }
-    val size = bytes.size()
-    if (conf.format == NBTBinaryConfig.Formats.Flat) {
-        writeInt16(output, conf, size.toShort())
-    } else {
-        writeSize(output, conf, size)
-    }
-    bytes.input().copyTo(output)
 }
 
 internal fun Appendable.next(level: Int, pretty: Boolean, identString: String) {

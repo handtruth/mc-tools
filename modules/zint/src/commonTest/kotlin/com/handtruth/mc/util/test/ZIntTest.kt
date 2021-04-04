@@ -1,9 +1,7 @@
 package com.handtruth.mc.util.test
 
 import com.handtruth.mc.util.*
-import kotlinx.io.buildBytes
-import kotlinx.io.readByte
-import kotlinx.io.writeUByte
+import io.ktor.utils.io.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -20,25 +18,23 @@ class ZIntTest {
         listOf(
             Case(0, byteArrayOf(0)),
             Case(Int.MAX_VALUE, byteArrayOf(-2, -1, -1, -1, 15)),
-            Case(Int.MIN_VALUE, byteArrayOf(-127, -128, -128, -128, 16)),
-            Case(-456, byteArrayOf(-111, 7)),
-            Case(-87895, byteArrayOf(-81, -35, 10)),
+            Case(Int.MIN_VALUE, byteArrayOf(-1, -1, -1, -1, 15)),
+            Case(-456, byteArrayOf(-113, 7)),
+            Case(-87895, byteArrayOf(-83, -35, 10)),
             Case(687, byteArrayOf(-34, 10)),
             Case(48677, byteArrayOf(-54, -8, 5)),
             Case(23, byteArrayOf(46)),
-            Case(-10, byteArrayOf(21))
+            Case(-10, byteArrayOf(19))
         ).forEachIndexed { i, (value, coded) ->
             val mark = "#$i"
-            assertEquals(coded.size, sizeSZInt32(value), mark)
-            val suka = value
-            val bytes = buildBytes {
-                writeSZInt32(this, suka)
+            assertEquals(coded.size, measureSZInt(value), mark)
+            val bytes = buildPacket {
+                this.writeSZInt(value)
             }
-            assertEquals(coded.size, bytes.size(), mark)
-            val input = bytes.input()
-            val intermediate = input.preview { ByteArray(coded.size) { readByte() } }
+            assertEquals(coded.size, bytes.remaining.toInt(), mark)
+            val intermediate = bytes.copy().use { it.readBytes(coded.size) }
             assertEquals(coded.toList(), intermediate.toList(), mark)
-            assertEquals(value, readSZInt32(input), mark)
+            assertEquals(value, bytes.readSZInt(), mark)
         }
     }
 
@@ -47,25 +43,23 @@ class ZIntTest {
         listOf(
             Case(0L, byteArrayOf(0)),
             Case(Long.MAX_VALUE, byteArrayOf(-2, -1, -1, -1, -1, -1, -1, -1, -1, 1)),
-            Case(Long.MIN_VALUE, byteArrayOf(-127, -128, -128, -128, -128, -128, -128, -128, -128, 2)),
-            Case(-456L, byteArrayOf(-111, 7)),
-            Case(-87895L, byteArrayOf(-81, -35, 10)),
+            Case(Long.MIN_VALUE, byteArrayOf(-1, -1, -1, -1, -1, -1, -1, -1, -1, 1)),
+            Case(-456L, byteArrayOf(-113, 7)),
+            Case(-87895L, byteArrayOf(-83, -35, 10)),
             Case(687L, byteArrayOf(-34, 10)),
             Case(48677L, byteArrayOf(-54, -8, 5)),
             Case(23L, byteArrayOf(46)),
-            Case(-10L, byteArrayOf(21))
+            Case(-10L, byteArrayOf(19))
         ).forEachIndexed { i, (value, coded) ->
             val mark = "#$i"
-            assertEquals(coded.size, sizeSZInt64(value), mark)
-            val suka = value
-            val bytes = buildBytes {
-                writeSZInt64(this, suka)
+            assertEquals(coded.size, measureSZLong(value), mark)
+            val bytes = buildPacket {
+                this.writeSZLong(value)
             }
-            assertEquals(coded.size, bytes.size(), mark)
-            val input = bytes.input()
-            val intermediate = input.preview { ByteArray(coded.size) { readByte() } }
+            assertEquals(coded.size, bytes.remaining.toInt(), mark)
+            val intermediate = bytes.copy().use { it.readBytes(coded.size) }
             assertEquals(coded.toList(), intermediate.toList(), mark)
-            assertEquals(value, readSZInt64(input), mark)
+            assertEquals(value, bytes.readSZLong(), mark)
         }
     }
 
@@ -79,16 +73,14 @@ class ZIntTest {
             Case(23u, byteArrayOf(23))
         ).forEachIndexed { i, (value, coded) ->
             val mark = "#$i"
-            assertEquals(coded.size, sizeUZInt32(value), mark)
-            val suka = value
-            val bytes = buildBytes {
-                writeUZInt32(this, suka)
+            assertEquals(coded.size, measureUZInt(value), mark)
+            val bytes = buildPacket {
+                this.writeUZInt(value)
             }
-            assertEquals(coded.size, bytes.size(), mark)
-            val input = bytes.input()
-            val intermediate = input.preview { ByteArray(coded.size) { readByte() } }
+            assertEquals(coded.size, bytes.remaining.toInt(), mark)
+            val intermediate = bytes.copy().use { it.readBytes(coded.size) }
             assertEquals(coded.toList(), intermediate.toList(), mark)
-            assertEquals(value, readUZInt32(input), mark)
+            assertEquals(value, bytes.readUZInt(), mark)
         }
     }
 
@@ -103,64 +95,62 @@ class ZIntTest {
             Case(23uL, byteArrayOf(23))
         ).forEachIndexed { i, (value, coded) ->
             val mark = "#$i"
-            assertEquals(coded.size, sizeUZInt64(value), mark)
-            val suka = value
-            val bytes = buildBytes {
-                writeUZInt64(this, suka)
+            assertEquals(coded.size, measureUZLong(value), mark)
+            val bytes = buildPacket {
+                this.writeUZLong(value)
             }
-            assertEquals(coded.size, bytes.size(), mark)
-            val input = bytes.input()
-            val intermediate = input.preview { ByteArray(coded.size) { readByte() } }
+            assertEquals(coded.size, bytes.remaining.toInt(), mark)
+            val intermediate = bytes.copy().use { it.readBytes(coded.size) }
             assertEquals(coded.toList(), intermediate.toList(), mark)
-            assertEquals(value, readUZInt64(input), mark)
+            assertEquals(value, bytes.readUZLong(), mark)
         }
     }
 
     @Test
     fun errors() {
         run {
-            val src = buildBytes {
+            val src = buildPacket {
                 repeat(5) {
                     writeUByte(255u)
                 }
             }
             val message = assertFailsWith<RuntimeException> {
-                readSZInt32(src.input())
+                src.readSZInt()
             }.message
-            assertEquals("SZInt32 is too big", message)
+            assertEquals("LEB128 is too big (bigger than 32 bit)", message)
         }
         run {
-            val src = buildBytes {
+            val src = buildPacket {
                 repeat(10) {
                     writeUByte(255u)
                 }
             }
             val message = assertFailsWith<RuntimeException> {
-                readSZInt64(src.input())
+                src.readSZLong()
             }.message
-            assertEquals("SZInt64 is too big", message)
+            assertEquals("LEB128 is too big (bigger than 64 bit)", message)
         }
         run {
-            val src = buildBytes {
+            val src = buildPacket {
                 repeat(5) {
                     writeUByte(255u)
                 }
             }
             val message = assertFailsWith<RuntimeException> {
-                readUZInt32(src.input())
+                src.readUZInt()
             }.message
-            assertEquals("UZInt32 is too big", message)
+            assertEquals("LEB128 is too big (bigger than 32 bit)", message)
         }
         run {
-            val src = buildBytes {
+            val src = buildPacket {
                 repeat(10) {
                     writeUByte(255u)
                 }
             }
             val message = assertFailsWith<RuntimeException> {
-                readUZInt64(src.input())
+                src.readUZLong()
             }.message
-            assertEquals("UZInt64 is too big", message)
+            assertEquals("LEB128 is too big (bigger than 64 bit)", message)
         }
     }
 }

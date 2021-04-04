@@ -4,10 +4,7 @@ import com.handtruth.mc.nbt.NBTBinaryCodec
 import com.handtruth.mc.nbt.NBTStringCodec
 import com.handtruth.mc.nbt.util.Reader
 import com.handtruth.mc.nbt.util.readAnyInt
-import kotlinx.io.Input
-import kotlinx.io.Output
-import kotlinx.io.readUByte
-import kotlinx.io.writeUByte
+import io.ktor.utils.io.core.*
 
 object UByteTag : Tag<UByte> {
     override val type = UByte::class

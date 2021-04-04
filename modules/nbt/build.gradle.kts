@@ -7,7 +7,7 @@ dependencies {
 
     commonMainImplementation(project(":tools-zint"))
     commonMainImplementation(project(":tools-types"))
-    commonMainImplementation(kotlinx("io"))
+    commonMainImplementation("io.ktor:ktor-io")
     commonMainApi(kotlinx("serialization-core"))
     commonMainApi(kotlinx("datetime:0.1.1"))
 }

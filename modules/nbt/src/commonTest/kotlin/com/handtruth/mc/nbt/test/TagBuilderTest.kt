@@ -7,8 +7,7 @@ import com.handtruth.mc.nbt.write
 import com.handtruth.mc.types.Dynamic
 import com.handtruth.mc.types.buildDynamic
 import com.handtruth.mc.types.dynamic
-import kotlinx.io.ByteArrayInput
-import kotlinx.io.ByteArrayOutput
+import io.ktor.utils.io.core.*
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
@@ -37,12 +36,12 @@ class TagBuilderTest {
             "longArray" assign longArrayOf(4842, -6496462, 24554679784123)
         }
         println(javaNBT.write(tag))
-        val output = ByteArrayOutput()
-        javaNBT.write(output, "", tag)
-        val bytes = output.toByteArray()
-        val input = ByteArrayInput(bytes)
-        val actual = javaNBT.read(input)
-        assertDynamicEquals(tag, actual.second as Dynamic)
+        buildPacket {
+            javaNBT.write(this, "", tag)
+        }.use { input ->
+            val actual = javaNBT.read(input)
+            assertDynamicEquals(tag, actual.second as Dynamic)
+        }
     }
 
     @Test
