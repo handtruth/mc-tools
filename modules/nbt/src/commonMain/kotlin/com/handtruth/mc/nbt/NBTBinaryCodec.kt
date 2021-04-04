@@ -2,7 +2,7 @@ package com.handtruth.mc.nbt
 
 import com.handtruth.mc.nbt.util.readString
 import com.handtruth.mc.nbt.util.writeString
-import kotlinx.io.*
+import io.ktor.utils.io.core.*
 
 interface NBTBinaryCodec : TagsContainer {
     val binaryConfig: NBTBinaryConfig
@@ -11,15 +11,16 @@ interface NBTBinaryCodec : TagsContainer {
 }
 
 fun NBTBinaryCodec.read(bytes: ByteArray, start: Int = 0, end: Int = bytes.size): Pair<String, Any> {
-    ByteArrayInput(bytes, start, end).use {
+    ByteReadPacket(bytes, start, end).use {
         return read(it)
     }
 }
 
 fun NBTBinaryCodec.write(key: String, value: Any): ByteArray {
-    ByteArrayOutput().use {
-        write(it, key, value)
-        return it.toByteArray()
+    buildPacket {
+        write(this, key, value)
+    }.use {
+        return it.readBytes()
     }
 }
 

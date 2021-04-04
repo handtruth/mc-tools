@@ -5,8 +5,7 @@ import com.handtruth.mc.nbt.NBTStringCodec
 import com.handtruth.mc.nbt.util.Reader
 import com.handtruth.mc.nbt.util.readString
 import com.handtruth.mc.nbt.util.writeString
-import kotlinx.io.Input
-import kotlinx.io.Output
+import io.ktor.utils.io.core.*
 
 object StringTag : Tag<String> {
     override val type = String::class

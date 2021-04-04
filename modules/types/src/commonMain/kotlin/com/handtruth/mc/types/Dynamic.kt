@@ -1,8 +1,6 @@
 package com.handtruth.mc.types
 
 import com.handtruth.mc.util.ReferenceSet
-import kotlinx.io.Bytes
-import kotlinx.io.readByte
 
 interface Dynamic : Iterable<Map.Entry<String, Any>> {
     val fields: Map<String, Any>
@@ -83,29 +81,6 @@ private fun arraysEquals(a: Any, b: Any): Boolean = when {
     a is FloatArray && b is FloatArray -> a.contentEquals(b)
     a is DoubleArray && b is DoubleArray -> a.contentEquals(b)
     a is Array<*> && b is Array<*> -> listEquals(a.asList(), b.asList())
-    a is Bytes && b is Bytes -> {
-        val size = a.size()
-        if (size != b.size()) {
-            false
-        } else {
-            if (size == 0) {
-                true
-            } else {
-                a.input().preview {
-                    val inA = this
-                    b.input().preview {
-                        val inB = this
-                        repeat(size) {
-                            if (inA.readByte() != inB.readByte()) {
-                                return@preview false
-                            }
-                        }
-                        true
-                    }
-                }
-            }
-        }
-    }
     else -> false
 }
 
@@ -291,14 +266,6 @@ private fun valueHashCode(value: Any?): Int = when (value) {
     is ULongArray -> value.contentHashCode()
     is FloatArray -> value.contentHashCode()
     is DoubleArray -> value.contentHashCode()
-    is Bytes -> value.input().preview {
-        val size = value.size()
-        var result = size.inv()
-        repeat(size) {
-            result = result.rotateLeft(2) + readByte()
-        }
-        result
-    }
     else -> value.hashCode()
 }
 
@@ -347,4 +314,10 @@ private class DynamicImpl : MutableDynamic {
         }
         append('}')
     }
+}
+
+fun Dynamic.copy(): MutableDynamic {
+    val result = MutableDynamic()
+    result.fields += fields
+    return result
 }

@@ -9,6 +9,7 @@ import com.handtruth.mc.nbt.tags.ShortArrayTag
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.CompositeEncoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.modules.SerializersModule
 
 internal abstract class NBTCompositeEncoder(
@@ -128,5 +129,9 @@ internal abstract class NBTCompositeEncoder(
 
     override fun encodeStringElement(descriptor: SerialDescriptor, index: Int, value: String) {
         placeTag(descriptor, index, value)
+    }
+
+    override fun encodeInlineElement(descriptor: SerialDescriptor, index: Int): Encoder {
+        throw UnsupportedOperationException()
     }
 }

@@ -1,7 +1,6 @@
 package com.handtruth.mc.nbt.util
 
-import kotlinx.io.Closeable
-import kotlinx.io.EOFException
+import io.ktor.utils.io.core.*
 
 data class Position(val line: Int, val column: Int, val offset: Int)
 

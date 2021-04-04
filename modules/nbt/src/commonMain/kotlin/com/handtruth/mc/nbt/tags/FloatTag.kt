@@ -6,8 +6,7 @@ import com.handtruth.mc.nbt.util.Reader
 import com.handtruth.mc.nbt.util.readAnyFloating
 import com.handtruth.mc.nbt.util.readFloat
 import com.handtruth.mc.nbt.util.writeFloat
-import kotlinx.io.Input
-import kotlinx.io.Output
+import io.ktor.utils.io.core.*
 
 object FloatTag : Tag<Float> {
     override val type = Float::class

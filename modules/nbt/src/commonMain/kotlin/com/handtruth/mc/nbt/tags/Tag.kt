@@ -3,8 +3,7 @@ package com.handtruth.mc.nbt.tags
 import com.handtruth.mc.nbt.NBTBinaryCodec
 import com.handtruth.mc.nbt.NBTStringCodec
 import com.handtruth.mc.nbt.util.Reader
-import kotlinx.io.Input
-import kotlinx.io.Output
+import io.ktor.utils.io.core.*
 import kotlin.reflect.KClass
 
 interface Tag<T : Any> {

@@ -3,8 +3,7 @@ package com.handtruth.mc.nbt.tags
 import com.handtruth.mc.nbt.NBTBinaryCodec
 import com.handtruth.mc.nbt.NBTStringCodec
 import com.handtruth.mc.nbt.util.*
-import kotlinx.io.Input
-import kotlinx.io.Output
+import io.ktor.utils.io.core.*
 
 object IntArrayTag : Tag<IntArray> {
     override val type = IntArray::class

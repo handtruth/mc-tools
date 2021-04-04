@@ -1,16 +1,30 @@
 package com.handtruth.mc.util
 
-import kotlinx.io.Input
-import kotlinx.io.Output
-import kotlinx.io.readByte
-import kotlin.math.abs
+import io.ktor.utils.io.*
+import io.ktor.utils.io.core.*
+
+private fun toZigZag(value: Int): UInt {
+    return ((value shl 1) xor (value shr 31)).toUInt()
+}
+
+private fun toZigZag(value: Long): ULong {
+    return ((value shl 1) xor (value shr 63)).toULong()
+}
+
+private fun fromZigZag(value: UInt): Int {
+    return (value shr 1).toInt() xor (-(value and 1u).toInt())
+}
+
+private fun fromZigZag(value: ULong): Long {
+    return (value shr 1).toLong() xor (-(value and 1u).toLong())
+}
 
 /**
- * Measure encoded UZInt size of 32-bit integer value.
+ * Measure encoded LEB128 size of 32-bit integer value.
  * @param value integer value
- * @return size of integer value
+ * @return size of encoded integer value
  */
-fun sizeUZInt32(value: UInt): Int {
+public fun measureUZInt(value: UInt): Int {
     var integer = value
     var count = 0
     do {
@@ -20,18 +34,13 @@ fun sizeUZInt32(value: UInt): Int {
     return count
 }
 
-/**
- * Read UZInt encoded integer with maximum size of 32-bit.
- * @param input input object to read from
- * @return 32-bit integer number that was read
- */
-fun readUZInt32(input: Input): UInt {
+private inline fun readUZInt(readByte: () -> Byte): UInt {
     var numRead = 0
     var result = 0u
     var read: UInt
     do {
-        check(numRead < 5) { "UZInt32 is too big" }
-        read = input.readByte().toUInt()
+        check(numRead < 5) { "LEB128 is too big (bigger than 32 bit)" }
+        read = readByte().toUInt()
         val value = read and 127u
         result = result or (value shl 7 * numRead)
         ++numRead
@@ -39,29 +48,42 @@ fun readUZInt32(input: Input): UInt {
     return result
 }
 
-/**
- * Write 32-bit integer value in UZInt format to [output].
- * @param output output object to write to
- * @param integer 32-bit integer number to write
- */
-fun writeUZInt32(output: Output, integer: UInt) {
-    var value = integer
+private inline fun writeUZInt(value: UInt, writeByte: (Byte) -> Unit) {
+    var mutable = value
     do {
-        var temp = (value and 127u)
-        value = value shr 7
-        if (value != 0u) {
+        var temp = (mutable and 127u)
+        mutable = mutable shr 7
+        if (mutable != 0u) {
             temp = temp or 128u
         }
-        output.writeByte(temp.toByte())
-    } while (value != 0u)
+        writeByte(temp.toByte())
+    } while (mutable != 0u)
 }
 
 /**
- * Measure encoded UZInt size of 64-bit integer value.
- * @param value integer value
- * @return size of integer value
+ * Read LEB128 encoded integer with maximum size of 32-bit.
+ * @receiver input object to read from
+ * @return 32-bit integer number that was read
  */
-fun sizeUZInt64(value: ULong): Int {
+public fun Input.readUZInt(): UInt = readUZInt(this::readByte)
+
+/**
+ * Write 32-bit integer value in LEB128 format to [this].
+ * @receiver output object to write to
+ * @param value 32-bit integer number to write
+ */
+public fun Output.writeUZInt(value: UInt): Unit = writeUZInt(value, this::writeByte)
+
+public suspend fun ByteReadChannel.readUZInt(): UInt = readUZInt { readByte() }
+
+public suspend fun ByteWriteChannel.writeUZInt(value: UInt): Unit = writeUZInt(value) { writeByte(it) }
+
+/**
+ * Measure encoded LEB128 size of 64-bit integer value.
+ * @param value integer value
+ * @return size of encoded integer value
+ */
+public fun measureUZLong(value: ULong): Int {
     var integer = value
     var count = 0
     do {
@@ -71,18 +93,13 @@ fun sizeUZInt64(value: ULong): Int {
     return count
 }
 
-/**
- * Read UZInt encoded integer with maximum size of 64-bit.
- * @param input input object to read from
- * @return 64-bit integer number that was read
- */
-fun readUZInt64(input: Input): ULong {
+private inline fun readUZLong(readByte: () -> Byte): ULong {
     var numRead = 0
     var result = 0uL
     var read: ULong
     do {
-        check(numRead < 10) { "UZInt64 is too big" }
-        read = input.readByte().toULong()
+        check(numRead < 10) { "LEB128 is too big (bigger than 64 bit)" }
+        read = readByte().toULong()
         val value = read and 127uL
         result = result or (value shl 7 * numRead)
         ++numRead
@@ -90,151 +107,82 @@ fun readUZInt64(input: Input): ULong {
     return result
 }
 
-/**
- * Write 64-bit integer value in UZInt format to [output].
- * @param output output object to write to
- * @param integer 64-bit integer number to write
- */
-fun writeUZInt64(output: Output, integer: ULong) {
-    var value = integer
+private inline fun writeUZLong(value: ULong, writeByte: (Byte) -> Unit) {
+    var mutable = value
     do {
-        var temp = (value and 127u)
-        value = value shr 7
-        if (value != 0uL) {
+        var temp = (mutable and 127u)
+        mutable = mutable shr 7
+        if (mutable != 0uL) {
             temp = temp or 128u
         }
-        output.writeByte(temp.toByte())
-    } while (value != 0uL)
+        writeByte(temp.toByte())
+    } while (mutable != 0uL)
 }
 
 /**
- * Measure encoded SZInt size of 32-bit integer value.
- * @param integer integer value
- * @return size of integer value
- */
-fun sizeSZInt32(integer: Int): Int {
-    var value = abs(integer).toUInt() shr 6
-    var count = 1
-    while (value != 0u) {
-        value = value shr 7
-        ++count
-    }
-    return count
-}
-
-/**
- * Read SZInt encoded integer with maximum size of 32-bit.
- * @param input input object to read from
- * @return 32-bit integer number that was read
- */
-fun readSZInt32(input: Input): Int {
-    var numRead = 0
-    var read = input.readByte().toUInt()
-    val sign = read and 1u == 1u
-    var result = read and 126u shr 1
-    while (read and 128u != 0u) {
-        check(numRead < 4) { "SZInt32 is too big" }
-        read = input.readByte().toUInt()
-        val value = read and 127u
-        result = result or (value shl (7 * numRead + 6))
-        ++numRead
-    }
-    return result.toInt().let { if (sign) -it else it }
-}
-
-/**
- * Write 32-bit integer value in SZInt format to [output].
- * @param output output object to write to
- * @param integer 32-bit integer number to write
- */
-fun writeSZInt32(output: Output, integer: Int) {
-    val sign: UInt
-    var value: UInt
-    if (integer < 0) {
-        sign = 1u
-        value = (-integer).toUInt()
-    } else {
-        sign = 0u
-        value = integer.toUInt()
-    }
-    var first = value and 63u shl 1 or sign
-    value = value shr 6
-    if (value != 0u) {
-        first = first or 128u
-    }
-    output.writeByte(first.toByte())
-    while (value != 0u) {
-        var temp = value and 127u
-        value = value shr 7
-        if (value != 0u) {
-            temp = temp or 128u
-        }
-        output.writeByte(temp.toByte())
-    }
-}
-
-/**
- * Measure encoded SZInt size of 64-bit integer value.
- * @param integer integer value
- * @return size of integer value
- */
-fun sizeSZInt64(integer: Long): Int {
-    var value = abs(integer).toULong() shr 6
-    var count = 1
-    while (value != 0uL) {
-        value = value shr 7
-        ++count
-    }
-    return count
-}
-
-/**
- * Read SZInt encoded integer with maximum size of 64-bit.
- * @param input input object to read from
+ * Read LEB128 encoded integer with maximum size of 64-bit.
+ * @receiver input object to read from
  * @return 64-bit integer number that was read
  */
-fun readSZInt64(input: Input): Long {
-    var numRead = 0
-    var read = input.readByte().toULong()
-    val sign = read and 1u == 1uL
-    var result = read and 126u shr 1
-    while (read and 128u != 0uL) {
-        check(numRead < 9) { "SZInt64 is too big" }
-        read = input.readByte().toULong()
-        val value = read and 127u
-        result = result or (value shl (7 * numRead + 6))
-        ++numRead
-    }
-    return result.toLong().let { if (sign) -it else it }
-}
+public fun Input.readUZLong(): ULong = readUZLong(this::readByte)
 
 /**
- * Write 64-bit integer value in SZInt format to [output].
- * @param output output object to write to
- * @param integer 64-bit integer number to write
+ * Write 64-bit integer value in LEB128 format to [this].
+ * @receiver output object to write to
+ * @param value 64-bit integer number to write
  */
-fun writeSZInt64(output: Output, integer: Long) {
-    val sign: ULong
-    var value: ULong
-    if (integer < 0) {
-        sign = 1u
-        value = (-integer).toULong()
-    } else {
-        sign = 0u
-        value = integer.toULong()
-    }
-    var first = value and 63u shl 1 or sign
-    value = value shr 6
-    if (value != 0uL) {
-        first = first or 128u
-    }
-    output.writeByte(first.toByte())
-    while (value != 0uL) {
-        var temp = value and 127u
-        value = value shr 7
-        if (value != 0uL) {
-            temp = temp or 128u
-        }
-        output.writeByte(temp.toByte())
-    }
-}
+public fun Output.writeUZLong(value: ULong): Unit = writeUZLong(value, this::writeByte)
+
+public suspend fun ByteReadChannel.readUZLong(): ULong = readUZLong { readByte() }
+
+public suspend fun ByteWriteChannel.writeUZLong(value: ULong): Unit = writeUZLong(value) { writeByte(it) }
+
+/**
+ * Measure encoded ZigZag+LEB128 size of 32-bit integer value.
+ * @param value integer value
+ * @return size of encoded integer value
+ */
+public fun measureSZInt(value: Int): Int = measureUZInt(toZigZag(value))
+
+/**
+ * Read ZigZag+LEB128 encoded integer with maximum size of 32-bit.
+ * @receiver input object to read from
+ * @return 32-bit integer number that was read
+ */
+public fun Input.readSZInt(): Int = fromZigZag(readUZInt())
+
+/**
+ * Write 32-bit integer value in ZigZag+LEB128 format to [this].
+ * @receiver output object to write to
+ * @param value 32-bit integer number to write
+ */
+public fun Output.writeSZInt(value: Int): Unit = writeUZInt(toZigZag(value))
+
+public suspend fun ByteReadChannel.readSZInt(): Int = fromZigZag(readUZInt())
+
+public suspend fun ByteWriteChannel.writeSZInt(value: Int): Unit = writeUZInt(toZigZag(value))
+
+/**
+ * Measure encoded ZigZag+LEB128 size of 64-bit integer value.
+ * @param value integer value
+ * @return size of encoded integer value
+ */
+public fun measureSZLong(value: Long): Int = measureUZLong(toZigZag(value))
+
+/**
+ * Read ZigZag+LEB128 encoded integer with maximum size of 64-bit.
+ * @receiver input object to read from
+ * @return 64-bit integer number that was read
+ */
+public fun Input.readSZLong(): Long = fromZigZag(readUZLong())
+
+/**
+ * Write 64-bit integer value in ZigZag+LEB128 format to [this].
+ * @receiver output object to write to
+ * @param value 64-bit integer number to write
+ */
+public fun Output.writeSZLong(value: Long): Unit = writeUZLong(toZigZag(value))
+
+public suspend fun ByteReadChannel.readSZLong(): Long = fromZigZag(readUZLong())
+
+public suspend fun ByteWriteChannel.writeSZLong(value: Long): Unit = writeUZLong(toZigZag(value))

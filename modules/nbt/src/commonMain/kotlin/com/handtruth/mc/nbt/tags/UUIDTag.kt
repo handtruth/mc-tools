@@ -5,8 +5,7 @@ import com.handtruth.mc.nbt.NBTBinaryConfig
 import com.handtruth.mc.nbt.NBTStringCodec
 import com.handtruth.mc.nbt.util.*
 import com.handtruth.mc.types.UUID
-import kotlinx.io.Input
-import kotlinx.io.Output
+import io.ktor.utils.io.core.*
 
 object UUIDTag : Tag<UUID> {
     override val type = UUID::class

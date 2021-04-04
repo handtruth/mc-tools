@@ -2,6 +2,7 @@ package com.handtruth.mc.nbt.util
 
 import com.handtruth.mc.nbt.NBTSerialFormat
 import com.handtruth.mc.types.Dynamic
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.encoding.CompositeDecoder
@@ -72,6 +73,11 @@ internal class NBTDecoder(
     }
 
     override fun decodeFloat() = decodeAs<Float>()
+
+    @ExperimentalSerializationApi
+    override fun decodeInline(inlineDescriptor: SerialDescriptor): Decoder {
+        throw UnsupportedOperationException()
+    }
 
     override fun decodeInt() = decodeAs<Int>()
 

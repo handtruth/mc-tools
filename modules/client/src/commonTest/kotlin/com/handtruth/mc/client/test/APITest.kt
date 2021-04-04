@@ -4,10 +4,13 @@ import com.handtruth.mc.chat.ChatMessage
 import com.handtruth.mc.chat.buildChat
 import com.handtruth.mc.client.MinecraftClient
 import com.handtruth.mc.client.model.ServerStatus
-import com.handtruth.mc.client.use
 import com.handtruth.mc.minecraft.model.Player
 import com.handtruth.mc.types.UUID
+import io.ktor.network.selector.*
 import io.ktor.test.dispatcher.*
+import io.ktor.util.*
+import io.ktor.utils.io.core.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withTimeout
@@ -17,10 +20,14 @@ import kotlin.test.assertNotNull
 import kotlin.time.seconds
 
 class APITest {
+
+    @OptIn(InternalAPI::class)
+    val selector = SelectorManager(Dispatchers.Default)
+
     @Test
     fun getVanillaStatus() = testSuspend {
         withTimeout(3.seconds) {
-            MinecraftClient("vanilla.mc.handtruth.com", 25565).use {
+            MinecraftClient(selector, "vanilla.mc.handtruth.com", 25565).use {
                 println(it.getStatus())
             }
         }
@@ -86,7 +93,7 @@ class APITest {
 
     @ExperimentalCoroutinesApi @Test
     fun getExampleStatus() = testSuspend {
-        MinecraftClient("example.mc.handtruth.com", 25565).use { client ->
+        MinecraftClient(selector, "example.mc.handtruth.com", 25565).use { client ->
             val status = client.getStatus()
             assertNotNull(status.favicon)
             val expected = exampleStatus.copy(favicon = status.favicon)
@@ -96,13 +103,13 @@ class APITest {
             assertEquals(string.length, status.description.length)
             assertEquals(expected, status)
             client.ping().take(3).collect()
-            client.disconnect()
+            client.close()
         }
     }
 
     @Test
     fun pingVanilla() = testSuspend {
-        MinecraftClient("vanilla.mc.handtruth.com", 25565).use { client ->
+        MinecraftClient(selector, "vanilla.mc.handtruth.com", 25565).use { client ->
             val ping = client.ping()
                 .drop(1)
                 .take(10)

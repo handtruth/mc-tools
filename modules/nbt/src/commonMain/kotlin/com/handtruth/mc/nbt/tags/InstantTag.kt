@@ -3,10 +3,9 @@ package com.handtruth.mc.nbt.tags
 import com.handtruth.mc.nbt.NBTBinaryCodec
 import com.handtruth.mc.nbt.NBTStringCodec
 import com.handtruth.mc.nbt.util.*
+import io.ktor.utils.io.core.*
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toLocalDateTime
-import kotlinx.io.Input
-import kotlinx.io.Output
 
 object InstantTag : Tag<Instant> {
     override val type = Instant::class

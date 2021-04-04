@@ -1,30 +1,24 @@
 package com.handtruth.mc.client.proto
 
 import com.handtruth.mc.paket.Paket
-import com.handtruth.mc.paket.PaketCreator
-import com.handtruth.mc.paket.fields.enum
-import com.handtruth.mc.paket.fields.string
-import com.handtruth.mc.paket.fields.uint16
-import com.handtruth.mc.paket.fields.varInt
+import com.handtruth.mc.paket.codec.enum
+import com.handtruth.mc.paket.codec.string
+import com.handtruth.mc.paket.codec.ushort
+import com.handtruth.mc.paket.codec.uzint
+import com.handtruth.mc.paket.field.field
 
-class HandshakePaket(
-    version: Int = -1,
-    address: String = "localhost",
-    port: Int = 25565,
-    state: States = States.Nothing
+internal class HandshakePaket(
+    version: UInt,
+    address: String,
+    port: UShort,
+    state: States
 ) : Paket() {
-    override val id = PaketID.HandshakeRequestResponse
-
-    var version by varInt(version)
-    var address by string(address)
-    var port by uint16(port.toUShort())
-    var state by enum(state)
+    var version by field(uzint, version)
+    var address by field(string, address)
+    var port by field(ushort, port)
+    var state by field(enum(), state)
 
     enum class States {
         Nothing, Status, Login
-    }
-
-    companion object : PaketCreator<HandshakePaket> {
-        override fun produce() = HandshakePaket()
     }
 }

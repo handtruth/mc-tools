@@ -6,8 +6,7 @@ import com.handtruth.mc.nbt.util.Reader
 import com.handtruth.mc.nbt.util.readAnyInt
 import com.handtruth.mc.nbt.util.readUInt32
 import com.handtruth.mc.nbt.util.writeUInt32
-import kotlinx.io.Input
-import kotlinx.io.Output
+import io.ktor.utils.io.core.*
 
 object UIntTag : Tag<UInt> {
     override val type = UInt::class

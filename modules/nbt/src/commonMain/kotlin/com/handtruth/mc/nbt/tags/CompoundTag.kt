@@ -5,9 +5,7 @@ import com.handtruth.mc.nbt.NBTStringCodec
 import com.handtruth.mc.nbt.util.*
 import com.handtruth.mc.types.Dynamic
 import com.handtruth.mc.types.buildDynamic
-import kotlinx.io.Input
-import kotlinx.io.Output
-import kotlinx.io.readByte
+import io.ktor.utils.io.core.*
 
 object CompoundTag : Tag<Dynamic> {
     override val type = Dynamic::class
@@ -15,7 +13,7 @@ object CompoundTag : Tag<Dynamic> {
     override fun readBinary(input: Input, conf: NBTBinaryCodec): Dynamic {
         return buildDynamic {
             while (true) {
-                if (input.exhausted()) {
+                if (input.endOfInput) {
                     break
                 }
                 val tagId = input.readByte()

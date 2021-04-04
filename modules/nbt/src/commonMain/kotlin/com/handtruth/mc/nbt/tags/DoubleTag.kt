@@ -6,8 +6,7 @@ import com.handtruth.mc.nbt.util.Reader
 import com.handtruth.mc.nbt.util.readAnyFloating
 import com.handtruth.mc.nbt.util.readDouble
 import com.handtruth.mc.nbt.util.writeDouble
-import kotlinx.io.Input
-import kotlinx.io.Output
+import io.ktor.utils.io.core.*
 
 object DoubleTag : Tag<Double> {
     override val type = Double::class

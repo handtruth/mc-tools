@@ -1,5 +1,16 @@
-dependencies {
-    fun kotlinx(name: String) = "org.jetbrains.kotlinx:kotlinx-$name"
+plugins {
+    id("info.solidsoft.pitest") version "1.5.2"
+}
 
-    commonMainApi(kotlinx("io"))
+kotlin {
+    explicitApi()
+}
+
+pitest {
+    targetClasses.set(listOf("com.handtruth.mc.util.*"))
+    junit5PluginVersion.set("0.12")
+}
+
+dependencies {
+    commonMainApi("io.ktor:ktor-io")
 }

@@ -9,10 +9,9 @@ dependencies {
 
     commonMainApi(project(":tools-chat"))
     commonMainImplementation(project(":tools-paket"))
-    commonMainImplementation(kotlinx("io"))
     commonMainImplementation(kotlinx("serialization-json"))
-    commonMainImplementation("com.soywiz.korlibs.korio:korio")
     commonMainImplementation("io.ktor:ktor-client-core")
+    commonMainImplementation("io.ktor:ktor-network")
 
     "jvmMainImplementation"(ktor("client-cio"))
 }

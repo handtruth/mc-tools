@@ -89,4 +89,8 @@ internal class NBTEncoder(
     override fun encodeString(value: String) {
         tag = value
     }
+
+    override fun encodeInline(inlineDescriptor: SerialDescriptor): Encoder {
+        throw UnsupportedOperationException()
+    }
 }

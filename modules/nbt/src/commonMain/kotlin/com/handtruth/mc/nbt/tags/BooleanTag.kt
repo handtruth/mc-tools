@@ -4,9 +4,7 @@ import com.handtruth.mc.nbt.NBTBinaryCodec
 import com.handtruth.mc.nbt.NBTStringCodec
 import com.handtruth.mc.nbt.util.Reader
 import com.handtruth.mc.nbt.util.skipSpace
-import kotlinx.io.Input
-import kotlinx.io.Output
-import kotlinx.io.readByte
+import io.ktor.utils.io.core.*
 
 object BooleanTag : Tag<Boolean> {
     override val type = Boolean::class

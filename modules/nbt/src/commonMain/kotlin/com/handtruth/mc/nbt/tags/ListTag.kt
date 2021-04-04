@@ -4,9 +4,7 @@ import com.handtruth.mc.nbt.NBTBinaryCodec
 import com.handtruth.mc.nbt.NBTStringCodec
 import com.handtruth.mc.nbt.TagsContainer
 import com.handtruth.mc.nbt.util.*
-import kotlinx.io.Input
-import kotlinx.io.Output
-import kotlinx.io.readByte
+import io.ktor.utils.io.core.*
 
 object ListTag : Tag<List<*>> {
     override val type = List::class

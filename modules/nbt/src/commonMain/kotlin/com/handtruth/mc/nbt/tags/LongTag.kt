@@ -6,8 +6,7 @@ import com.handtruth.mc.nbt.util.Reader
 import com.handtruth.mc.nbt.util.readAnyInt
 import com.handtruth.mc.nbt.util.readInt64
 import com.handtruth.mc.nbt.util.writeInt64
-import kotlinx.io.Input
-import kotlinx.io.Output
+import io.ktor.utils.io.core.*
 
 object LongTag : Tag<Long> {
     override val type = Long::class

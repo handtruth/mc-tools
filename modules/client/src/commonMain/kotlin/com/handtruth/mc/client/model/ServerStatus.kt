@@ -11,8 +11,8 @@ import kotlinx.serialization.UseSerializers
 
 @Serializable
 data class ServerStatus(
-    val version: Version,
-    val players: Players,
+    val version: Version = Version("", -1),
+    val players: Players = Players(0, 0, null),
     val favicon: String? = null,
     val description: ChatMessage = ChatMessage.empty
 ) {
