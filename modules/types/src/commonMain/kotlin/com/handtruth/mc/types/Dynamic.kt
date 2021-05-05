@@ -2,55 +2,56 @@ package com.handtruth.mc.types
 
 import com.handtruth.mc.util.ReferenceSet
 
-interface Dynamic : Iterable<Map.Entry<String, Any>> {
-    val fields: Map<String, Any>
-    fun getOrNull(name: String): Any?
+public interface Dynamic : Iterable<Map.Entry<String, Any>> {
+    public val fields: Map<String, Any>
+    public fun getOrNull(name: String): Any?
 }
 
-operator fun Dynamic.get(name: String): Any = getOrNull(name) ?: error("field \"$name\" not found")
+public operator fun Dynamic.get(name: String): Any = getOrNull(name) ?: error("field \"$name\" not found")
 
-interface MutableDynamic : Dynamic {
+public interface MutableDynamic : Dynamic, MutableIterable<Map.Entry<String, Any>> {
     override val fields: MutableMap<String, Any>
-    operator fun set(name: String, value: Any?)
-    infix fun String.assign(value: Any?) = set(this, value)
+    public operator fun set(name: String, value: Any?)
+    public infix fun String.assign(value: Any?): Unit = set(this, value)
 
-    infix fun String.byte(value: Byte) = set(this, value)
-    infix fun String.short(value: Short) = set(this, value)
-    infix fun String.int(value: Int) = set(this, value)
-    infix fun String.long(value: Long) = set(this, value)
-    infix fun String.ubyte(value: UByte) = set(this, value)
-    infix fun String.ushort(value: UShort) = set(this, value)
-    infix fun String.uint(value: UInt) = set(this, value)
-    infix fun String.ulong(value: ULong) = set(this, value)
-    infix fun String.float(value: Float) = set(this, value)
-    infix fun String.double(value: Double) = set(this, value)
-    infix fun String.list(value: List<*>) = set(this, value)
-    infix fun <T> String.list(@BuilderInference block: MutableList<T>.() -> Unit) = set(this, buildList(block))
+    public infix fun String.byte(value: Byte): Unit = set(this, value)
+    public infix fun String.short(value: Short): Unit = set(this, value)
+    public infix fun String.int(value: Int): Unit = set(this, value)
+    public infix fun String.long(value: Long): Unit = set(this, value)
+    public infix fun String.ubyte(value: UByte): Unit = set(this, value)
+    public infix fun String.ushort(value: UShort): Unit = set(this, value)
+    public infix fun String.uint(value: UInt): Unit = set(this, value)
+    public infix fun String.ulong(value: ULong): Unit = set(this, value)
+    public infix fun String.float(value: Float): Unit = set(this, value)
+    public infix fun String.double(value: Double): Unit = set(this, value)
+    public infix fun String.list(value: List<*>): Unit = set(this, value)
+    public infix fun <T> String.list(@BuilderInference block: MutableList<T>.() -> Unit): Unit =
+        set(this, buildList(block))
 
-    fun String.dynamic(block: MutableDynamic.() -> Unit): MutableDynamic {
+    public fun String.dynamic(block: MutableDynamic.() -> Unit): MutableDynamic {
         val result = buildMutableDynamic(block)
         assign(result)
         return result
     }
 
-    operator fun String.invoke(block: MutableDynamic.() -> Unit): MutableDynamic = dynamic(block)
+    public operator fun String.invoke(block: MutableDynamic.() -> Unit): MutableDynamic = dynamic(block)
 }
 
-inline fun MutableList<Dynamic>.dynamic(block: MutableDynamic.() -> Unit): Dynamic {
+public inline fun MutableList<Dynamic>.dynamic(block: MutableDynamic.() -> Unit): Dynamic {
     val result = buildDynamic(block)
     add(result)
     return result
 }
 
-fun MutableDynamic(): MutableDynamic = DynamicImpl()
+public fun MutableDynamic(): MutableDynamic = MutableDynamicImpl()
 
-fun Dynamic(): Dynamic = EmptyDynamic
+public fun Dynamic(): Dynamic = EmptyDynamic
 
-inline fun buildMutableDynamic(block: MutableDynamic.() -> Unit): MutableDynamic {
+public inline fun buildMutableDynamic(block: MutableDynamic.() -> Unit): MutableDynamic {
     return MutableDynamic().apply(block)
 }
 
-inline fun buildDynamic(block: MutableDynamic.() -> Unit): Dynamic = buildMutableDynamic(block)
+public inline fun buildDynamic(block: MutableDynamic.() -> Unit): Dynamic = buildMutableDynamic(block)
 
 private fun listEquals(a: List<*>, b: List<*>): Boolean {
     if (a === b) {
@@ -94,7 +95,7 @@ private fun anyDeepEquals(a: Any?, b: Any?) = if (a != b) {
     true
 }
 
-fun Dynamic?.contentDeepEquals(other: Dynamic?): Boolean {
+public fun Dynamic?.contentDeepEquals(other: Dynamic?): Boolean {
     if (this === other) {
         return true
     }
@@ -118,7 +119,7 @@ private class ContentToStringContext(val pretty: Boolean, appendable: Appendable
     val references = ReferenceSet<Any>()
 }
 
-fun Dynamic?.contentToString(pretty: Boolean = false): String {
+public fun Dynamic?.contentToString(pretty: Boolean = false): String {
     this ?: return "null"
     return buildString {
         with(ContentToStringContext(pretty, this)) {
@@ -243,7 +244,7 @@ private fun ContentToStringContext.appendMap(value: Map<*, *>) {
     append('}')
 }
 
-fun Dynamic?.contentDeepHashCode(): Int {
+public fun Dynamic?.contentDeepHashCode(): Int {
     this ?: return 0
     return mapHashCode(fields)
 }
@@ -280,19 +281,8 @@ private object EmptyDynamic : Dynamic {
     override fun iterator() = emptyList<Map.Entry<String, Any>>().iterator()
 }
 
-private class DynamicImpl : MutableDynamic {
-    override val fields: MutableMap<String, Any> = hashMapOf()
-
+private abstract class AbstractDynamic : Dynamic {
     override fun getOrNull(name: String): Any? = fields[name]
-    override fun set(name: String, value: Any?) {
-        if (value == null) {
-            fields.remove(name)
-        } else {
-            fields[name] = value
-        }
-    }
-
-    override fun iterator() = fields.entries.iterator()
 
     override fun equals(other: Any?) = this === other || other is Dynamic && fields == other.fields
 
@@ -316,8 +306,32 @@ private class DynamicImpl : MutableDynamic {
     }
 }
 
-fun Dynamic.copy(): MutableDynamic {
+private class DynamicImpl(
+    override val fields: Map<String, Any>
+) : AbstractDynamic() {
+    override fun iterator() = fields.entries.iterator()
+}
+
+private class MutableDynamicImpl(
+    override val fields: MutableMap<String, Any> = hashMapOf()
+) : AbstractDynamic(), MutableDynamic {
+    override fun set(name: String, value: Any?) {
+        if (value == null) {
+            fields.remove(name)
+        } else {
+            fields[name] = value
+        }
+    }
+
+    override fun iterator() = fields.entries.iterator()
+}
+
+public fun Dynamic.toMutableDynamic(): MutableDynamic {
     val result = MutableDynamic()
     result.fields += fields
     return result
 }
+
+public fun MutableMap<String, Any>.asMutableDynamic(): MutableDynamic = MutableDynamicImpl(this)
+
+public fun Map<String, Any>.asDynamic(): Dynamic = DynamicImpl(this)

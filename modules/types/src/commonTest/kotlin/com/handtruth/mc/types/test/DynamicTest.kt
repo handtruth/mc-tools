@@ -32,5 +32,6 @@ class DynamicTest {
         @Suppress("UNCHECKED_CAST")
         ((actual["inner"] as MutableDynamic)["some"] as MutableList<Any>).add(actual)
         println(actual.contentToString(true))
+        actual.fields.asDynamic()
     }
 }

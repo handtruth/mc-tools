@@ -4,12 +4,13 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
 internal const val uuidClassName = "com.handtruth.mc.types.UUID"
 
-class MalformedUUIDException(message: String) : IllegalArgumentException(message)
+public class MalformedUUIDException(message: String) : IllegalArgumentException(message)
 
 internal fun char2hex(char: Char, i: Int) = when (char) {
     in '0'..'9' -> char - '0'
@@ -61,18 +62,18 @@ private fun exportUUIDPart(part: Long, chars: CharArray, begin: Int, isMojang: B
 }
 
 @Serializable(UUID.Serializer.Default::class)
-data class UUID(val most: Long, val least: Long) {
-    companion object {
-        val nil = UUID(0, 0)
+public data class UUID(val most: Long, val least: Long) {
+    public companion object {
+        public val nil: UUID = UUID(0, 0)
 
-        fun parse(string: CharSequence, variant: Variants = Variants.Any) = when (variant) {
+        public fun parse(string: CharSequence, variant: Variants = Variants.Any): UUID = when (variant) {
             Variants.Any -> parseAny(string)
             Variants.Default -> parseDefault(string)
             Variants.GUID -> parseGUID(string)
             Variants.Mojang -> parseMojangUUID(string)
         }
 
-        fun parseAny(string: CharSequence): UUID {
+        public fun parseAny(string: CharSequence): UUID {
             if (string.length < 32) {
                 throw MalformedUUIDException("UUID token size should be at least 32 chars, got ${string.length}")
             }
@@ -85,7 +86,7 @@ data class UUID(val most: Long, val least: Long) {
             return UUID(most, least)
         }
 
-        fun parseDefault(string: CharSequence): UUID {
+        public fun parseDefault(string: CharSequence): UUID {
             if (string.length != 36) {
                 throw MalformedUUIDException("UUID token size should be 36 chars, got ${string.length}")
             }
@@ -104,7 +105,7 @@ data class UUID(val most: Long, val least: Long) {
             return UUID(most, least)
         }
 
-        fun parseGUID(string: CharSequence): UUID {
+        public fun parseGUID(string: CharSequence): UUID {
             if (string.length != 38) {
                 throw MalformedUUIDException("GUID token size should be 38 chars, got ${string.length}")
             }
@@ -122,7 +123,7 @@ data class UUID(val most: Long, val least: Long) {
             return value
         }
 
-        fun parseMojangUUID(string: CharSequence): UUID {
+        public fun parseMojangUUID(string: CharSequence): UUID {
             if (string.length != 32) {
                 throw MalformedUUIDException("Mojang UUID format should be 32 chars, got ${string.length}")
             }
@@ -132,7 +133,7 @@ data class UUID(val most: Long, val least: Long) {
         }
     }
 
-    enum class Variants {
+    public enum class Variants {
         Any, Default, GUID, Mojang
     }
 
@@ -143,51 +144,52 @@ data class UUID(val most: Long, val least: Long) {
         return chars.concatToString()
     }
 
-    fun toString(variant: Variants) = when (variant) {
+    public fun toString(variant: Variants): String = when (variant) {
         Variants.Any, Variants.Default -> toString()
         Variants.GUID -> toGUID()
         Variants.Mojang -> toMojangUUID()
     }
 
-    fun toGUID(): String {
+    public fun toGUID(): String {
         return "{$this}"
     }
 
-    fun toMojangUUID(): String {
+    public fun toMojangUUID(): String {
         val chars = CharArray(32)
         exportUUIDPart(most, chars, 0, true)
         exportUUIDPart(least, chars, 16, true)
         return chars.concatToString()
     }
 
-    sealed class Serializer : KSerializer<UUID> {
-        abstract val variant: Variants
+    public sealed class Serializer : KSerializer<UUID> {
+        public abstract val variant: Variants
 
-        object Any : Serializer() {
-            override val variant get() = Variants.Any
-            override fun deserialize(decoder: Decoder) = parse(decoder.decodeString(), Variants.Any)
-            override fun serialize(encoder: Encoder, value: UUID) = encoder.encodeString(value.toString(Variants.Any))
+        public object Any : Serializer() {
+            override val variant: Variants get() = Variants.Any
+            override fun deserialize(decoder: Decoder): UUID = parse(decoder.decodeString(), Variants.Any)
+            override fun serialize(encoder: Encoder, value: UUID): Unit =
+                encoder.encodeString(value.toString(Variants.Any))
         }
 
-        object Default : Serializer() {
-            override val variant get() = Variants.Default
-            override fun deserialize(decoder: Decoder) = parse(decoder.decodeString(), Variants.Default)
-            override fun serialize(encoder: Encoder, value: UUID) =
+        public object Default : Serializer() {
+            override val variant: Variants get() = Variants.Default
+            override fun deserialize(decoder: Decoder): UUID = parse(decoder.decodeString(), Variants.Default)
+            override fun serialize(encoder: Encoder, value: UUID): Unit =
                 encoder.encodeString(value.toString(Variants.Default))
         }
 
-        object GUID : Serializer() {
-            override val variant get() = Variants.GUID
-            override fun deserialize(decoder: Decoder) = parse(decoder.decodeString(), Variants.GUID)
-            override fun serialize(encoder: Encoder, value: UUID) = encoder.encodeString(value.toGUID())
+        public object GUID : Serializer() {
+            override val variant: Variants get() = Variants.GUID
+            override fun deserialize(decoder: Decoder): UUID = parse(decoder.decodeString(), Variants.GUID)
+            override fun serialize(encoder: Encoder, value: UUID): Unit = encoder.encodeString(value.toGUID())
         }
 
-        object Mojang : Serializer() {
-            override val variant get() = Variants.Mojang
-            override fun deserialize(decoder: Decoder) = parse(decoder.decodeString(), Variants.Mojang)
-            override fun serialize(encoder: Encoder, value: UUID) = encoder.encodeString(value.toMojangUUID())
+        public object Mojang : Serializer() {
+            override val variant: Variants get() = Variants.Mojang
+            override fun deserialize(decoder: Decoder): UUID = parse(decoder.decodeString(), Variants.Mojang)
+            override fun serialize(encoder: Encoder, value: UUID): Unit = encoder.encodeString(value.toMojangUUID())
         }
 
-        override val descriptor = PrimitiveSerialDescriptor(uuidClassName, PrimitiveKind.STRING)
+        override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor(uuidClassName, PrimitiveKind.STRING)
     }
 }
