@@ -131,7 +131,7 @@ class MCSDBTest {
         println(expectedBigBytes.toList())
         println(bigBytesData.toList())
         assertTrue(expectedBigBytes.contentEquals(bigBytesData))
-        val tag2 = tag.copy()
+        val tag2 = tag.toMutableDynamic()
         tag2["empty-bytes"] = null
         tag2["space-bytes"] = null
         tag2["big-bytes"] = null

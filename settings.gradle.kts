@@ -36,6 +36,7 @@ val kotlinProjects = listOf(
     "client",
     "mojang-api",
     "types",
+    "collections",
     "all"
 )
 
