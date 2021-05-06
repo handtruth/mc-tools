@@ -22,10 +22,10 @@ assemble:
   stage: build
   script:
     - $GRADLE assemble
-  artifacts: &artifacts
-    paths:
-      - build
-      - 'modules/*/build'
+  artifacts: &artifacts {}
+    #paths:
+    #  - build
+    #  - 'modules/*/build'
 
 .test: &test
   script:
