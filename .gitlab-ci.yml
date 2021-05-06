@@ -23,9 +23,9 @@ assemble:
   script:
     - $GRADLE assemble
   artifacts: &artifacts {}
-    #paths:
-    #  - build
-    #  - 'modules/*/build'
+    paths:
+      - build
+      - 'modules/*/build'
 
 .test: &test
   script:
