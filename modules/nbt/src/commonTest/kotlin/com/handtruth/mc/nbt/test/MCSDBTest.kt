@@ -120,17 +120,14 @@ class MCSDBTest {
 
     private fun checkTag(tag: Dynamic) {
         val emptyBytes = tag.getOrNull("empty-bytes")
-        assertTrue(emptyBytes is ByteReadPacket)
-        assertEquals(0L, emptyBytes.remaining)
+        assertTrue(emptyBytes is ByteArray)
+        assertEquals(0, emptyBytes.size)
         val spaceBytes = tag.getOrNull("space-bytes")
-        assertTrue(spaceBytes is ByteReadPacket)
-        assertEquals(0L, spaceBytes.remaining)
+        assertTrue(spaceBytes is ByteArray)
+        assertEquals(0, spaceBytes.size)
         val bigBytes = tag.getOrNull("big-bytes")
-        assertTrue(bigBytes is ByteReadPacket)
-        val bigBytesData = bigBytes.copy().use { it.readBytes() }
-        println(expectedBigBytes.toList())
-        println(bigBytesData.toList())
-        assertTrue(expectedBigBytes.contentEquals(bigBytesData))
+        assertTrue(bigBytes is ByteArray)
+        assertTrue(expectedBigBytes.contentEquals(bigBytes))
         val tag2 = tag.toMutableDynamic()
         tag2["empty-bytes"] = null
         tag2["space-bytes"] = null

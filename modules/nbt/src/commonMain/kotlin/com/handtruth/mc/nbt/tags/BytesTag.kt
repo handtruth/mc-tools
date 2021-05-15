@@ -9,20 +9,15 @@ import com.handtruth.mc.nbt.util.skipSpace
 import com.handtruth.mc.nbt.util.writeSize
 import io.ktor.utils.io.core.*
 
-object BytesTag : Tag<ByteReadPacket> {
-    override val type = ByteReadPacket::class
+object BytesTag : Tag<ByteArray> {
+    override val type = ByteArray::class
 
-    override fun readBinary(input: Input, conf: NBTBinaryCodec): ByteReadPacket {
+    override fun readBinary(input: Input, conf: NBTBinaryCodec): ByteArray {
         val size = readSize(input, conf.binaryConfig)
-        return buildPacket {
-            // TODO: Improve, when fixed
-            repeat(size) {
-                writeByte(input.readByte())
-            }
-        }
+        return input.readBytes(size)
     }
 
-    override fun readText(input: Reader, conf: NBTStringCodec): ByteReadPacket {
+    override fun readText(input: Reader, conf: NBTStringCodec): ByteArray {
         input.skipSpace()
         check(input.read() == '(') { "bytes token expected" }
         return buildPacket {
@@ -75,25 +70,14 @@ object BytesTag : Tag<ByteReadPacket> {
                     }
                 }
             }
-        }
+        }.use { it.readBytes() }
     }
 
-    private fun Input.pipe(output: Output, size: Int) {
-        // TODO: Improve, when fixed
-        repeat(size) {
-            output.writeByte(readByte())
-        }
-    }
-
-    override fun writeBinary(output: Output, conf: NBTBinaryCodec, value: ByteReadPacket) {
-        val size = value.remaining.toInt()
+    override fun writeBinary(output: Output, conf: NBTBinaryCodec, value: ByteArray) {
+        val size = value.size
         writeSize(output, conf.binaryConfig, size)
         if (size != 0) {
-            if (conf.binaryConfig.moveBytes) {
-                value.use { it.pipe(output, size) }
-            } else {
-                value.copy().use { it.pipe(output, size) }
-            }
+            output.writeFully(value)
         }
     }
 
@@ -173,16 +157,10 @@ object BytesTag : Tag<ByteReadPacket> {
         output.append(')')
     }
 
-    override fun writeText(output: Appendable, conf: NBTStringCodec, value: ByteReadPacket, level: Int) {
-        val size = value.remaining.toInt()
+    override fun writeText(output: Appendable, conf: NBTStringCodec, value: ByteArray, level: Int) {
+        val size = value.size
         if (size != 0) {
-            if (conf.stringConfig.moveBytes) {
-                value.use { it.writeBase64(output, size, conf.stringConfig, level) }
-            } else {
-                value.copy().use {
-                    it.writeBase64(output, size, conf.stringConfig, level)
-                }
-            }
+            ByteReadPacket(value).use { it.writeBase64(output, size, conf.stringConfig, level) }
         } else {
             output.append("()")
         }

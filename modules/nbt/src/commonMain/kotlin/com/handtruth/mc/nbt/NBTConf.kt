@@ -5,8 +5,7 @@ import kotlinx.datetime.TimeZone
 data class NBTBinaryConfig internal constructor(
     val endian: ByteOrders,
     val format: Formats,
-    val compressBooleans: Boolean,
-    val moveBytes: Boolean
+    val compressBooleans: Boolean
 ) {
     enum class ByteOrders {
         Big, Little
@@ -20,28 +19,24 @@ data class NBTBinaryConfig internal constructor(
         val Java = NBTBinaryConfig(
             endian = ByteOrders.Big,
             format = Formats.Flat,
-            compressBooleans = false,
-            moveBytes = false
+            compressBooleans = false
         )
         inline val Default get() = Java
         val BedrockDisk = NBTBinaryConfig(
             endian = ByteOrders.Little,
             format = Formats.Flat,
-            compressBooleans = false,
-            moveBytes = false
+            compressBooleans = false
         )
         inline val Bedrock get() = BedrockDisk
         val BedrockNet = NBTBinaryConfig(
             endian = ByteOrders.Little,
             format = Formats.LEB128,
-            compressBooleans = false,
-            moveBytes = false
+            compressBooleans = false
         )
         val KBT = NBTBinaryConfig(
             endian = ByteOrders.Big,
             format = Formats.ZInt,
-            compressBooleans = true,
-            moveBytes = false
+            compressBooleans = true
         )
     }
 }
@@ -53,7 +48,6 @@ data class NBTStringConfig internal constructor(
     val quoteValues: Boolean,
     val timeZone: TimeZone,
     val base64Variant: Base64Variants,
-    val moveBytes: Boolean,
     val base64LineLength: Int
 ) {
     enum class Base64Variants {
@@ -68,7 +62,6 @@ data class NBTStringConfig internal constructor(
             quoteValues = true,
             timeZone = TimeZone.currentSystemDefault(),
             base64Variant = Base64Variants.RFC4648,
-            moveBytes = false,
             base64LineLength = 64,
         )
         inline val Default get() = Mojang
@@ -79,7 +72,6 @@ data class NBTStringConfig internal constructor(
             quoteValues = true,
             timeZone = TimeZone.currentSystemDefault(),
             base64Variant = Base64Variants.RFC4648,
-            moveBytes = false,
             base64LineLength = 64,
         )
     }
