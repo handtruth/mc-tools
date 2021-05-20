@@ -1,4 +1,4 @@
-package com.handtruth.mc.collections
+package com.handtruth.mc.graph
 
 public interface Graph<out V, out E> {
     public val vertices: Set<Vertex<V, E>>
@@ -194,3 +194,27 @@ public fun <V, E> Graph<V, E>.copy(reverse: Boolean = false): MutableGraph<V, E>
 public fun <V, E> Graph<V, E>.toMutableGraph(): Graph<V, E> = copy()
 
 public fun <V, E> MutableGraph(): MutableGraph<V, E> = DirectedGraph()
+
+public infix fun <V, E> Graph<V, E>.isomorphicTo(other: Graph<V, E>): Boolean {
+    return getIsomorphism(this, other) != null
+}
+
+public infix fun <V> MutableGraph.MutableVertex<V, Unit>.connect(
+    other: MutableGraph.MutableVertex<V, Unit>
+): MutableGraph.MutableEdge<V, Unit> {
+    return connect(other, Unit)
+}
+
+public fun <E> MutableGraph<Unit, E>.addVertex(): MutableGraph.MutableVertex<Unit, E> = addVertex(Unit)
+
+public val <V, E> Graph.Vertex<V, E>.sources: Sequence<Graph.Vertex<V, E>>
+    get() = edges.asSequence().mapNotNull {
+        val source = it.source
+        if (source === this) null else source
+    }
+
+public val <V, E> Graph.Vertex<V, E>.targets: Sequence<Graph.Vertex<V, E>>
+    get() = edges.asSequence().mapNotNull {
+        val target = it.target
+        if (target === this) null else target
+    }

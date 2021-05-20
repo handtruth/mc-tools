@@ -1,6 +1,6 @@
-package com.handtruth.mc.collections.test
+package com.handtruth.mc.graph.test
 
-import com.handtruth.mc.collections.*
+import com.handtruth.mc.graph.*
 import kotlin.test.*
 
 class DirectedGraphTest {
@@ -410,5 +410,64 @@ class DirectedGraphTest {
         assertFailsWith<IllegalStateException> {
             graph.topologicalSorted()
         }
+    }
+
+    private fun createGraph(): MutableGraph<Unit, Unit> {
+        val graph = MutableGraph<Unit, Unit>()
+        val a = graph.addVertex()
+        val b = graph.addVertex()
+        val c = graph.addVertex()
+        val d = graph.addVertex()
+        val e = graph.addVertex()
+        val f = graph.addVertex()
+        val g = graph.addVertex()
+        val h = graph.addVertex()
+        a connect b
+        b connect c
+        b connect d
+        c connect e
+        d connect f
+        d connect e
+        e connect g
+        f connect g
+        g connect h
+        return graph
+    }
+
+    @Test
+    fun isomorphismTest() {
+        val a = createGraph()
+        val b = createGraph()
+        assertTrue { a isomorphicTo b }
+        val vertex = b.vertices.first()
+        vertex connect vertex
+        assertFalse { a isomorphicTo b }
+    }
+
+    private fun <T> cast(value: Any): T {
+        @Suppress("UNCHECKED_CAST")
+        return value as T
+    }
+
+    @Test
+    fun equationTest1() {
+        val a = createGraph()
+        val b = createGraph()
+        assertEquals(a, b)
+        val vertex = a.vertices.last()
+        vertex.value = cast(Any())
+        assertNotEquals(a, b)
+        assertTrue { a isomorphicTo b }
+    }
+
+    @Test
+    fun equationTest2() {
+        val a = createGraph()
+        val b = createGraph()
+        assertEquals(a, b)
+        val edge = a.edges.last()
+        edge.value = cast(Any())
+        assertNotEquals(a, b)
+        assertTrue { a isomorphicTo b }
     }
 }

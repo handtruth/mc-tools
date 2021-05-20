@@ -1,4 +1,7 @@
-package com.handtruth.mc.collections
+package com.handtruth.mc.graph
+
+import com.handtruth.mc.internals.assert
+import com.handtruth.mc.internals.end
 
 internal class Multimap<K, V> {
     private val container = hashMapOf<K, MutableList<V>>()

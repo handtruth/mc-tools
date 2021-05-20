@@ -1,9 +1,11 @@
-package com.handtruth.mc.collections
+package com.handtruth.mc.graph
 
+import com.handtruth.mc.internals.assert
+import com.handtruth.mc.internals.end
 import kotlin.contracts.contract
 import kotlin.jvm.JvmField
 
-public class DirectedGraph<V, E> : MutableGraph<V, E> {
+public class DirectedGraph<V, E> : MutableGraph<V, E>, AbstractGraph<V, E>() {
 
     private val vertexMap = Multimap<V, DirectVertex>()
     private val edgeMap = Multimap<E, DirectEdge>()
@@ -384,78 +386,4 @@ public class DirectedGraph<V, E> : MutableGraph<V, E> {
             removeEdges(current)
         }
     }
-
-    private fun Appendable.appendEdge(cache: Map<Graph.Vertex<*, *>, String>, edge: Graph.Edge<*, *>) {
-        append(cache[edge.source])
-        append("-[")
-        append(edge.value.toString())
-        append("]->")
-        append(cache[edge.target])
-    }
-
-    private fun Appendable.appendVertex(cache: Map<Graph.Vertex<*, *>, String>, vertex: Graph.Vertex<*, *>) {
-        val iterator = vertex.edges.iterator()
-        val first: Graph.Edge<*, *>
-        while (true) {
-            if (iterator.hasNext()) {
-                val edge = iterator.next()
-                if (edge.source === vertex) {
-                    first = edge
-                    break
-                }
-            } else {
-                append(cache[vertex])
-                return
-            }
-        }
-        appendEdge(cache, first)
-        for (edge in iterator) {
-            append(", ")
-            appendEdge(cache, edge)
-        }
-    }
-
-    override fun toString(): String = buildString {
-        append("DirectedGraph(")
-        val cache = buildMap<Graph.Vertex<*, *>, String> {
-            for (vertex in vertices) {
-                put(vertex, vertex.value.toString())
-            }
-        }
-        val iterator = vertices.iterator()
-        if (iterator.hasNext()) {
-            val first = iterator.next()
-            appendVertex(cache, first)
-            for (vertex in iterator) {
-                append("; ")
-                appendVertex(cache, vertex)
-            }
-        }
-        append(")")
-    }
-
-    /*
-    override fun equals(other: Any?): Boolean {
-        if (this === other) {
-            return true
-        }
-        if (other !is Graph<*, *>) {
-            return false
-        }
-        if (vertices.size != other.vertices.size || edges.size != other.edges.size) {
-            return false
-        }
-        val bV = other.vertices.toList()
-        main@ for (a in vertices) {
-            for (b in bV) {
-                if (a.value == b.value && a.edges.size == b.edges.size) {
-                    for (ea in a.edges) {
-
-                    }
-                }
-            }
-            return false
-        }
-    }
-    */
 }

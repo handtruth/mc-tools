@@ -1,5 +1,6 @@
 package com.handtruth.mc.collections
 
+import com.handtruth.mc.internals.end
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
 
