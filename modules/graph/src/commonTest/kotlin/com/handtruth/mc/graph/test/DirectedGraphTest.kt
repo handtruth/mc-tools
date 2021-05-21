@@ -434,14 +434,20 @@ class DirectedGraphTest {
         return graph
     }
 
+    data class Labeled(val i: Int, val n: String) : Comparable<Labeled> {
+        override fun compareTo(other: Labeled): Int {
+            return i.compareTo(other.i)
+        }
+    }
+
     @Test
     fun isomorphismTest() {
         val a = createGraph()
         val b = createGraph()
-        assertTrue { a isomorphicTo b }
+        assertTrue { a isIsomorphicTo b }
         val vertex = b.vertices.first()
         vertex connect vertex
-        assertFalse { a isomorphicTo b }
+        assertFalse { a isIsomorphicTo b }
     }
 
     private fun <T> cast(value: Any): T {
@@ -454,10 +460,13 @@ class DirectedGraphTest {
         val a = createGraph()
         val b = createGraph()
         assertEquals(a, b)
+        println("equals")
         val vertex = a.vertices.last()
         vertex.value = cast(Any())
         assertNotEquals(a, b)
-        assertTrue { a isomorphicTo b }
+        println("not equals")
+        assertTrue { a isIsomorphicTo b }
+        println("isomorphic")
     }
 
     @Test
@@ -468,6 +477,6 @@ class DirectedGraphTest {
         val edge = a.edges.last()
         edge.value = cast(Any())
         assertNotEquals(a, b)
-        assertTrue { a isomorphicTo b }
+        assertTrue { a isIsomorphicTo b }
     }
 }

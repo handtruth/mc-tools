@@ -32,7 +32,7 @@ public abstract class AbstractGraph<V, E> : Graph<V, E> {
     }
 
     override fun toString(): String = buildString {
-        append("DirectedGraph(")
+        append("Graph(")
         val cache = buildMap<Graph.Vertex<*, *>, String> {
             for (vertex in vertices) {
                 put(vertex, vertex.value.toString())
@@ -65,6 +65,6 @@ public abstract class AbstractGraph<V, E> : Graph<V, E> {
         if (other !is Graph<*, *>) {
             return false
         }
-        return getIsomorphism(this, other, ValueEquator, ValueEquator) != null
+        return findIsomorphism(this, other, valueEquator, valueEquator) != null
     }
 }
