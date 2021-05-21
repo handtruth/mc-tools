@@ -267,7 +267,7 @@ class DirectedGraphTest {
 
         graph.clear()
 
-        assertEquals("DirectedGraph()", graph.toString())
+        assertEquals("Graph()", graph.toString())
     }
 
     @Test
@@ -478,5 +478,12 @@ class DirectedGraphTest {
         edge.value = cast(Any())
         assertNotEquals(a, b)
         assertTrue { a isIsomorphicTo b }
+    }
+
+    @Test
+    fun equationTest3() {
+        val a = MutableGraph<Unit, Unit>()
+        val b = MutableGraph<Unit, Unit>()
+        assertEquals(a, b)
     }
 }
