@@ -196,7 +196,7 @@ public fun <V, E> Graph<V, E>.toMutableGraph(): Graph<V, E> = copy()
 public fun <V, E> MutableGraph(): MutableGraph<V, E> = DirectedGraph()
 
 public infix fun <V, E> Graph<V, E>.isomorphism(other: Graph<V, E>): Map<Graph.Vertex<V, E>, Graph.Vertex<V, E>>? {
-    return findIsomorphism(this, other)
+    return findIsomorphism(this, other, false)
 }
 
 public infix fun <V, E> Graph<V, E>.isIsomorphicTo(other: Graph<V, E>): Boolean = this isomorphism other != null

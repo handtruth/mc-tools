@@ -3,9 +3,13 @@ package com.handtruth.mc.graph
 public abstract class AbstractGraph<V, E> : Graph<V, E> {
     private fun Appendable.appendEdge(cache: Map<Graph.Vertex<*, *>, String>, edge: Graph.Edge<*, *>) {
         append(cache[edge.source])
-        append("-[")
-        append(edge.value.toString())
-        append("]->")
+        if (edge.value === Unit) {
+            append("->")
+        } else {
+            append("-[")
+            append(edge.value.toString())
+            append("]->")
+        }
         append(cache[edge.target])
     }
 
@@ -65,6 +69,6 @@ public abstract class AbstractGraph<V, E> : Graph<V, E> {
         if (other !is Graph<*, *>) {
             return false
         }
-        return findIsomorphism(this, other, valueEquator, valueEquator) != null
+        return findIsomorphism(this, other, true) != null
     }
 }

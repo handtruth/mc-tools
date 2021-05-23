@@ -434,12 +434,6 @@ class DirectedGraphTest {
         return graph
     }
 
-    data class Labeled(val i: Int, val n: String) : Comparable<Labeled> {
-        override fun compareTo(other: Labeled): Int {
-            return i.compareTo(other.i)
-        }
-    }
-
     @Test
     fun isomorphismTest() {
         val a = createGraph()
@@ -485,5 +479,52 @@ class DirectedGraphTest {
         val a = MutableGraph<Unit, Unit>()
         val b = MutableGraph<Unit, Unit>()
         assertEquals(a, b)
+    }
+
+    private fun complexGraph(lastEdge: Boolean): MutableGraph<Int, Unit> {
+        val graph = MutableGraph<Int, Unit>()
+        graph.set(1, 6)
+        graph.set(6, 10)
+        graph.set(6, 11)
+        graph.set(1, 11)
+        graph.set(10, 12)
+        graph.set(10, 11)
+        graph.set(10, 2)
+        graph.set(10, 5)
+        graph.set(10, 3)
+        graph.set(12, 13)
+        graph.set(12, 15)
+        graph.set(12, 8)
+        graph.set(12, 2)
+        graph.set(13, 2)
+        graph.set(8, 2)
+        graph.set(3, 15)
+        graph.set(3, 7)
+        graph.set(3, 14)
+        graph.set(3, 5)
+        graph.set(15, 16)
+        graph.set(7, 9)
+        graph.set(7, 5)
+        graph.set(9, 4)
+        if (lastEdge) {
+            graph.set(16, 4)
+        }
+        return graph
+    }
+
+    @Test
+    fun complexEquationTest() {
+        val graphA = complexGraph(false)
+        val graphB = complexGraph(true)
+        assertNotEquals(graphA, graphB)
+        graphA.set(16, 4)
+        assertEquals(graphA, graphB)
+    }
+
+    @Test
+    fun simpleGraph() {
+        val graph = MutableGraph<Int, Unit>()
+        graph.set(1, 2)
+        assertEquals("Graph(1->2; 2)", graph.toString())
     }
 }

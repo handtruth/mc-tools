@@ -1,13 +1,5 @@
 package com.handtruth.mc.graph
 
-internal fun interface Equator<in T> {
-    fun equals(a: T, b: T): Boolean
-}
-
-internal val ignoreEquator = Equator<Any?> { _, _ -> true }
-
-internal val valueEquator = Equator<Any?> { a, b -> a == b }
-
 private fun <E> swap(list: MutableList<E>, i: Int, j: Int) {
     val a = list[i]
     val b = list[j]
@@ -40,8 +32,11 @@ internal val <E> List<E>.permutations: Iterable<List<E>>
         heapPermutation(list, size)
     }.asIterable()
 
-private fun <V, E> Graph<V, E>.groups() = vertices.groupBy { it.edges.size }
-private fun <K : Comparable<K>, V> Map<K, V>.sortedGroups() = entries.sortedBy { it.key }.map { it.value }
+private fun <V, E> Graph<V, E>.groups(equation: Boolean) = if (equation) {
+    vertices.groupBy { it.edges.size to it.value }
+} else {
+    vertices.groupBy { it.edges.size }
+}
 
 private suspend fun <E> SequenceScope<List<E>>.nextGroup(
     result: MutableList<E>,
@@ -71,24 +66,27 @@ internal val <E> List<List<E>>.groupPermutations: Iterable<List<E>>
 internal fun <V, E> findIsomorphism(
     a: Graph<V, E>,
     b: Graph<V, E>,
-    vertexEquator: Equator<V> = ignoreEquator,
-    edgeEquator: Equator<E> = ignoreEquator
+    equation: Boolean
 ): Map<Graph.Vertex<V, E>, Graph.Vertex<V, E>>? {
     if (a.vertices.size != b.vertices.size) {
         return null
     }
-    val groupsA = a.groups()
-    val groupsB = b.groups()
+    val groupsA = a.groups(equation)
+    val groupsB = b.groups(equation)
     if (groupsA.keys != groupsB.keys) {
         return null
     }
-    val sortedA = groupsA.sortedGroups()
-    val sortedB = groupsB.sortedGroups()
+    val sortedA = ArrayList<List<Graph.Vertex<V, E>>>(groupsA.size)
+    val sortedB = ArrayList<List<Graph.Vertex<V, E>>>(groupsB.size)
+    for ((key, value) in groupsA.entries) {
+        sortedA += value
+        sortedB += groupsB[key]!!
+    }
     sortedA.groupPermutations.forEach { permA ->
         sortedB.groupPermutations.forEach { permB ->
             val isomorphism = HashMap<Graph.Vertex<V, E>, Graph.Vertex<V, E>>()
             permA.zip(permB) { a, b -> isomorphism[a] = b }
-            if (isIsomorphism(isomorphism, vertexEquator, edgeEquator)) {
+            if (isIsomorphism(isomorphism, equation)) {
                 return isomorphism
             }
         }
@@ -98,14 +96,13 @@ internal fun <V, E> findIsomorphism(
 
 internal fun <V, E> isIsomorphism(
     candidate: Map<Graph.Vertex<V, E>, Graph.Vertex<V, E>>,
-    vertexEquator: Equator<V>,
-    edgeEquator: Equator<E>
+    equation: Boolean
 ): Boolean {
     for ((key, value) in candidate) {
         if (key.edges.size != value.edges.size) {
             return false
         }
-        if (!vertexEquator.equals(key.value, value.value)) {
+        if (equation && key.value != value.value) {
             return false
         }
         for (childEdge in key.edges) {
@@ -115,7 +112,7 @@ internal fun <V, E> isIsomorphism(
             }
             val vertex = candidate[key] ?: return false
             val found = (candidate[child] ?: return false).edges.any {
-                it.source === vertex && edgeEquator.equals(it.value, childEdge.value)
+                it.source === vertex && (!equation || it.value == childEdge.value)
             }
             if (!found) {
                 return false
