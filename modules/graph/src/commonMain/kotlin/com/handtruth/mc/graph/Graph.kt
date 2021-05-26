@@ -191,7 +191,7 @@ public fun <V, E> Graph<V, E>.copy(reverse: Boolean = false): MutableGraph<V, E>
     return newGraph
 }
 
-public fun <V, E> Graph<V, E>.toMutableGraph(): Graph<V, E> = copy()
+public fun <V, E> Graph<V, E>.toMutableGraph(): MutableGraph<V, E> = copy()
 
 public fun <V, E> MutableGraph(): MutableGraph<V, E> = DirectedGraph()
 

@@ -95,6 +95,8 @@ private fun anyDeepEquals(a: Any?, b: Any?) = if (a != b) {
     true
 }
 
+public infix fun Any?.contentDeepEquals(other: Any?): Boolean = anyDeepEquals(this, other)
+
 public infix fun Dynamic?.contentDeepEquals(other: Dynamic?): Boolean {
     if (this === other) {
         return true
