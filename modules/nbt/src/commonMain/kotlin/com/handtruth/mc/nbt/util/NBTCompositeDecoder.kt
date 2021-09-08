@@ -33,7 +33,7 @@ internal abstract class NBTCompositeDecoder(
 
     override fun decodeCharElement(descriptor: SerialDescriptor, index: Int): Char {
         return when (val value = ensureRetrieveTag(descriptor, index)) {
-            is Short -> value.toChar()
+            is Short -> value.toInt().toChar()
             is Char -> value
             else -> notValid(Char::class, value)
         }

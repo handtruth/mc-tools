@@ -5,6 +5,13 @@ plugins {
 
 kotlin {
     explicitApi()
+    sourceSets.all {
+        languageSettings {
+            optIn("io.ktor.utils.io.core.ExperimentalIoApi")
+            optIn("io.ktor.utils.io.core.ExperimentalIoApi")
+            optIn("kotlinx.coroutines.ObsoleteCoroutinesApi")
+        }
+    }
 }
 
 dependencies {

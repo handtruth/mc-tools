@@ -17,6 +17,8 @@ import kotlinx.coroutines.withTimeout
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
 import kotlin.time.seconds
 
 class APITest {
@@ -26,7 +28,7 @@ class APITest {
 
     @Test
     fun getVanillaStatus() = testSuspend {
-        withTimeout(3.seconds) {
+        withTimeout(Duration.seconds(3)) {
             MinecraftClient(selector, "vanilla.mc.handtruth.com", 25565).use {
                 println(it.getStatus())
             }
@@ -114,7 +116,7 @@ class APITest {
                 .drop(1)
                 .take(10)
                 .withIndex()
-                .map { (i, ping) -> println("#$i -> $ping"); ping.inMilliseconds }
+                .map { (i, ping) -> println("#$i -> $ping"); ping.toDouble(DurationUnit.MILLISECONDS) }
                 .reduce { a, b -> a + b } / 10
             println("${ping}ms")
         }

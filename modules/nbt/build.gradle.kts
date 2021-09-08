@@ -2,6 +2,14 @@ plugins {
     kotlin("plugin.serialization")
 }
 
+kotlin {
+    sourceSets.all {
+        languageSettings {
+            optIn("io.ktor.utils.io.core.ExperimentalIoApi")
+        }
+    }
+}
+
 dependencies {
     fun kotlinx(name: String) = "org.jetbrains.kotlinx:kotlinx-$name"
 

@@ -34,7 +34,7 @@ internal abstract class NBTCompositeEncoder(
         if (CharTag in conf.tagsModule) {
             placeTag(descriptor, index, value)
         } else {
-            placeTag(descriptor, index, value.toShort())
+            placeTag(descriptor, index, value.code.toShort())
         }
     }
 

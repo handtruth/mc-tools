@@ -11,7 +11,7 @@ import kotlin.reflect.KProperty
 
 public class ListCodec<T>(private val codec: Codec<T>) : Codec<List<T>> {
     override fun measure(value: List<T>): Int =
-        measureVarInt(value.size) + value.sumBy { codec.measure(it) }
+        measureVarInt(value.size) + value.sumOf { codec.measure(it) }
 
     override fun read(input: Input): List<T> {
         val size = input.readVarInt()

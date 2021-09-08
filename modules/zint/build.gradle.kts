@@ -1,5 +1,5 @@
 plugins {
-    id("info.solidsoft.pitest") version "1.5.2"
+    id("info.solidsoft.pitest") version "1.6.0"
 }
 
 kotlin {

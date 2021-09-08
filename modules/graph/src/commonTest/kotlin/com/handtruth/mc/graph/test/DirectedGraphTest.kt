@@ -456,7 +456,12 @@ class DirectedGraphTest {
         assertEquals(a, b)
         println("equals")
         val vertex = a.vertices.last()
-        vertex.value = cast(Any())
+        run {
+            val ohh = cast<MutableGraph.MutableVertex<Any, Unit>>(vertex)
+            ohh.value = Any()
+        }
+        println(a)
+        println(b)
         assertNotEquals(a, b)
         println("not equals")
         assertTrue { a isIsomorphicTo b }
@@ -469,7 +474,10 @@ class DirectedGraphTest {
         val b = createGraph()
         assertEquals(a, b)
         val edge = a.edges.last()
-        edge.value = cast(Any())
+        run {
+            val ohh = cast<MutableGraph.MutableEdge<Unit, Any>>(edge)
+            ohh.value = Any()
+        }
         assertNotEquals(a, b)
         assertTrue { a isIsomorphicTo b }
     }

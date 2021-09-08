@@ -55,8 +55,8 @@ public abstract class AbstractGraph<V, E> : Graph<V, E> {
     }
 
     override fun hashCode(): Int {
-        val vertexSum = vertices.sumBy { it.value.hashCode() }
-        val edgeSum = edges.sumBy {
+        val vertexSum = vertices.sumOf { it.value.hashCode() }
+        val edgeSum = edges.sumOf {
             it.value.hashCode() - (it.source.value.hashCode() xor it.target.value.hashCode())
         }
         return vertexSum xor edgeSum

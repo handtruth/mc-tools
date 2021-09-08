@@ -21,6 +21,7 @@ data class ServerStatus(
         val name: String,
         val protocol: Int
     )
+
     @Serializable
     data class Players(
         val max: Int,

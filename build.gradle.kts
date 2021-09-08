@@ -96,15 +96,15 @@ fun Project.kotlinProject() {
             all {
                 with(languageSettings) {
                     enableLanguageFeature("InlineClasses")
-                    useExperimentalAnnotation("kotlin.RequiresOptIn")
-                    useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
-                    useExperimentalAnnotation("kotlin.ExperimentalStdlibApi")
-                    useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
-                    useExperimentalAnnotation("com.handtruth.mc.paket.ExperimentalPaketApi")
-                    useExperimentalAnnotation("kotlin.time.ExperimentalTime")
-                    useExperimentalAnnotation("kotlinx.coroutines.ExperimentalCoroutinesApi")
-                    useExperimentalAnnotation("kotlinx.serialization.ExperimentalSerializationApi")
-                    useExperimentalAnnotation("kotlin.experimental.ExperimentalTypeInference")
+                    optIn("kotlin.RequiresOptIn")
+                    optIn("kotlin.ExperimentalUnsignedTypes")
+                    optIn("kotlin.ExperimentalStdlibApi")
+                    optIn("kotlin.contracts.ExperimentalContracts")
+                    optIn("com.handtruth.mc.paket.ExperimentalPaketApi")
+                    optIn("kotlin.time.ExperimentalTime")
+                    optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
+                    optIn("kotlinx.serialization.ExperimentalSerializationApi")
+                    optIn("kotlin.experimental.ExperimentalTypeInference")
                 }
                 dependencies {
                     val handtruthPlatform = dependencies.platform("com.handtruth.internal:platform:$platformVersion")
@@ -150,7 +150,7 @@ fun Project.kotlinProject() {
     }
 
     configure<KtlintExtension> {
-        version.set("0.39.0")
+        version.set("0.42.1")
         verbose.set(true)
         outputToConsole.set(true)
         enableExperimentalRules.set(true)
@@ -165,7 +165,7 @@ fun Project.kotlinProject() {
     }
 
     configure<JacocoPluginExtension> {
-        toolVersion = "0.8.6"
+        toolVersion = "0.8.7"
     }
 
     val jvmTest by tasks.getting(Test::class) {
@@ -196,7 +196,7 @@ fun Project.kotlinProject() {
 }
 
 configure<JacocoPluginExtension> {
-    toolVersion = "0.8.6"
+    toolVersion = "0.8.7"
 }
 
 val thisProjects = kotlinProjects.map { project(":$name-$it") }

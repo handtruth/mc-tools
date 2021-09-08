@@ -37,7 +37,7 @@ data class ChatMessage(
 
     fun toChatString() = json.encodeToString(ChatMessageJsonSerializer, this)
 
-    val length: Int get() = text.length + extra.sumBy { it.length }
+    val length: Int get() = text.length + extra.sumOf { it.length }
 
     override fun toString(): String = buildString { stringify(this) }
 
@@ -83,36 +83,52 @@ data class ChatMessage(
     enum class Color(val color: String, val css: String, val code: Int) {
         @SerialName("unknown")
         Unknown("unknown", "black", 0),
+
         @SerialName("black")
         Black("black", "black", 0x000000),
+
         @SerialName("dark_blue")
         DarkBlue("dark_blue", "darkblue", 0x0000AA),
+
         @SerialName("dark_green")
         DarkGreen("dark_green", "darkgreen", 0x00AA00),
+
         @SerialName("dark_aqua")
         DarkAqua("dark_aqua", "darkcyan", 0x00AAAA),
+
         @SerialName("dark_red")
         DarkRed("dark_red", "darkred", 0xAA0000),
+
         @SerialName("dark_purple")
         DarkPurple("dark_purple", "purple", 0xAA00AA),
+
         @SerialName("gold")
         Gold("gold", "gold", 0xFFAA00),
+
         @SerialName("gray")
         Gray("gray", "gray", 0xAAAAAA),
+
         @SerialName("dark_gray")
         DarkGray("dark_gray", "darkgray", 0x555555),
+
         @SerialName("blue")
         Blue("blue", "blue", 0x5555FF),
+
         @SerialName("green")
         Green("green", "green", 0x55FF55),
+
         @SerialName("aqua")
         Aqua("aqua", "cyan", 0x55FFFF),
+
         @SerialName("red")
         Red("red", "red", 0xFF5555),
+
         @SerialName("light_purple")
         LightPurple("light_purple", "mediumorchid", 0xFF55FF),
+
         @SerialName("yellow")
         Yellow("yellow", "yellow", 0xFFFF55),
+
         @SerialName("white")
         White("white", "white", 0xFFFFFF);
 

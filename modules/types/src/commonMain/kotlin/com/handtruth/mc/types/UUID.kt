@@ -41,8 +41,8 @@ private fun sumPart(str: CharSequence, begin: Int): Long {
 }
 
 private fun int2char(value: Int) = when (value) {
-    in 0..9 -> value + '0'.toInt()
-    in 10..15 -> value - 10 + 'a'.toInt()
+    in 0..9 -> value + '0'.code
+    in 10..15 -> value - 10 + 'a'.code
     else -> error("bad value")
 }.toChar()
 

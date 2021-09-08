@@ -235,7 +235,7 @@ internal class ReceiveSplitterImpl<T>(
                 break
             }
         }
-        conductor.offer(Unit)
+        conductor.trySend(Unit)
     }
 
     override fun spill(key: T): Receiver {
@@ -293,7 +293,7 @@ internal class ReceiveSplitterImpl<T>(
             mutex.withLock {
                 current.value = null
                 receiver.drop()
-                conductor.offer(Unit)
+                conductor.trySend(Unit)
             }
         }
 
@@ -318,7 +318,7 @@ internal class ReceiveSplitterImpl<T>(
                 }
                 if (isCaught) {
                     current.value = null
-                    conductor.offer(Unit)
+                    conductor.trySend(Unit)
                 }
             }
         }
@@ -341,7 +341,7 @@ internal class ReceiveSplitterImpl<T>(
                 }
                 if (isCaught) {
                     current.value = null
-                    conductor.offer(Unit)
+                    conductor.trySend(Unit)
                 }
             }
         }

@@ -56,7 +56,7 @@ internal class NBTDecoder(
 
     override fun decodeChar(): Char {
         return when (value) {
-            is Short -> value.toChar()
+            is Short -> value.toInt().toChar()
             is Char -> value
             else -> notValid(Char::class, value)
         }

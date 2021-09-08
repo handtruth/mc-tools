@@ -24,8 +24,8 @@ internal fun sizeStringChars(sequence: CharSequence): Int {
     while (i < len) {
         val ch = sequence[i]
         when {
-            ch.toInt() <= 0x7F -> count++
-            ch.toInt() <= 0x7FF -> count += 2
+            ch.code <= 0x7F -> count++
+            ch.code <= 0x7FF -> count += 2
             ch.isHighSurrogate() -> {
                 count += 4
                 ++i
@@ -69,9 +69,9 @@ internal const val LONG_SIZE: Int = Long.SIZE_BYTES
 
 internal const val CHAR_SIZE: Int = Char.SIZE_BYTES
 
-internal fun Input.readChar(): Char = readShort().toChar()
+internal fun Input.readChar(): Char = readShort().toInt().toChar()
 
-internal fun Output.writeChar(value: Char): Unit = writeShort(value.toShort())
+internal fun Output.writeChar(value: Char): Unit = writeShort(value.code.toShort())
 
 @PublishedApi
 internal fun <T> construct(serializer: KSerializer<T>): T = serializer.deserialize(EmptyDecoder)

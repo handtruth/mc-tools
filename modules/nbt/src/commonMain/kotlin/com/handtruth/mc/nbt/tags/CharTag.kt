@@ -11,12 +11,12 @@ import io.ktor.utils.io.core.*
 object CharTag : Tag<Char> {
     override val type = Char::class
 
-    override fun readBinary(input: Input, conf: NBTBinaryCodec) = readInt16(input, conf.binaryConfig).toChar()
+    override fun readBinary(input: Input, conf: NBTBinaryCodec) = readInt16(input, conf.binaryConfig).toInt().toChar()
 
     override fun readText(input: Reader, conf: NBTStringCodec) = readChar(input)
 
     override fun writeBinary(output: Output, conf: NBTBinaryCodec, value: Char) {
-        writeInt16(output, conf.binaryConfig, value.toShort())
+        writeInt16(output, conf.binaryConfig, value.code.toShort())
     }
 
     override fun writeText(output: Appendable, conf: NBTStringCodec, value: Char, level: Int) {

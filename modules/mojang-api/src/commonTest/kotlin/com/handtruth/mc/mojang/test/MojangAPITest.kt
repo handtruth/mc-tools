@@ -33,7 +33,7 @@ class MojangAPITest {
         assertNotNull(textures)
         assertEquals(data.id, textures.profileId)
         assertEquals(data.name, textures.profileName)
-        assertNull(textures.cape)
+        assertNotNull(textures.cape)
         assertNotNull(textures.skin)
         assertFalse(textures.isAlex)
         TexturesProperty(

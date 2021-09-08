@@ -88,7 +88,7 @@ private fun arraysEquals(a: Any, b: Any): Boolean = when {
 private fun anyDeepEquals(a: Any?, b: Any?) = if (a != b) {
     when {
         a is List<*> && b is List<*> -> listEquals(a, b)
-        a is Dynamic && b is Dynamic -> a.contentDeepEquals(b)
+        a is Dynamic && b is Dynamic -> dynamicDeepEquals(a, b)
         else -> a != null && b != null && arraysEquals(a, b)
     }
 } else {
@@ -97,19 +97,13 @@ private fun anyDeepEquals(a: Any?, b: Any?) = if (a != b) {
 
 public infix fun Any?.contentDeepEquals(other: Any?): Boolean = anyDeepEquals(this, other)
 
-public infix fun Dynamic?.contentDeepEquals(other: Dynamic?): Boolean {
-    if (this === other) {
-        return true
-    }
-    if (this == null || other == null) {
+private fun dynamicDeepEquals(a: Dynamic, b: Dynamic): Boolean {
+    if (a.fields.size != b.fields.size) {
         return false
     }
-    if (this.fields.size != other.fields.size) {
-        return false
-    }
-    for ((field, a) in this) {
-        val b = other.getOrNull(field) ?: return false
-        if (!anyDeepEquals(a, b)) {
+    for ((field, value) in a) {
+        val other = b.getOrNull(field) ?: return false
+        if (!anyDeepEquals(value, other)) {
             return false
         }
     }
@@ -121,13 +115,10 @@ private class ContentToStringContext(val pretty: Boolean, appendable: Appendable
     val references = ReferenceSet<Any>()
 }
 
-public fun Dynamic?.contentToString(pretty: Boolean = false): String {
-    this ?: return "null"
+public fun Any?.contentToString(pretty: Boolean = false): String {
     return buildString {
         with(ContentToStringContext(pretty, this)) {
-            notice(this@contentToString) {
-                appendMap(this@contentToString.fields)
-            }
+            appendValueAsString(this@contentToString)
         }
     }
 }
@@ -246,10 +237,7 @@ private fun ContentToStringContext.appendMap(value: Map<*, *>) {
     append('}')
 }
 
-public fun Dynamic?.contentDeepHashCode(): Int {
-    this ?: return 0
-    return mapHashCode(fields)
-}
+public fun Any?.contentDeepHashCode(): Int = valueHashCode(this)
 
 private fun valueHashCode(value: Any?): Int = when (value) {
     null -> 0

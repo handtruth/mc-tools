@@ -31,6 +31,7 @@ class ProfileContext private constructor(val factories: Map<String, PropertyFact
     operator fun plus(map: Map<String, PropertyFactory<BaseProperty>>) = ProfileContext(factories + map)
     operator fun plus(entry: Map.Entry<String, PropertyFactory<BaseProperty>>) =
         ProfileContext(factories.toMutableMap().apply { put(entry.key, entry.value) })
+
     @JvmName("plusEntries")
     operator fun plus(iterable: Iterable<Map.Entry<String, PropertyFactory<BaseProperty>>>): ProfileContext {
         val map = factories.toMutableMap()
@@ -42,6 +43,7 @@ class ProfileContext private constructor(val factories: Map<String, PropertyFact
         ProfileContext(factories + pairs)
     operator fun plus(pairs: Sequence<Pair<String, PropertyFactory<BaseProperty>>>) =
         ProfileContext(factories + pairs)
+
     @JvmName("plusEntries")
     operator fun plus(pairs: Sequence<Map.Entry<String, PropertyFactory<BaseProperty>>>) = this + pairs.asIterable()
 

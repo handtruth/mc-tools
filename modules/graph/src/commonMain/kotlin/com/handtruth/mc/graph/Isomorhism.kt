@@ -59,7 +59,7 @@ private suspend fun <E> SequenceScope<List<E>>.nextGroup(
 
 internal val <E> List<List<E>>.groupPermutations: Iterable<List<E>>
     get() = sequence {
-        val result = ArrayList<E>(sumBy { it.size })
+        val result = ArrayList<E>(sumOf { it.size })
         nextGroup(result, this@groupPermutations, 0)
     }.asIterable()
 

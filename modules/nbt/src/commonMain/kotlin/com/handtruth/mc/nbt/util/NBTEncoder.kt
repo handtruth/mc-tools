@@ -51,7 +51,7 @@ internal class NBTEncoder(
         tag = if (CharTag in conf.tagsModule) {
             value
         } else {
-            value.toShort()
+            value.code.toShort()
         }
     }
 

@@ -32,7 +32,7 @@ internal class NBTLongArrayDecoder(
     }
 
     override fun decodeCharElement(descriptor: SerialDescriptor, index: Int): Char {
-        return value[index].toChar()
+        return value[index].toInt().toChar()
     }
 
     override fun decodeDoubleElement(descriptor: SerialDescriptor, index: Int): Double {
