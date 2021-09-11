@@ -1,8 +1,8 @@
 package com.handtruth.mc.nbt.util
 
 import com.handtruth.mc.nbt.NBTSerialFormat
+import com.handtruth.mc.nbt.contains
 import com.handtruth.mc.types.Dynamic
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.encoding.CompositeDecoder
@@ -14,6 +14,8 @@ internal class NBTDecoder(
     val conf: NBTSerialFormat,
     override val serializersModule: SerializersModule
 ) : Decoder {
+    private var isUnsigned = false
+
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
         return when (descriptor.kind) {
             StructureKind.LIST -> {
@@ -52,7 +54,7 @@ internal class NBTDecoder(
         }
     }
 
-    override fun decodeByte() = decodeAs<Byte>()
+    override fun decodeByte() = if (isUnsigned) decodeAs<UByte>().toByte() else decodeAs<Byte>()
 
     override fun decodeChar(): Char {
         return when (value) {
@@ -74,20 +76,23 @@ internal class NBTDecoder(
 
     override fun decodeFloat() = decodeAs<Float>()
 
-    @ExperimentalSerializationApi
     override fun decodeInline(inlineDescriptor: SerialDescriptor): Decoder {
-        throw UnsupportedOperationException()
+        val tag = unsignedSerialDescriptors[inlineDescriptor]
+        if (tag != null && tag in conf.tagsModule) {
+            isUnsigned = true
+        }
+        return this
     }
 
-    override fun decodeInt() = decodeAs<Int>()
+    override fun decodeInt() = if (isUnsigned) decodeAs<UInt>().toInt() else decodeAs<Int>()
 
-    override fun decodeLong() = decodeAs<Long>()
+    override fun decodeLong() = if (isUnsigned) decodeAs<ULong>().toLong() else decodeAs<Long>()
 
     override fun decodeNotNullMark() = true
 
     override fun decodeNull() = null
 
-    override fun decodeShort() = decodeAs<Short>()
+    override fun decodeShort() = if (isUnsigned) decodeAs<UShort>().toShort() else decodeAs<Short>()
 
     override fun decodeString() = decodeAs<String>()
 }

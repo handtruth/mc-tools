@@ -1,5 +1,6 @@
 package com.handtruth.mc.nbt
 
+import com.handtruth.mc.util.Base64Variants
 import kotlinx.datetime.TimeZone
 
 data class NBTBinaryConfig internal constructor(
@@ -50,10 +51,6 @@ data class NBTStringConfig internal constructor(
     val base64Variant: Base64Variants,
     val base64LineLength: Int
 ) {
-    enum class Base64Variants {
-        RFC4648, RFC4648Url, RFC3501
-    }
-
     companion object {
         val Mojang = NBTStringConfig(
             pretty = false,

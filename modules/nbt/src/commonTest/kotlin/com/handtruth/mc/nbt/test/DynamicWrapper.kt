@@ -2,7 +2,7 @@ package com.handtruth.mc.nbt.test
 
 import com.handtruth.mc.types.Dynamic
 import com.handtruth.mc.types.contentDeepEquals
-import com.handtruth.mc.types.contentToString
+import com.handtruth.mc.types.contentDeepToString
 import kotlin.test.assertEquals
 
 data class DynamicWrapper(val dynamic: Dynamic) {
@@ -11,7 +11,7 @@ data class DynamicWrapper(val dynamic: Dynamic) {
 
     override fun hashCode() = dynamic.hashCode()
 
-    override fun toString() = dynamic.contentToString()
+    override fun toString() = dynamic.contentDeepToString()
 }
 
 fun assertDynamicEquals(expected: Dynamic, actual: Dynamic, message: String? = null) {

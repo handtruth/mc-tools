@@ -7,8 +7,8 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.util.zip.GZIPInputStream
 
-fun NBTBinaryCodec.read(input: InputStream) = read(input.asInput())
-fun NBTBinaryCodec.write(output: OutputStream, key: String, value: Any) = write(output.asOutput(), key, value)
+fun NBTBinaryCodec.read(input: InputStream) = readNamedBinary(input.asInput())
+fun NBTBinaryCodec.write(output: OutputStream, key: String, value: Any) = writeNamedBinary(output.asOutput(), key, value)
 
 private class KtorInputStream(val input: ByteReadPacket) : InputStream() {
     override fun available(): Int = input.remaining.toInt()
@@ -48,4 +48,4 @@ fun Input.asNBTInput(): Input {
 
 fun InputStream.asNBTInput() = asInput().asNBTInput()
 
-fun NBTBinaryCodec.read(file: File) = read(file.inputStream().asInput().asNBTInput())
+fun NBTBinaryCodec.read(file: File) = readNamedBinary(file.inputStream().asInput().asNBTInput())

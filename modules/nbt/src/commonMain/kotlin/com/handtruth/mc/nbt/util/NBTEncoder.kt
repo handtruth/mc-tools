@@ -18,6 +18,8 @@ internal class NBTEncoder(
 ) : Encoder {
     var tag: Any = EndTag
 
+    private var isUnsigned = false
+
     override fun beginStructure(
         descriptor: SerialDescriptor
     ): CompositeEncoder {
@@ -44,7 +46,7 @@ internal class NBTEncoder(
     }
 
     override fun encodeByte(value: Byte) {
-        tag = value
+        tag = if (isUnsigned) value.toUByte() else value
     }
 
     override fun encodeChar(value: Char) {
@@ -71,11 +73,11 @@ internal class NBTEncoder(
     }
 
     override fun encodeInt(value: Int) {
-        tag = value
+        tag = if (isUnsigned) value.toUInt() else value
     }
 
     override fun encodeLong(value: Long) {
-        tag = value
+        tag = if (isUnsigned) value.toULong() else value
     }
 
     override fun encodeNull() {
@@ -83,7 +85,7 @@ internal class NBTEncoder(
     }
 
     override fun encodeShort(value: Short) {
-        tag = value
+        tag = if (isUnsigned) value.toUShort() else value
     }
 
     override fun encodeString(value: String) {
@@ -91,6 +93,10 @@ internal class NBTEncoder(
     }
 
     override fun encodeInline(inlineDescriptor: SerialDescriptor): Encoder {
-        throw UnsupportedOperationException()
+        val tag = unsignedSerialDescriptors[inlineDescriptor]
+        if (tag != null && tag in conf.tagsModule) {
+            isUnsigned = true
+        }
+        return this
     }
 }

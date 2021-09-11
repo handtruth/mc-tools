@@ -17,5 +17,5 @@ dependencies {
     commonMainImplementation(project(":tools-types"))
     commonMainImplementation("io.ktor:ktor-io")
     commonMainApi(kotlinx("serialization-core"))
-    commonMainApi(kotlinx("datetime:0.1.1"))
+    commonMainApi(kotlinx("datetime"))
 }

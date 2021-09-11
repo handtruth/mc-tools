@@ -13,14 +13,14 @@ class AlternativeFormats {
     @Test
     fun bedrock() {
         val bedrock = NBTBinaryCodec(binaryConfig = NBTBinaryConfig.Bedrock)
-        val tag = bedrock.read(open("bedrock_level.nbt"))
+        val tag = bedrock.readNamedBinary(open("bedrock_level.nbt"))
         println(tag)
     }
 
     @Test
     fun kbt() {
         val kbt = NBTBinaryCodec(binaryConfig = NBTBinaryConfig.KBT)
-        val tag = kbt.read(open("kbt.nbt"))
+        val tag = kbt.readNamedBinary(open("kbt.nbt"))
         println(tag)
     }
 }

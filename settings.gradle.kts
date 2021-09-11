@@ -1,7 +1,7 @@
 pluginManagement {
     repositories {
         gradlePluginPortal()
-        jcenter()
+        mavenCentral()
     }
     val kotlinVersion: String by settings
     val atomicfuVersion: String by settings

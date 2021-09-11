@@ -3,7 +3,7 @@ package com.handtruth.mc.nbt.test
 import com.handtruth.mc.nbt.NBT
 import com.handtruth.mc.nbt.NBTBinaryConfig
 import com.handtruth.mc.nbt.tags.*
-import com.handtruth.mc.nbt.write
+import com.handtruth.mc.nbt.writeText
 import com.handtruth.mc.types.Dynamic
 import com.handtruth.mc.types.buildDynamic
 import com.handtruth.mc.types.dynamic
@@ -35,11 +35,11 @@ class TagBuilderTest {
             "intArray" assign intArrayOf(58, -98, 334)
             "longArray" assign longArrayOf(4842, -6496462, 24554679784123)
         }
-        println(javaNBT.write(tag))
+        println(javaNBT.writeText(tag))
         buildPacket {
-            javaNBT.write(this, "", tag)
+            javaNBT.writeNamedBinary(this, "", tag)
         }.use { input ->
-            val actual = javaNBT.read(input)
+            val actual = javaNBT.readNamedBinary(input)
             assertDynamicEquals(tag, actual.second as Dynamic)
         }
     }

@@ -48,7 +48,7 @@ class MojangsonTest {
                     value: -56890984387l,
                 }}
         """.trimIndent()
-        val tag = format.read(string)
+        val tag = format.readText(string)
         val expected = buildDynamic {
             "byte" assign 8.toByte()
             "short-short.short_short" assign (-56).toShort()
@@ -80,7 +80,7 @@ class MojangsonTest {
             }
         }
         assertDynamicEquals(expected, tag as Dynamic)
-        val tag2 = format.read(format.write(tag))
+        val tag2 = format.readText(format.writeText(tag))
         assertDynamicEquals(expected, tag2 as Dynamic)
     }
 
@@ -99,7 +99,7 @@ class MojangsonTest {
                 booleans: [b; true, false, false, true]
             }
         """.trimIndent()
-        val tag = format.read(string) as Dynamic
+        val tag = format.readText(string) as Dynamic
         val expected = buildDynamic {
             "hello" assign 'S'
             "world" assign "S"
@@ -111,7 +111,7 @@ class MojangsonTest {
             "booleans" assign booleanArrayOf(true, false, false, true)
         }
         assertDynamicEquals(expected, tag)
-        val tag2 = format.read(format.write(tag))
+        val tag2 = format.readText(format.writeText(tag))
         assertDynamicEquals(expected, tag2 as Dynamic)
     }
 
@@ -131,7 +131,7 @@ class MojangsonTest {
                 uuid: {d03cf771-6d96-4fb3-84de-26f7c832238a}
             }
         """.trimIndent()
-        val tag = format.read(string) as Dynamic
+        val tag = format.readText(string) as Dynamic
         val expected = buildDynamic {
             "booleans" assign listOf(true, false, false, false, true)
             "instant1" assign LocalDate.parse("2010-02-13")
@@ -146,7 +146,7 @@ class MojangsonTest {
             "uuid" assign UUID.parse("d03cf771-6d96-4fb3-84de-26f7c832238a")
         }
         assertDynamicEquals(expected, tag)
-        val tag2 = format.read(format.write(tag).also(::println))
+        val tag2 = format.readText(format.writeText(tag).also(::println))
         assertDynamicEquals(expected, tag2 as Dynamic)
     }
 
@@ -210,7 +210,7 @@ class MojangsonTest {
     @Test
     fun errorCheck() {
         val e = assertFailsWith<NBTParseException> {
-            format.read("")
+            format.readText("")
         }
         assertEquals(Position(1, 0, 0), e.position)
     }

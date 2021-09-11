@@ -31,8 +31,7 @@ allprojects {
 
     repositories {
         maven("https://mvn.handtruth.com")
-        maven("https://dl.bintray.com/korlibs/korlibs")
-        jcenter()
+        mavenCentral()
         maven("https://kotlin.bintray.com/kotlinx")
     }
 }
@@ -134,18 +133,6 @@ fun Project.kotlinProject() {
                     runtimeOnly("org.junit.jupiter:junit-jupiter-engine")
                 }
             }
-            /*
-            val jsMain by getting {
-                dependencies {
-                    implementation(kotlin("stdlib-js"))
-                }
-            }
-            val jsTest by getting {
-                dependencies {
-                    implementation(kotlin("test-js"))
-                }
-            }
-            */
         }
     }
 
@@ -232,8 +219,8 @@ tasks {
         executionData.setFrom(mergeTestCoverageReport)
 
         reports {
-            xml.isEnabled = true
-            html.isEnabled = true
+            xml.required.set(true)
+            html.required.set(true)
         }
     }
     val dokkaHtmlMultiModule by getting(DokkaMultiModuleTask::class)

@@ -2,6 +2,7 @@ package com.handtruth.mc.nbt.test
 
 import com.handtruth.mc.nbt.*
 import com.handtruth.mc.types.*
+import com.handtruth.mc.util.UnsafeBytes
 import io.ktor.utils.io.core.*
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toInstant
@@ -58,11 +59,11 @@ class MCSDBTest {
                 ]
             }
         """.trimIndent()
-        val tag1 = nbt.read(string) as Dynamic
-        println(nbt.write(tag1))
+        val tag1 = nbt.readText(string) as Dynamic
+        println(nbt.writeText(tag1))
         checkTag(tag1)
-        val bytes = nbt.write("MCSDB", tag1)
-        val (name, tag3) = nbt.read(bytes)
+        val bytes = nbt.writeNamedBinary("MCSDB", tag1)
+        val (name, tag3) = nbt.readNamedBinary(bytes)
         assertEquals("MCSDB", name)
         checkTag(tag3 as Dynamic)
     }
@@ -87,7 +88,7 @@ class MCSDBTest {
         "uuid" assign UUID.parseDefault("bf810f1c-ca49-41c8-9141-871452464ebb")
         "instant" assign LocalDateTime.parse("1337-12-06T23:42:13").toInstant(nbt.stringConfig.timeZone)
         "empty-compound" {}
-        "empty-list" list emptyList<Nothing>()
+        "empty-list" assign emptyList<Nothing>()
         "list-of-compounds" list {
             dynamic {
                 "name" assign "object"
@@ -101,6 +102,7 @@ class MCSDBTest {
         }
     }
 
+    @OptIn(UnsafeBytes::class)
     private val expectedBigBytes = buildPacket {
         writeText(
             "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium " +
@@ -116,18 +118,18 @@ class MCSDBTest {
                 "voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem " +
                 "eum fugiat quo voluptas nulla pariatur?"
         )
-    }.copy().use { it.readBytes() }
+    }.use { Bytes.wrap(it.readBytes()) }
 
     private fun checkTag(tag: Dynamic) {
         val emptyBytes = tag.getOrNull("empty-bytes")
-        assertTrue(emptyBytes is ByteArray)
+        assertTrue(emptyBytes is Bytes)
         assertEquals(0, emptyBytes.size)
         val spaceBytes = tag.getOrNull("space-bytes")
-        assertTrue(spaceBytes is ByteArray)
+        assertTrue(spaceBytes is Bytes)
         assertEquals(0, spaceBytes.size)
         val bigBytes = tag.getOrNull("big-bytes")
-        assertTrue(bigBytes is ByteArray)
-        assertTrue(expectedBigBytes.contentEquals(bigBytes))
+        assertTrue(bigBytes is Bytes)
+        assertEquals(expectedBigBytes, bigBytes)
         val tag2 = tag.toMutableDynamic()
         tag2["empty-bytes"] = null
         tag2["space-bytes"] = null

@@ -1,11 +1,15 @@
 package com.handtruth.mc.nbt.util
 
-import com.handtruth.mc.nbt.*
+import com.handtruth.mc.nbt.NBTBinaryConfig
+import com.handtruth.mc.nbt.NBTStringCodec
+import com.handtruth.mc.nbt.NBTStringConfig
+import com.handtruth.mc.nbt.contains
 import com.handtruth.mc.nbt.tags.*
 import com.handtruth.mc.util.*
 import io.ktor.utils.io.charsets.*
 import io.ktor.utils.io.core.*
 import kotlinx.datetime.*
+import kotlinx.serialization.builtins.serializer
 import kotlin.contracts.contract
 import kotlin.reflect.KClass
 
@@ -816,3 +820,10 @@ internal inline fun compressBooleansWrite(output: Output, size: Int, get: (Int) 
         output.writeByte(byte.toByte())
     }
 }
+
+internal val unsignedSerialDescriptors = mapOf(
+    UByte.serializer().descriptor to UByteTag,
+    UShort.serializer().descriptor to UShortTag,
+    UInt.serializer().descriptor to UIntTag,
+    ULong.serializer().descriptor to ULongTag,
+)

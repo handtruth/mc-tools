@@ -21,13 +21,13 @@ class BinaryFormatTest {
     @Test
     fun readPlayerData() {
         // Real example
-        val tag = javaNBT.read(open("66f3f777-edce-3c09-a5d2-6118f9b9e223.dat"))
+        val tag = javaNBT.readNamedBinary(open("66f3f777-edce-3c09-a5d2-6118f9b9e223.dat"))
         println(tag)
     }
 
     @Test
     fun readWriteBigNBT() {
-        val actual = javaNBT.read(open("bigtest.nbt"))
+        val actual = javaNBT.readNamedBinary(open("bigtest.nbt"))
         val expected = buildDynamic {
             "shortTest" assign 32767.toShort()
             "longTest" assign 9223372036854775807L
@@ -65,19 +65,16 @@ class BinaryFormatTest {
         }
         assertEquals("Level", actual.first)
         assertDynamicEquals(expected, actual.second as Dynamic)
-        val expectedOutput = buildPacket {
-            javaNBT.write(this, "Level", expected)
-        }
         val actualOutput = buildPacket {
-            javaNBT.write(this, "Level", actual.second)
+            javaNBT.writeNamedBinary(this, "Level", actual.second)
         }
-        assertEquals(expectedOutput.readBytes().toList(), actualOutput.readBytes().toList())
+        assertDynamicEquals(expected, javaNBT.readNamedBinary(actualOutput).second as Dynamic)
     }
 
     @Test
     fun deserializeBigNBT() {
         val expected = bigNBTObject
-        val tag = javaNBT.read(open("bigtest.nbt"))
+        val tag = javaNBT.readNamedBinary(open("bigtest.nbt"))
         val actual = javaNBT.decodeFromNBT(Level.serializer(), tag.second)
         assertEquals(expected, actual)
         println(actual)
@@ -101,10 +98,10 @@ class BinaryFormatTest {
             "name" assign "Bananrama"
         }
         buildPacket {
-            javaNBT.write(this, "hello world", root)
+            javaNBT.writeNamedBinary(this, "hello world", root)
         }.use { decode ->
-            val easy1 = javaNBT.read(decode)
-            val easy2 = javaNBT.read(input)
+            val easy1 = javaNBT.readNamedBinary(decode)
+            val easy2 = javaNBT.readNamedBinary(input)
             assertEquals(easy1, easy2)
         }
     }

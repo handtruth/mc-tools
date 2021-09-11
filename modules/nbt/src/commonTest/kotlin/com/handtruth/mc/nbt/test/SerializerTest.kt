@@ -7,7 +7,6 @@ import com.handtruth.mc.nbt.plus
 import com.handtruth.mc.types.Dynamic
 import com.handtruth.mc.types.buildDynamic
 import com.handtruth.mc.types.contentDeepHashCode
-import com.handtruth.mc.types.contentToString
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -56,7 +55,6 @@ class SerializerTest {
         }
         val actual = player2nbt(player)
         assertDynamicEquals(expected, actual)
-        assertEquals(expected.contentToString(true), actual.contentToString(true))
         assertEquals(expected.contentDeepHashCode(), actual.contentDeepHashCode())
         println(actual)
 

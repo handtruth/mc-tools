@@ -17,16 +17,16 @@ interface NBTSerialFormat : SerialFormat {
 
 interface NBTBinaryFormat : BinaryFormat, NBTBinaryCodec, NBTSerialFormat {
     override fun <T> decodeFromByteArray(deserializer: DeserializationStrategy<T>, bytes: ByteArray): T {
-        return decodeFromNBT(deserializer, read(bytes).second)
+        return decodeFromNBT(deserializer, readNamedBinary(bytes).second)
     }
 
     override fun <T> encodeToByteArray(serializer: SerializationStrategy<T>, value: T): ByteArray {
-        return write("", encodeToNBT(serializer, value))
+        return writeNamedBinary("", encodeToNBT(serializer, value))
     }
 }
 
 fun <T> NBTBinaryFormat.decodeFromInput(deserializer: DeserializationStrategy<T>, input: Input): T {
-    return decodeFromNBT(deserializer, read(input).second)
+    return decodeFromNBT(deserializer, readNamedBinary(input).second)
 }
 
 fun <T> NBTBinaryFormat.encodeToOutput(
@@ -34,24 +34,24 @@ fun <T> NBTBinaryFormat.encodeToOutput(
     output: Output,
     value: T
 ) {
-    write(output, "", encodeToNBT(serializer, value))
+    writeNamedBinary(output, "", encodeToNBT(serializer, value))
 }
 
 interface NBTStringFormat : StringFormat, NBTStringCodec, NBTSerialFormat {
     fun <T> decodeFromReader(deserializer: DeserializationStrategy<T>, reader: Reader): T {
-        return decodeFromNBT(deserializer, read(reader))
+        return decodeFromNBT(deserializer, readText(reader))
     }
 
     override fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, string: String): T {
-        return decodeFromNBT(deserializer, read(string))
+        return decodeFromNBT(deserializer, readText(string))
     }
 
     fun <T> encodeToString(serializer: SerializationStrategy<T>, appendable: Appendable, value: T) {
-        write(appendable, encodeToNBT(serializer, value))
+        writeText(appendable, encodeToNBT(serializer, value))
     }
 
     override fun <T> encodeToString(serializer: SerializationStrategy<T>, value: T): String {
-        return write(encodeToNBT(serializer, value))
+        return writeText(encodeToNBT(serializer, value))
     }
 }
 

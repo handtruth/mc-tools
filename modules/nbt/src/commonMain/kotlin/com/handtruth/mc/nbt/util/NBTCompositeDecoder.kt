@@ -53,9 +53,6 @@ internal abstract class NBTCompositeDecoder(
         deserializer: DeserializationStrategy<T?>,
         previousValue: T?
     ): T? {
-        if (this is NBTStructDecoder) {
-            println(descriptor.getElementName(index))
-        }
         if (retrieveTag(descriptor, index) == null) {
             return null
         }

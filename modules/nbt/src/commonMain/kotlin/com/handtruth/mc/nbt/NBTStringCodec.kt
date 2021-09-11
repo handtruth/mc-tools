@@ -8,16 +8,16 @@ import io.ktor.utils.io.core.*
 
 interface NBTStringCodec : TagsContainer {
     val stringConfig: NBTStringConfig
-    fun read(reader: Reader): Any
-    fun write(appendable: Appendable, value: Any)
+    fun readText(reader: Reader): Any
+    fun writeText(appendable: Appendable, value: Any)
 }
 
-fun NBTStringCodec.read(string: String, start: Int = 0, end: Int = string.length): Any {
-    return StringReader(string, start, end).use { read(it) }
+fun NBTStringCodec.readText(string: String, start: Int = 0, end: Int = string.length): Any {
+    return StringReader(string, start, end).use { readText(it) }
 }
 
-fun NBTStringCodec.write(value: Any): String {
-    return buildString { write(this, value) }
+fun NBTStringCodec.writeText(value: Any): String {
+    return buildString { writeText(this, value) }
 }
 
 class NBTParseException(val position: Position, inner: Exception) :
@@ -27,7 +27,7 @@ internal class NBTStringCodecImpl(
     override val tagsModule: TagsModule,
     override val stringConfig: NBTStringConfig
 ) : NBTStringCodec {
-    override fun read(reader: Reader): Any {
+    override fun readText(reader: Reader): Any {
         try {
             val tag = deduceTag(reader, this)
             return tag.readText(reader, this)
@@ -36,7 +36,7 @@ internal class NBTStringCodecImpl(
         }
     }
 
-    override fun write(appendable: Appendable, value: Any) {
+    override fun writeText(appendable: Appendable, value: Any) {
         tagsModule.tagOf(value).writeText(appendable, this, value)
     }
 }
