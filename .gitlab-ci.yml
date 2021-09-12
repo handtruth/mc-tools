@@ -1,4 +1,4 @@
-image: gradle:6.9.1
+image: gradle:7.2
 
 stages:
   - build
