@@ -39,7 +39,8 @@ val kotlinProjects = listOf(
     "internals",
     "collections",
     "graph",
-    "all"
+    "objloader",
+    "all",
 )
 
 fun subproject(name: String) {
